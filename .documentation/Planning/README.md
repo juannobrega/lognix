@@ -18,14 +18,14 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | # | Área | O que define | Status |
 |---|------|--------------|--------|
 | 01 | [Produto](01%20Produto/README.md) | Problema, visão, escopo, personas, requisitos, glossário | Em revisão |
-| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 5 ADRs aceitos |
+| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 9 ADRs aceitos |
 | 03 | [Coleta de Logs](03%20Coleta%20de%20Logs/README.md) | Alloy, inventário e conexão de instâncias, Docker, Kubernetes | Pendente |
-| 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Pendente |
-| 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Pendente |
+| 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Decisões iniciais |
+| 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Decisões iniciais |
 | 06 | [Frontend](06%20Frontend/README.md) | Telas, navegação, componentes, estado, design system | Pendente |
 | 07 | [Infraestrutura e Segurança](07%20Infraestrutura%20e%20Segurança/README.md) | Ambientes, compose, CI/CD, segredos, RBAC | Pendente |
 | 08 | [Gestão](08%20Gestão/README.md) | Roadmap, fases, questões abertas | Em revisão |
-| 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Pendente |
+| 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Decisões iniciais |
 
 ## Ciclo de vida de um documento
 

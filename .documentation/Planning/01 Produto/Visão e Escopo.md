@@ -34,8 +34,11 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 6. **IA que explica e aponta o código.** Resumo do que aconteceu, causa provável, e, para projetos ligados
    a um repositório GitHub, o arquivo e trecho suspeitos. Ver [04 Inteligência Artificial](../04%20Inteligência%20Artificial/README.md)
    e [09 Integração GitHub](../09%20Integração%20GitHub/README.md).
-7. **Ação: abrir issue no GitHub.** Única ação externa da v1. Alertas por outros canais ficam no
-   [Roadmap](../08%20Gestão/Roadmap.md).
+7. **Ação: abrir issue no GitHub.** Única ação externa da v1, via GitHub App. Em recorrência comenta, se
+   fechada e o erro voltou, reabre. Alertas por outros canais ficam no [Roadmap](../08%20Gestão/Roadmap.md).
+8. **IA acionada por triggers.** Nunca roda sozinha. Erro na janela dispara coleta de contexto, prompt e
+   insight. Provider único na v1: OpenRouter, configurado na interface, com custo e chamadas contabilizados.
+9. **Login e usuários.** Tela de login com JWT e cadastro de usuários. Sem papéis.
 
 ## 4. Objetivos (v1)
 
@@ -49,15 +52,19 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 | O6 | Issue aberta no GitHub com contexto suficiente para um dev agir sem abrir o Lognix | Revisão manual das issues geradas |
 | O7 | Subir o Lognix inteiro com um `docker compose up` em qualquer máquina com Docker | Reprodutível em máquina limpa |
 | O8 | Host monitorado permanece intocado e nunca recebe comando de alteração | Teste automatizado contra o proxy somente leitura |
+| O9 | Todo gasto com IA é visível: chamadas, tokens e custo por período, host e workload | Reconciliação com o painel do OpenRouter |
 
 ## 5. Não-objetivos (v1)
 
 - **Não** instala nada no host monitorado. Nem agente, nem proxy, nem alteração de configuração do Docker.
 - **Não** altera nada no Docker remoto. Não reinicia, não para, não remove.
 - **Não** suporta Kubernetes. Fica para a v2, mas as abstrações não podem assumir Docker.
-- **Não** tem permissionamento. Um único nível de acesso. RBAC está no roadmap.
+- **Não** tem permissionamento. Há login e vários usuários, mas todos com acesso total. RBAC está no roadmap.
 - **Não** é multi-tenant. Uma instalação, um conjunto de hosts.
 - **Não** notifica por Slack, e-mail ou webhook. Só abre issue no GitHub.
+- **Não** suporta outro provider de IA além do OpenRouter.
+- **Não** faz diagnóstico de código para workload sem repositório vinculado. Esse workload é tratado como somente imagem.
+- **Não** aceita repositórios de infraestrutura ou GitOps como vínculo. Só o codebase do sistema.
 - **Não** faz APM, tracing distribuído ou dashboards genéricos.
 - **Não** indexa texto completo. Busca é por labels e janela de tempo, como o Loki trabalha.
 
@@ -75,10 +82,10 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 2. **Somente leitura.** Imposto por código, auditável, testado.
 3. **Logs primeiro, IA depois.** A interface de logs tem que ser boa com IA desligada.
 4. **IA explicável.** Toda saída de IA mostra as linhas e o trecho de código que a embasaram.
-5. **Custo visível.** Cada chamada de IA tem custo estimado e o usuário vê consumo acumulado.
+5. **Custo visível.** Cada chamada de IA registra tokens, custo e gatilho. O usuário vê consumo por período, host e workload.
 6. **Alloy e Loki como estão.** Lognix não reimplementa coleta nem armazenamento. Gera config e consulta.
 7. **Kubernetes-ready por desenho.** "Instância" e "workload" são abstrações neutras.
-8. **Instalação trivial.** Um compose, um `.env`, pronto.
+8. **Instalação trivial.** Um compose, um `.env` mínimo, pronto. Chaves de IA e GitHub são configuradas na interface, não no `.env`.
 
 ## 8. Divisão de responsabilidades
 
@@ -89,5 +96,6 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 | Descobrir containers e ler logs | Grafana Alloy, via túnel |
 | Armazenar e consultar logs | Loki |
 | Inventário, estado, eventos e inspeção de containers | Backend via Docker API no túnel |
-| Rotina de análise a cada 30 s, IA, GitHub | Backend Python |
+| Rotina de análise a cada 30 s, triggers, IA, GitHub | Backend Python |
+| Autenticação, usuários, configuração de providers | Backend Python |
 | Interface, logs ao vivo, insights, issues | Frontend React |

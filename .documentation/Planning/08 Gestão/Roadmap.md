@@ -15,8 +15,9 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - Inventário de containers com estado e eventos
 - Rotina de análise a cada 30 s: padrões, erros, anomalias
 - Visualização de logs ao vivo e histórico
-- Insights de IA: resumo, causa provável
-- Diagnóstico de código via GitHub e abertura de issues
+- Insights de IA acionados por triggers, provider OpenRouter, custos contabilizados
+- Login com JWT e cadastro de usuários, sem papéis
+- Diagnóstico de código via GitHub App e abertura, comentário e reabertura de issues. Fase posterior ao núcleo
 - Instalação por `docker compose up`
 - Acesso único, sem permissionamento
 
@@ -47,6 +48,7 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Correlação com deploys.** Saber que o erro começou após o commit X.
 
 ### IA
+- **Outros providers além do OpenRouter.** Anthropic e OpenAI diretos, Azure, Bedrock.
 - **Modelo local via Ollama** como alternativa sem custo externo.
 - **Chat sobre logs** em linguagem natural, com histórico por investigação.
 - **Aprendizado de padrões normais** por serviço para reduzir falsos positivos.
@@ -55,12 +57,13 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 
 ### Produto e acesso
 - **Permissionamento e papéis.** Admin, operador, leitor. Visibilidade por host.
-- **Multiusuário com autenticação externa.** OAuth GitHub, Google, OIDC.
+- **Autenticação externa.** OAuth GitHub, Google, OIDC. Hoje é usuário e senha com JWT.
 - **Multi-tenant.** Organizações isoladas.
 - **Auditoria.** Quem fez o quê, incluindo todas as chamadas à Docker API.
 - **Retenção configurável por host ou container.**
 
 ### Operação do próprio Lognix
+- **Redis e fila dedicada** se a medição do ADR 009 mostrar necessidade.
 - **Alta disponibilidade.** Hoje é instância única.
 - **Backup e restauração** de Postgres e Loki.
 - **Imagens oficiais publicadas** e release versionado.
