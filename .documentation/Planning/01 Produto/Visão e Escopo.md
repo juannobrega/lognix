@@ -45,7 +45,7 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 1. O usuário cadastra uma **máquina**: endereço, porta, usuário SSH e chave.
 2. O Lognix testa a conexão SSH, abre o túnel e verifica que há Docker respondendo. Se falhar, mostra o motivo.
 3. O Lognix lista os **containers disponíveis** na máquina. O usuário seleciona quais quer **monitorar**.
-4. Só os selecionados passam a ter logs coletados e analisados. Cada container monitorado é um **projeto**.
+4. Só os selecionados passam a ter logs coletados e analisados, **a partir do momento da marcação**. Logs anteriores não são coletados. Cada container monitorado é um **projeto**.
 5. Opcionalmente, o usuário vincula o projeto a um **repositório GitHub** de código. Sem vínculo, o projeto é do tipo imagem Docker.
 6. Se um **container novo** aparece na máquina, o Lognix emite uma notificação. O usuário escolhe se passa a monitorá-lo.
 7. A rotina de 30 s gera **insights**. Eles ficam na tela até o usuário marcar como vistos, individualmente ou com "limpar todos".
