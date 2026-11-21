@@ -45,7 +45,7 @@ flowchart TB
 | Container | Responsabilidade | Estado |
 |---|---|---|
 | frontend | Interface. Arquivos estáticos servidos por nginx, que também faz proxy de `/api` para o backend | Sem estado |
-| backend | API, autenticação, supervisor de túneis, proxy somente leitura, rotina de 30 s, triggers, IA, GitHub, gerador de config do Alloy | Instância única |
+| backend | API, autenticação, supervisor de túneis, proxy somente leitura, ciclos de análise, triggers, IA, GitHub, gerador de config do Alloy | Instância única |
 | postgres | Usuários, hosts, containers, insights, chamadas de IA, notificações, issues, configurações | Volume `postgres-data` |
 | loki | Logs dos containers monitorados | Volume `loki-data` |
 | alloy | Descobre containers via sockets espelhados, filtra os monitorados, envia ao Loki | Config gerada pelo backend |

@@ -19,7 +19,7 @@ trabalho nem reimplementar o que as ferramentas já fazem.
 | Armazenar e consultar logs | Loki | LogQL, tail, retenção |
 | Inventário com estado, eventos, inspeção | Backend | Docker API via proxy |
 | Gerar e recarregar config do Alloy | Backend | Um bloco por host, `/-/reload` |
-| Rotina de análise a cada 30 s | Backend | Consulta Loki, nunca o Docker |
+| Ciclo de análise por container | Backend | Consulta Loki, nunca o Docker |
 | Padrões, anomalias, IA, GitHub | Backend | |
 | Interface, logs ao vivo | Frontend | Tail do Loki, dados do backend |
 

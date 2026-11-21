@@ -27,8 +27,9 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
    Ver [ADR 001](../02%20Arquitetura/ADR/ADR%20001%20Loki%20como%20Armazenamento%20de%20Logs.md).
 3. **Somente leitura, garantido.** O Lognix nunca altera nada no Docker de um host monitorado. Isso é
    imposto por um proxy no próprio Lognix, não só prometido. Ver [ADR 003](../02%20Arquitetura/ADR/ADR%20003%20Proxy%20Somente%20Leitura%20para%20Docker%20API.md).
-4. **Rotina de análise a cada 30 segundos.** O backend consulta o Loki pela janela recente dos containers
-   selecionados, agrupa padrões, detecta erros e anomalias e dispara a IA quando necessário.
+4. **Ciclo de análise por container, com 30 segundos entre ciclos.** O backend consulta o Loki pela janela
+   desde o ciclo anterior, agrupa padrões, detecta erros e anomalias, chama a IA se houver trigger e espera
+   a resposta antes de contar os 30 s seguintes.
    Ver [ADR 005](../02%20Arquitetura/ADR/ADR%20005%20Ciclo%20de%20Análise%20e%20Visualização%20ao%20Vivo.md).
 5. **Visualização ao vivo.** A interface permite acompanhar logs em tempo real quando o usuário quiser.
 6. **IA que explica e aponta o código.** Resumo do que aconteceu, causa provável, e, para projetos ligados
@@ -48,7 +49,7 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 4. Só os selecionados passam a ter logs coletados e analisados, **a partir do momento da marcação**. Logs anteriores não são coletados. Cada container monitorado é um **projeto**.
 5. Opcionalmente, o usuário vincula o projeto a um **repositório GitHub** de código. Sem vínculo, o projeto é do tipo imagem Docker.
 6. Se um **container novo** aparece na máquina, o Lognix emite uma notificação. O usuário escolhe se passa a monitorá-lo.
-7. A rotina de 30 s gera **insights**. Eles ficam na tela até o usuário marcar como vistos, individualmente ou com "limpar todos".
+7. O ciclo de análise gera **insights**. Eles ficam na tela até o usuário marcar como vistos, individualmente ou com "limpar todos".
 
 ## 4. Objetivos (v1)
 
@@ -106,6 +107,6 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 | Descobrir containers e ler logs | Grafana Alloy, via túnel |
 | Armazenar e consultar logs | Loki |
 | Inventário, estado, eventos e inspeção de containers | Backend via Docker API no túnel |
-| Rotina de análise a cada 30 s, triggers, IA, GitHub | Backend Python |
+| Ciclo de análise por container, triggers, IA, GitHub | Backend Python |
 | Autenticação, usuários, configuração de providers | Backend Python |
 | Interface, logs ao vivo, insights, issues | Frontend React |

@@ -13,7 +13,7 @@ documentação do software, não aqui.
 | Framework web | FastAPI | Async nativo, tipagem com Pydantic, OpenAPI gerado, WebSocket e SSE |
 | ORM e migrações | SQLAlchemy 2 async + Alembic | Padrão do ecossistema, async compatível com FastAPI |
 | Banco de metadados | PostgreSQL | Concorrência real, JSONB para insights, maturidade. Guarda só o que o Lognix produz, nunca linhas de log |
-| Agendamento e tarefas | APScheduler + tarefas async no processo | Sem Redis na primeira fase, condicionado a medição. Ver ADR 009 |
+| Agendamento e tarefas | Um loop async por container monitorado, mais APScheduler para tarefas periódicas como inventário | Sem Redis na primeira fase, condicionado a medição. Ver ADR 009 |
 | Túnel SSH | A decidir em protótipo: `asyncssh` ou binário `ssh` como subprocesso | Decisão de implementação, não bloqueia planejamento |
 | Cliente Docker | `aiodocker` ou chamadas HTTP diretas via `httpx` sobre socket Unix | Passa sempre pelo proxy somente leitura |
 | Cliente Loki | `httpx` contra a API HTTP do Loki | API simples, não compensa biblioteca |
@@ -33,7 +33,7 @@ documentação do software, não aqui.
 | Linguagem | TypeScript | Contratos tipados com a API, menos erro em telas de dados densos |
 | Estilo | CSS Modules | Continua CSS puro, escopo por componente, sem framework de utilitários |
 | Roteamento | React Router | Padrão |
-| Dados remotos | TanStack Query | Cache, revalidação e estado de carregamento para a rotina de 30 s |
+| Dados remotos | TanStack Query | Cache, revalidação e estado de carregamento para dados que mudam a cada ciclo |
 | Tempo real | WebSocket ou SSE do backend para eventos; tail do Loki para logs ao vivo | Detalhar em 06 Frontend |
 | Testes | Vitest, Testing Library | |
 | Qualidade | ESLint, Prettier | |

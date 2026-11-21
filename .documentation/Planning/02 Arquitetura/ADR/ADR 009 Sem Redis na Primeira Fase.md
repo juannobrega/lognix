@@ -4,7 +4,7 @@
 
 ## Contexto
 
-A rotina de análise roda a cada 30 s e há tarefas assíncronas: supervisão de túneis, chamadas de IA,
+Há um ciclo de análise por container monitorado, com 30 s entre ciclos, e há tarefas assíncronas: supervisão de túneis, chamadas de IA,
 GitHub. O padrão em Python seria Celery ou arq com Redis. Isso adiciona um container ao compose e
 complexidade de operação para quem instala.
 
@@ -21,10 +21,10 @@ Critérios de medição:
 
 | Critério | Limite |
 |---|---|
-| Rotina de 30 s com 10 hosts e 100 containers termina em | menos de 20 s |
-| Rotina de análise não bloqueia a API | p95 da API abaixo de 300 ms durante a rotina |
+| Parte determinística de um ciclo, com 100 containers em ciclo simultâneo, termina em | menos de 5 s por container |
+| Ciclos de análise não bloqueiam a API | p95 da API abaixo de 300 ms com 100 ciclos ativos |
 | Reinício do backend não perde tarefa de IA em andamento sem registro | 0 perdas silenciosas |
-| Túneis de 10 hosts mantidos e reconectados sem afetar a rotina | sem falha em teste de 1 h |
+| Túneis de 10 hosts mantidos e reconectados sem afetar os ciclos | sem falha em teste de 1 h |
 
 ## Alternativas consideradas
 

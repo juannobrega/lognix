@@ -14,7 +14,7 @@ Define o que a IA faz com os logs, como, a que custo e com quais limites.
 ## Decisões já tomadas
 
 - **Provider:** só OpenRouter na v1, configurado pela interface, com abstração interna para outros no futuro. Toda chamada é contabilizada em tokens, custo e quantidade. Ver [ADR 006](../02%20Arquitetura/ADR/ADR%20006%20Provider%20de%20IA%20via%20OpenRouter%20e%20Contabilização%20de%20Custos.md).
-- **A IA nunca roda sozinha.** Ela é acionada por **triggers** programáticos. A rotina de 30 s avalia a janela e, quando um trigger dispara, o backend monta o contexto e chama a IA.
+- **A IA nunca roda sozinha.** Ela é acionada por **triggers** programáticos. O ciclo de análise avalia a janela e, quando um trigger dispara, o backend monta o contexto, chama a IA e espera a resposta antes de contar os 30 s até o próximo ciclo.
 - **Trigger de erro** é o primeiro e obrigatório: a janela contém linhas classificadas como erro. O backend coleta o contexto, linhas anteriores e posteriores, eventos Docker do período, metadados do workload, monta o prompt e envia. A resposta vira um **insight** com metadados, horário, o que aconteceu e, quando houver repositório vinculado, o trecho de código suspeito.
 - **Janela normal não gasta IA.** Sem trigger, a rotina só agrupa padrões e atualiza estatísticas.
 - **Quatro triggers na v1**, nesta ordem de implementação:
