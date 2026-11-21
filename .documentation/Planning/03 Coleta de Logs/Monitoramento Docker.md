@@ -22,9 +22,8 @@ Reconciliação:
 | Container no banco e não no Docker | `state = removed`, `monitored = false`, vai para aba Containers excluídos, recarrega Alloy se era monitorado |
 | Container nos dois | atualiza `state`, `name`, `image`, `image_digest`, `labels` |
 
-Identidade: o Lognix casa pelo `docker_id`. Se um `docker compose up` recria o container, o
-`docker_id` muda e o container antigo vai para excluídos e o novo chega como não monitorado, com
-notificação. **Ponto de atenção:** isso é incômodo para quem faz deploy frequente. Ver seção 6.
+Identidade: o Lognix casa primeiro pelo `docker_id`. Se não encontra, tenta a **identidade de
+serviço** descrita na seção 6, antes de concluir que é um container novo.
 
 ## 2. Mapeamento Docker → Container
 
@@ -54,7 +53,8 @@ Um stream `GET /events` por host, aberto pelo backend logo após o túnel. Filtr
 | `die` com `exitCode != 0` | grava `DockerEvent`, | **sim**, evento crítico |
 | `die` com `exitCode = 0` | grava | não |
 | `oom` | grava | **sim**, evento crítico |
-| `restart` | grava, conta restarts em 5 min | **sim** se ≥ 3 em 5 min, restart em loop |
+| `restart` | grava, conta restarts em 5 min | **sim** se ≥ 3 em 5 min, restart em loop. Confirmado |
+| `redeploy` (sintético, gerado pelo Lognix) | grava com imagem anterior e nova | não dispara, mas entra no contexto de qualquer trigger seguinte |
 | `kill`, `stop`, `pause`, `unpause` | grava | não |
 | `health_status: unhealthy` | grava | **sim**, evento crítico |
 | `destroy` | inventário, container excluído | não |
@@ -87,10 +87,10 @@ chegar. A interface precisa dizer isso, em vez de parecer quebrada.
 
 ## 6. Containers recriados por deploy
 
-Problema: `docker compose up` após um build recria o container com novo `docker_id`. No modelo atual
-isso gera um container excluído mais um novo não monitorado a cada deploy.
+Decisão de 2026-11-21. `docker compose up` após um build recria o container com novo `docker_id`.
+Sem tratamento, isso geraria um container excluído mais um novo não monitorado a cada deploy.
 
-Proposta a confirmar: **reconhecimento por identidade de serviço**. Se um container novo aparece
+**Reconhecimento por identidade de serviço.** Se um container novo aparece
 com o mesmo `compose_project` e `compose_service` de um container monitorado que acabou de ir para
 excluídos no mesmo host, o Lognix trata como **o mesmo projeto**: mantém o `Container.id`, atualiza
 `docker_id`, `image` e `image_digest`, continua monitorando, recarrega o Alloy, e registra um

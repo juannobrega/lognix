@@ -34,6 +34,8 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Métricas básicas de container.** CPU, memória, rede, via `cadvisor` do Alloy, para correlação com logs.
 - **Intervalo da rotina de análise configurável.** Hoje fixo em 30 s.
 - **Descoberta de hosts.** Importar de provedores de nuvem, varredura de rede, inventário externo.
+- **Bastion / jump host** para alcançar hosts sem SSH direto.
+- **Apagar host de verdade**, incluindo logs no Loki, como operação separada da remoção. Pode entrar ainda na v1 se barato.
 
 ### Alertas e ações
 - **Canais de notificação.** Slack, Discord, e-mail, webhook genérico, Telegram.

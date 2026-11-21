@@ -14,10 +14,14 @@ Campos pedidos ao usuário:
 | Endereço | sim | IP ou DNS |
 | Porta SSH | não, padrão 22 | 1 a 65535 |
 | Usuário SSH | sim | |
-| Chave privada | sim | formato OpenSSH ou PEM, sem senha na v1 |
+| Método de autenticação | sim | `chave`, `chave com passphrase` ou `senha` |
+| Chave privada | se método for chave | formato OpenSSH ou PEM |
+| Passphrase da chave | se a chave tiver | criptografada, usada só para carregar a chave em memória |
+| Senha | se método for senha | criptografada |
 
-Chave com passphrase: roadmap. Senha SSH em vez de chave: **não suportado**, por segurança e por
-não funcionar bem em conexão não interativa persistente.
+Autenticação SSH **completa** na v1: chave, chave com passphrase e senha. Decisão de 2026-11-21.
+A interface recomenda chave e avisa que senha é a opção menos segura, mas não bloqueia. Todas as
+credenciais ficam criptografadas no banco, ADR 008 e Modelo de Dados seção 5.
 
 ## 2. Validação em etapas
 
@@ -100,6 +104,4 @@ Remover um host **não apaga** containers, insights, padrões ou chamadas de IA.
 ## 7. Limites da v1
 
 - Sem bastion ou jump host. Roadmap.
-- Sem chave com passphrase. Roadmap.
-- Sem autenticação por senha. Decisão permanente.
 - Hosts só com runtime Docker. Kubernetes em v2.

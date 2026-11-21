@@ -51,7 +51,10 @@ Uma máquina com Docker alcançável por SSH. Abstração neutra para Kubernetes
 | address | text | IP ou DNS |
 | ssh_port | int | padrão 22 |
 | ssh_user | text | |
-| ssh_private_key_enc | bytea | criptografada com chave do servidor |
+| ssh_auth_method | enum | `key`, `key_passphrase`, `password` |
+| ssh_private_key_enc | bytea, nulo | criptografada com chave do servidor |
+| ssh_key_passphrase_enc | bytea, nulo | criptografada |
+| ssh_password_enc | bytea, nulo | criptografada |
 | ssh_host_key_fingerprint | text | fixado no primeiro acesso, protege contra MITM |
 | runtime | enum | `docker` na v1 |
 | docker_version | text | obtido em `GET /version` |
@@ -92,7 +95,9 @@ Um projeto. Existe para todo container visto no host, monitorado ou não.
 | kind | enum, derivado | `image` sem RepositoryLink, `github` com |
 | first_seen_at, last_seen_at | timestamptz | |
 
-Container que desaparece do host fica com `state = removed` e `monitored = false`, automaticamente. Não é apagado: aparece na aba **Containers excluídos** da interface e seus insights continuam acessíveis. Se um container com o mesmo nome e imagem voltar a aparecer, é tratado como novo e gera notificação.
+Container que desaparece do host fica com `state = removed` e `monitored = false`, automaticamente. Não é apagado: aparece na aba **Containers excluídos** da interface e seus insights continuam acessíveis.
+
+**Exceção, redeploy:** se logo após o sumiço aparece no mesmo host um container com a mesma identidade de serviço, mesmo `compose_project` e `compose_service`, ou mesmo `name` quando não há Compose, o Lognix mantém o mesmo `Container.id`, atualiza `docker_id`, `image` e `image_digest`, continua monitorando e grava um `DockerEvent` do tipo `redeploy`. Ver Monitoramento Docker seção 6.
 
 ### RepositoryLink
 | Campo | Tipo | Nota |
@@ -112,7 +117,8 @@ Só repositórios de código. Validação na interface e no backend.
 |---|---|
 | id | bigserial |
 | container_id | uuid → Container |
-| type | enum: `start`, `die`, `oom`, `restart`, `kill`, `stop`, `health_status` |
+| type | enum: `start`, `die`, `oom`, `restart`, `kill`, `stop`, `health_status`, `redeploy` |
+| previous_image, new_image | text, nulos. Só em `redeploy` |
 | exit_code | int, nulo |
 | attributes | jsonb |
 | occurred_at | timestamptz |
