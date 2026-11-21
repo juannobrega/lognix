@@ -39,6 +39,7 @@ Regras:
 - O backend precisa do binário `ssh` na imagem se a decisão da fase 0.2.0 for subprocesso.
 - Healthchecks em todos os serviços; backend espera Postgres e Loki prontos.
 - `restart: unless-stopped`.
+- **Config do Alloy fora de `/etc/alloy`.** A imagem oficial traz uma config padrão nesse caminho; um volume vazio montado ali herda esse arquivo e o Alloy passa a rodar a config da imagem em vez da nossa. Descoberto na 0.1.0. O volume fica em `/lognix/alloy`.
 
 ## 3. `.env`
 
