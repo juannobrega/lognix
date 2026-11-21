@@ -11,7 +11,7 @@ O que a IA faz no Lognix e, igualmente importante, o que ela não faz. A IA nunc
 | IA-1 | **Explicar um erro** | erro, evento crítico, anomalia, manual | contexto da janela, seção 2 do Pipeline | Insight: severidade, título, resumo, causa provável, ação sugerida, evidências |
 | IA-2 | **Diagnosticar no código** | IA-1 concluído em projeto do tipo GitHub | insight de IA-1 + arquivos relevantes do repositório | `code_diagnosis`: arquivo, trecho, linhas, explicação, confiança |
 | IA-3 | **Redigir issue** | IA-2 concluído, ou IA-1 em projeto GitHub sem diagnóstico de código | insight + diagnóstico | título e corpo em Markdown para a issue |
-| IA-4 | **Análise manual** | botão "analisar agora" | janela e projeto escolhidos pelo usuário | igual a IA-1 |
+| IA-4 | **Análise manual** | botão "analisar agora" | janela e projeto escolhidos pelo usuário | igual a IA-1. Aparece no executor da interface enquanto roda |
 
 IA-2 e IA-3 pertencem à fase GitHub, posterior ao núcleo. ADR 007.
 

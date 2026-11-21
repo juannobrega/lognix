@@ -40,7 +40,9 @@ além do de issues consome `Insight` para produzir efeito externo.
 
 ## 4. Custo descontrolado
 
-- Deduplicação de 30 min por container e padrões.
+- Ciclo sequencial por container: no máximo uma chamada a cada 30 s mais a duração da chamada.
+- **Sem deduplicação na v1.** Erro persistente gera insights repetidos e custo repetido. Aceito e
+  documentado. Primeira melhoria do roadmap de IA.
 - Concorrência limitada.
 - Pausa automática em rate limit.
 - Trigger manual tem limite de 1 por projeto por minuto.
@@ -49,8 +51,9 @@ além do de issues consome `Insight` para produzir efeito externo.
 ## 5. Falhas
 
 - Erro de rede, timeout ou esquema inválido após retry: `AICall.status = error` e notificação `ai_error`.
-- IA desativada ou sem chave: a rotina roda tudo que é determinístico e registra triggers com
-  `insight_id` nulo, para que, ao ativar a IA, o usuário saiba o que ficou sem análise.
+- IA desativada ou sem chave: a rotina roda tudo que é determinístico e **registra o evento** como
+  `TriggerFired` sem insight. A interface lista esses eventos em "ocorrências sem análise". Confirmado
+  em 2026-11-21.
 - Nunca se cria insight vazio ou genérico para esconder uma falha.
 
 ## 6. Prompt injection via log

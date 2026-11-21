@@ -149,14 +149,16 @@ Um ciclo de 30 s para um container.
 |---|---|
 | id | bigserial |
 | container_id | uuid → Container |
-| window_start, window_end | timestamptz |
+| window_start, window_end | timestamptz, janela real: do fim da anterior até o início deste ciclo |
+| ai_called | bool |
+| ai_duration_ms | int, nulo |
 | lines_count | int |
 | error_lines_count | int |
 | new_patterns_count | int |
 | duration_ms | int |
 | status | enum: `ok`, `skipped`, `failed` |
 
-Retenção curta, 7 dias, serve para medir a rotina e detectar anomalia de volume.
+Um por ciclo por container. Retenção curta, 7 dias, serve para medir a rotina e detectar anomalia de volume.
 
 ### TriggerFired
 | Campo | Tipo |
@@ -184,8 +186,6 @@ Retenção curta, 7 dias, serve para medir a rotina e detectar anomalia de volum
 | code_diagnosis | jsonb, nulo | arquivo, trecho, linhas, explicação. Só `kind = github` |
 | confidence | numeric(3,2) | 0 a 1, vindo da IA |
 | context_truncated | bool | contexto cortado por limite de tokens |
-| occurrences | int | recorrências dentro da janela de deduplicação |
-| last_seen_at | timestamptz | última recorrência |
 | sent_context | text | contexto exato enviado à IA, para transparência |
 | status | enum | `new`, `seen` |
 | seen_by | uuid → User, nulo | |

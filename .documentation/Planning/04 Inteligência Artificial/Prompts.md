@@ -9,7 +9,7 @@ logs reais. Aqui ficam estrutura, regras e versionamento.
 
 - Prompts vivem em arquivos versionados no repositório, um por caso de uso, com número de versão.
 - `AICall` grava a versão do prompt usada. Permite comparar qualidade entre versões.
-- Idioma da saída: o mesmo da interface do usuário. Na v1, português e inglês, escolhido em configuração.
+- Idioma da saída: **português** apenas, na v1. Decisão de 2026-11-21. Internacionalização no roadmap.
 - O prompt de sistema declara o papel, o formato de saída obrigatório, o esquema JSON e as proibições.
 - O prompt de usuário contém só o contexto, em blocos delimitados e rotulados, na ordem do Pipeline seção 2.
 - Nenhum prompt pede ação. A IA descreve e sugere; o backend decide o que fazer.

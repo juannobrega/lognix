@@ -127,15 +127,36 @@ Decidido em 2026-11-21: **esquema fechado, fora do esquema é retry.**
 
 ## 7. Deduplicação de insights
 
-Antes de chamar a IA, o backend verifica se existe insight **novo**, não visto, para o mesmo
-container e o mesmo conjunto de padrões de erro, criado nos últimos 30 minutos. Se existir, não chama
-a IA: incrementa um contador `occurrences` no insight existente e atualiza `last_seen_at`. Evita
-pagar pela mesma explicação a cada ciclo enquanto o erro persiste.
+**Não há deduplicação na v1.** Decisão de 2026-11-21. Enquanto um erro persistir, cada ciclo que o
+encontrar gera um novo insight, mesmo que repetido. Deduplicação está no roadmap. O que limita o
+custo na v1 é o ciclo em si: a IA só pode ser chamada uma vez por ciclo por container, e o ciclo só
+recomeça 30 s depois que a chamada anterior termina. Ver seção 8.
 
-Isso exige dois campos a mais em `Insight`: `occurrences` e `last_seen_at`. Modelo de Dados a atualizar.
+## 8. Tempo do ciclo
 
-## 8. Tempo
+Decisão de 2026-11-21: **os 30 segundos contam a partir do fim do ciclo anterior, incluindo a chamada
+de IA**. O ciclo é sequencial por container:
 
-A rotina de 30 s **não espera a IA**. Trigger disparado vira tarefa assíncrona. O ciclo termina
-quando a parte determinística acaba. Chamadas de IA correm em paralelo, com limite de concorrência
-configurável, padrão 3.
+```
+analisa janela → (se trigger) chama IA e espera → grava insight → aguarda 30 s → recomeça
+```
+
+Consequências:
+
+- A janela de cada ciclo vai do fim da janela anterior até agora. Não é fixa em 30 s. Se a IA levou
+  20 s, a próxima janela terá cerca de 50 s. Nenhuma linha fica de fora.
+- A IA nunca é chamada mais de uma vez a cada 30 s para o mesmo container, por construção.
+- Containers são independentes: cada um tem seu próprio ciclo. Um container com IA lenta não atrasa os outros.
+- Concorrência global de chamadas de IA limitada, padrão 3. Se o limite estiver cheio, o container
+  espera sua vez dentro do próprio ciclo.
+- `AnalysisRun.window_start` e `window_end` registram a janela real de cada ciclo.
+
+O trigger **manual** roda fora desse ciclo, na hora, sobre a janela escolhida pelo usuário, respeitando
+o limite de 1 por projeto por minuto e a concorrência global.
+
+## 9. Indicador de execução
+
+A interface mostra um **executor**: lista do que está rodando agora, por projeto, com tipo de trigger,
+fase (consultando, montando contexto, aguardando IA, gravando) e tempo decorrido. Serve para o usuário
+saber que o pedido manual foi aceito e para enxergar a IA trabalhando nos ciclos automáticos. Alimentado
+por WebSocket a partir do backend.

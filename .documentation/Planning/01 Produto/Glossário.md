@@ -24,8 +24,10 @@
 | **LogQL** | Linguagem de consulta do Loki. |
 | **Label** | Par chave/valor indexado no Loki que identifica um stream, por exemplo `host`, `container`, `compose_project`. |
 | **Stream** | Sequência de linhas de log com o mesmo conjunto de labels. |
-| **Rotina de análise** | Processo do backend que roda a cada 30 s: consulta a janela recente no Loki, agrupa padrões, detecta erros e anomalias, aciona IA e GitHub quando necessário. |
-| **Janela** | Intervalo de tempo de uma consulta ou análise. A rotina padrão usa 30 s. |
+| **Rotina de análise** | Ciclo sequencial por container monitorado: consulta no Loki a janela desde o ciclo anterior, agrupa padrões, detecta erros e anomalias, aciona IA se houver trigger e espera a resposta, grava, aguarda 30 s e recomeça. |
+| **Ciclo** | Uma execução da rotina de análise para um container. Gera um `AnalysisRun`. |
+| **Executor** | Painel da interface que mostra as análises em andamento, manuais e automáticas. |
+| **Janela** | Intervalo de tempo de uma consulta ou análise. No ciclo automático, vai do fim da janela anterior até o início do ciclo atual. |
 | **Visualização ao vivo** | Modo da interface que acompanha logs em tempo real via tail do Loki, fora do ciclo de 30 s. |
 | **Padrão (template)** | Linha de log com partes variáveis substituídas por `<*>`. Ex.: `user <*> logged in from <*>`. |
 | **Anomalia** | Desvio em volume, taxa de erro ou surgimento de padrão inédito. |

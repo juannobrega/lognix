@@ -115,7 +115,7 @@ flowchart LR
 | Cliente Docker API | Inventário, inspeção, eventos | ADR 004 |
 | Gerador de Config Alloy | Um bloco por host, filtro de monitorados, `/-/reload` | Área 03 |
 | Ouvinte de Eventos Docker | `GET /events` por host: start, die, oom, restart. Gera notificação de container novo e alimenta triggers | Área 03 |
-| Agendador | Dispara a rotina a cada 30 s | ADR 005, ADR 009 |
+| Agendador | Mantém um ciclo por container monitorado, com 30 s entre o fim de um e o início do próximo | ADR 005, ADR 009 |
 | Rotina de Análise | Consulta Loki, agrupa, classifica, avalia triggers | ADR 005 |
 | Padrões Drain | Templates por container | Área 04 |
 | Classificador de Erro | Nível estruturado ou regex | Área 04 |
@@ -153,11 +153,11 @@ sequenceDiagram
     end
 ```
 
-### 5.2 Rotina de 30 segundos
+### 5.2 Ciclo de análise por container
 
 ```mermaid
 flowchart TD
-    S[tick 30s] --> Q[Para cada container monitorado:<br/>LogQL dos últimos 30s]
+    S[início do ciclo do container] --> Q[LogQL: do fim da janela anterior até agora]
     Q --> D[Drain: atualiza padrões]
     D --> C[Classifica linhas: erro?]
     C --> T{Algum trigger?}
@@ -169,10 +169,12 @@ flowchart TD
     INS --> GH{Projeto GitHub?}
     GH -->|sim| CODE[Lê código relevante, diagnóstico, issue]
     GH -->|não| END[Insight somente imagem]
-    STAT --> END2[fim do ciclo]
+    STAT --> END2[aguarda 30 s, recomeça]
+    END --> END2
+    CODE --> END2
 ```
 
-Se o ciclo passar de 30 s, o próximo é pulado e uma notificação é gerada.
+Cada container monitorado tem seu próprio ciclo. A IA é aguardada dentro do ciclo. Os 30 s contam a partir do fim do ciclo, IA incluída. ADR 005 revisado.
 
 ### 5.3 Container novo no host
 

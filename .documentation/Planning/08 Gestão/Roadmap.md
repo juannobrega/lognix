@@ -50,6 +50,8 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Correlação com deploys.** Saber que o erro começou após o commit X.
 
 ### IA
+- **Deduplicação de insights.** Erro persistente hoje gera insight e chamada de IA a cada ciclo. Primeira melhoria de IA a fazer. Decidido fora da v1 em 2026-11-21.
+- **Intervalo entre ciclos configurável.** Hoje 30 s fixo.
 - **Outros providers além do OpenRouter.** Anthropic e OpenAI diretos, Azure, Bedrock.
 - **Modelo local via Ollama** como alternativa sem custo externo.
 - **Chat sobre logs** em linguagem natural, com histórico por investigação.
@@ -62,6 +64,7 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Permissionamento e papéis.** Admin, operador, leitor. Visibilidade por host.
 - **Autenticação externa.** OAuth GitHub, Google, OIDC. Hoje é usuário e senha com JWT.
 - **Multi-tenant.** Organizações isoladas.
+- **Internacionalização.** Interface e saída da IA em outros idiomas. Hoje só português.
 - **Auditoria.** Quem fez o quê, incluindo todas as chamadas à Docker API.
 - **Retenção configurável por host ou container.**
 
