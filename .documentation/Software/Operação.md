@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.3.0
+**Versão:** 0.4.0
 
 ## Preparar um host para o Lognix
 
@@ -64,12 +64,32 @@ configuração do Alloy, recarrega e guarda a versão. A coleta começa **na mar
 timestamp anterior a dois minutos são descartadas pelo Alloy e contadas na métrica
 `loki_process_dropped_lines_total{reason="lognix_before_monitoring"}`.
 
-Containers marcados viram **projetos** e aparecem em Projetos. A visualização dos logs na interface
-chega na 0.4.0; até lá, os logs já estão no Loki com os labels `host`, `host_id`, `container`,
-`container_id`, `compose_project` e `compose_service`.
+Containers marcados viram **projetos** e aparecem em Projetos. Os logs ficam no Loki com os labels
+`host`, `host_id`, `container`, `container_id`, `compose_project` e `compose_service`.
 
 Se um container monitorado for recriado, por exemplo por um `docker compose up` após build, o ID
 Docker muda e a coleta para até o inventário ser sincronizado, o que acontece ao abrir a tela do
 host. A reconciliação automática por eventos chega na 0.5.0.
 
 A configuração atual do Alloy e as últimas versões aplicadas ficam visíveis na tela do host.
+
+## Ver logs
+
+Na tela do projeto:
+
+- **Ao vivo**: as linhas chegam por WebSocket conforme o Alloy as envia ao Loki. Rolar para cima
+  pausa o acompanhamento e um botão mostra quantas linhas novas chegaram. A tela guarda até 5 000
+  linhas; acima disso, as mais antigas saem e um aviso aparece.
+- **Histórico**: período de 15 minutos a 7 dias, 500 linhas por página, "carregar mais antigas" ao
+  chegar ao topo. Janela máxima de consulta: 16 dias.
+- **Filtro de texto**: busca literal (contém), aplicada no Loki para o histórico e no navegador para
+  o ao vivo.
+- Linhas com `ERROR`, `FATAL`, `Exception`, `Traceback`, `panic` ou `[error]` ganham destaque. É só
+  visual; a classificação de verdade chega na 0.6.0.
+- Passe o mouse sobre uma linha para ver os labels.
+
+Logo após marcar um container a tela fica vazia até a primeira linha nova: linhas anteriores à
+marcação não são coletadas.
+
+API: `GET /api/v1/projects/{id}/logs?start=&end=&q=&limit=&direction=` e WebSocket `/ws?token=`
+com mensagem `{"type":"subscribe","channel":"logs:<id>"}`.

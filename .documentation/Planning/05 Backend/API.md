@@ -103,11 +103,11 @@ pelo FastAPI em `/api/docs`.
 
 ## 3. WebSocket `/ws`
 
-Autenticação por token na query na abertura. Canais por mensagem `subscribe`:
+Autenticação por token na query na abertura; sem token válido o handshake é recusado com HTTP 403. Canais por mensagem `subscribe`:
 
 | Canal | Payload | Uso |
 |---|---|---|
-| `logs:{project_id}` | linhas conforme chegam do tail do Loki | logs ao vivo |
+| `logs:{project_id}` | linhas conforme chegam do tail do Loki. **Implementado na 0.4.0** | logs ao vivo |
 | `executor` | início, mudança de fase e fim de cada análise | painel do executor |
 | `notifications` | nova notificação, contadores | barra lateral |
 | `insights` | novo insight, contador | barra lateral e painel |

@@ -1,0 +1,72 @@
+.viewer {
+  background: var(--log-bg);
+  color: var(--log-fg);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  height: 60vh;
+  overflow: auto;
+  position: relative;
+}
+.row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.ts {
+  color: #7d8a99;
+  user-select: none;
+}
+.error {
+  background: rgba(248, 113, 113, 0.12);
+}
+.error .text {
+  color: #fca5a5;
+}
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #94a0ad;
+  text-align: center;
+  padding: var(--space-6);
+}
+.pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 8px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.toFoot {
+  position: sticky;
+  bottom: var(--space-3);
+  float: right;
+  margin-right: var(--space-3);
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font: inherit;
+}

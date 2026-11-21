@@ -132,3 +132,18 @@ export interface AlloyConfig {
   path: string
   versions: AlloyConfigVersion[]
 }
+
+export interface LogLine {
+  ts_ns: string
+  line: string
+  labels: Record<string, string>
+}
+
+export interface LogsResponse {
+  lines: LogLine[]
+  has_more: boolean
+  oldest_ts_ns: string | null
+  newest_ts_ns: string | null
+  query: string
+  monitored_since: string | null
+}
