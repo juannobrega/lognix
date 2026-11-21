@@ -1,6 +1,6 @@
 # ADR 003 — Proxy Somente Leitura para Docker API
 
-**Status:** Aceito · **Data:** 2026-11-21
+**Status:** Aceito, aprovado para construção em 2026-11-21 · **Data:** 2026-11-21
 
 ## Contexto
 

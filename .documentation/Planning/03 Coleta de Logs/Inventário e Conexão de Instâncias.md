@@ -1,6 +1,6 @@
 # Inventário e Conexão de Instâncias
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 Como um host entra no Lognix, como a conexão é mantida e o que acontece quando falha. Base: ADR 002 e 003.
 

@@ -1,6 +1,6 @@
 # ADR 002 — Coleta Remota via Túnel SSH
 
-**Status:** Aceito · **Data:** 2026-11-21
+**Status:** Aceito, aprovado para construção em 2026-11-21 · **Data:** 2026-11-21
 
 ## Contexto
 
