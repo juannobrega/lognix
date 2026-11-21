@@ -1,6 +1,6 @@
 # ADR 004 — Fronteiras entre Alloy, Loki e Backend
 
-**Status:** Aceito · **Data:** 2026-11-21
+**Status:** Aceito, aprovado para construção em 2026-11-21 · **Data:** 2026-11-21
 
 ## Contexto
 

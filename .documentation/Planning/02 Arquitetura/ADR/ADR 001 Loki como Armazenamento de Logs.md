@@ -1,6 +1,6 @@
 # ADR 001 — Loki como Armazenamento de Logs
 
-**Status:** Aceito · **Data:** 2026-11-21
+**Status:** Aceito, aprovado para construção em 2026-11-21 · **Data:** 2026-11-21
 
 ## Contexto
 

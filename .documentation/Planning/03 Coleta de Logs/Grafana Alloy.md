@@ -1,6 +1,6 @@
 # Grafana Alloy
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 Como o Alloy é usado no Lognix. Base: ADR 002, 003, 004 e 005.
 
