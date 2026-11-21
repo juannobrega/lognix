@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
-import type { ContainerSummary, Host } from '../api/types'
+import type { AlloyConfig, Container, Host, MonitoredResult } from '../api/types'
+import { ContainerPicker } from '../hosts/ContainerPicker'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
-import { ContainerStateBadge, HostStatusBadge } from '../components/StatusBadge'
+import { HostStatusBadge } from '../components/StatusBadge'
 import { ValidationSteps } from '../components/ValidationSteps'
 import { useValidation } from '../hosts/useValidation'
 
@@ -18,11 +19,11 @@ export function HostDetailPage() {
   const host = useQuery({ queryKey: ['host', id], queryFn: () => api<Host>(`/hosts/${id}`), refetchInterval: 10_000 })
   const containers = useQuery({
     queryKey: ['host', id, 'containers'],
-    queryFn: () => api<ContainerSummary[]>(`/hosts/${id}/containers`),
-    enabled: host.data?.status === 'connected',
+    queryFn: () => api<Container[]>(`/hosts/${id}/containers`),
     refetchInterval: 15_000,
     retry: false,
   })
+  const alloy = useQuery({ queryKey: ['host', id, 'alloy'], queryFn: () => api<AlloyConfig>(`/hosts/${id}/alloy-config`) })
   const validation = useValidation(validationId)
 
   const onErr = (err: unknown) => setError(err instanceof ApiError ? err : new ApiError(0, 'network', 'Falha de rede.'))
@@ -30,6 +31,21 @@ export function HostDetailPage() {
     void qc.invalidateQueries({ queryKey: ['host', id] })
     void qc.invalidateQueries({ queryKey: ['hosts'] })
   }
+  const [alloyMsg, setAlloyMsg] = useState<string | null>(null)
+  const saveMonitored = useMutation({
+    mutationFn: (ids: string[]) => api<MonitoredResult>(`/hosts/${id}/containers/monitored`, { method: 'PUT', json: { container_ids: ids } }),
+    onSuccess: (r) => {
+      setAlloyMsg(
+        r.alloy.reload_ok
+          ? `Config do Alloy aplicada: ${r.alloy.containers_in_config} containers em ${r.alloy.hosts_in_config} hosts.`
+          : `Falha ao recarregar o Alloy, config anterior restaurada: ${r.alloy.error ?? ''}`,
+      )
+      void qc.invalidateQueries({ queryKey: ['host', id, 'containers'] })
+      void qc.invalidateQueries({ queryKey: ['host', id, 'alloy'] })
+      void qc.invalidateQueries({ queryKey: ['projects'] })
+    },
+    onError: onErr,
+  })
   const reconnect = useMutation({
     mutationFn: () => api<{ validation_id: string }>(`/hosts/${id}/reconnect`, { method: 'POST' }),
     onSuccess: (d) => {
@@ -121,35 +137,47 @@ export function HostDetailPage() {
         </dl>
       </section>
 
-      <section>
+      <section style={{ marginBottom: 'var(--space-5)' }}>
         <h2>Containers</h2>
-        {h.status !== 'connected' && <p style={{ color: 'var(--fg-muted)' }}>Host desconectado. O inventário aparece quando o túnel estiver ativo.</p>}
+        {h.status !== 'connected' && <p style={{ color: 'var(--fg-muted)' }}>Host desconectado. Mostrando o último inventário conhecido.</p>}
         {containers.error && <Alert kind="error" message={(containers.error as ApiError).message} />}
-        {containers.data && (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ textAlign: 'left', color: 'var(--fg-muted)' }}>
-                <th>Nome</th>
-                <th>Imagem</th>
-                <th>Estado</th>
-                <th>Compose</th>
-                <th>Monitorar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {containers.data.map((c) => (
-                <tr key={c.docker_id} style={{ borderTop: '1px solid var(--border)' }}>
-                  <td>{c.name}</td>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{c.image}</td>
-                  <td>
-                    <ContainerStateBadge state={c.state} />
-                  </td>
-                  <td style={{ color: 'var(--fg-muted)' }}>{c.compose_project ? `${c.compose_project} / ${c.compose_service ?? ''}` : '—'}</td>
-                  <td style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-xs)' }}>fase 0.3.0</td>
-                </tr>
+        {alloyMsg && <Alert message={alloyMsg} />}
+        {containers.data && containers.data.length === 0 && <p style={{ color: 'var(--fg-muted)' }}>Nenhum container neste host.</p>}
+        {containers.data && containers.data.length > 0 && (
+          <ContainerPicker containers={containers.data} onSave={(ids) => saveMonitored.mutate(ids)} saving={saveMonitored.isPending} />
+        )}
+      </section>
+
+      <section>
+        <h2>Config do Alloy</h2>
+        {alloy.data && (
+          <>
+            <p style={{ color: 'var(--fg-muted)' }}>
+              Arquivo <code>{alloy.data.path}</code>, gerado pelo Lognix. Últimas versões:
+            </p>
+            <ul style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>
+              {alloy.data.versions.slice(0, 5).map((v) => (
+                <li key={v.id}>
+                  #{v.id} · {new Date(v.applied_at).toLocaleString('pt-BR')} · {v.reason} · {v.reload_ok ? 'reload ok' : `falhou: ${v.error ?? ''}`}
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+            <details>
+              <summary>Ver config atual</summary>
+              <pre
+                style={{
+                  background: 'var(--log-bg)',
+                  color: 'var(--log-fg)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-sm)',
+                  overflowX: 'auto',
+                  fontSize: 'var(--text-xs)',
+                }}
+              >
+                {alloy.data.current}
+              </pre>
+            </details>
+          </>
         )}
       </section>
     </>

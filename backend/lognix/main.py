@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from lognix import __version__
+from lognix.alloy.service import get_alloy_manager
 from lognix.api import api_router
 from lognix.config import get_settings
 from lognix.db import get_engine
@@ -25,6 +26,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging(settings.lognix_log_level)
     log.info("lognix starting", extra={"version": __version__})
     await get_supervisor().start()
+    try:
+        await get_alloy_manager().apply("inicialização do backend")
+    except Exception:
+        log.exception("alloy config apply on startup failed")
     yield
     await get_supervisor().stop()
     await get_engine().dispose()

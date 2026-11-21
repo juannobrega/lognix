@@ -33,6 +33,7 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Alloy `remotecfg`.** Agentes buscando config do Lognix em vez de receber por push.
 - **Métricas básicas de container.** CPU, memória, rede, via `cadvisor` do Alloy, para correlação com logs.
 - **Intervalo da rotina de análise configurável.** Hoje fixo em 30 s.
+- **Evitar tráfego de histórico na marcação.** Hoje o histórico antigo do container atravessa o túnel SSH uma vez e é descartado pelo `stage.drop`. Alternativas: pré-semear posições do Alloy, ou ler via Docker API com `since` fora do Alloy.
 - **Descoberta de hosts.** Importar de provedores de nuvem, varredura de rede, inventário externo.
 - **Bastion / jump host** para alcançar hosts sem SSH direto.
 - **Apagar host de verdade**, incluindo logs no Loki, como operação separada da remoção. Pode entrar ainda na v1 se barato.

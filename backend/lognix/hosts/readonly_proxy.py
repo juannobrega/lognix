@@ -31,6 +31,9 @@ ALLOWED_PATHS: tuple[re.Pattern[str], ...] = tuple(
         r"/containers/[A-Za-z0-9_.-]+/logs",
         r"/events",
         r"/images/[A-Za-z0-9_.:/@-]+/json",
+        # discovery.docker do Alloy lista redes para montar labels de rede dos containers
+        r"/networks",
+        r"/networks/[A-Za-z0-9_.-]+",
     )
 )
 ALLOWED_METHODS = frozenset({"GET", "HEAD"})

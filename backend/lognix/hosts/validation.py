@@ -190,10 +190,13 @@ async def _validate(run: ValidationRun, host: Host, supervisor: TunnelSupervisor
 
     run.status = "ok"
     run.finished_at = datetime.now(UTC)
-    await _persist_success(host.id, version.get("Version"))
+    await _persist_success(host.id, version.get("Version"), raw)
 
 
-async def _persist_success(host_id: uuid.UUID, docker_version: str | None) -> None:
+async def _persist_success(
+    host_id: uuid.UUID, docker_version: str | None, raw: list[dict[str, Any]]
+) -> None:
+    from lognix.containers.service import sync_inventory
     from lognix.db import get_sessionmaker
 
     async with get_sessionmaker()() as db:
@@ -204,3 +207,8 @@ async def _persist_success(host_id: uuid.UUID, docker_version: str | None) -> No
         host.status = HostStatus.connected
         host.last_error = None
         await db.commit()
+        _, monitored_changed = await sync_inventory(db, host, raw)
+    if monitored_changed:
+        from lognix.alloy.service import get_alloy_manager
+
+        await get_alloy_manager().apply(f"host {host.name}: inventário mudou na validação")

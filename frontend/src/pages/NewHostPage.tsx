@@ -76,7 +76,7 @@ export function NewHostPage() {
         )}
         {v?.status === 'ok' && (
           <>
-            <Alert message="Host conectado. A seleção de containers para monitorar chega na fase 0.3.0; por enquanto o inventário é só leitura." />
+            <Alert message="Host conectado. Escolha os containers a monitorar na tela do host." />
             <h2>Containers encontrados ({v.containers?.length ?? 0})</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 'var(--space-5)' }}>
               <thead>
@@ -103,7 +103,7 @@ export function NewHostPage() {
               </tbody>
             </table>
             <Button variant="primary" onClick={() => navigate(`/hosts/${created.host.id}`)}>
-              Ir para o host
+              Ir para o host e escolher containers
             </Button>
           </>
         )}

@@ -86,10 +86,18 @@ discovery.relabel "h_3f2a" {
 }
 
 loki.source.docker "h_3f2a" {
-  host             = "unix:///tunnels/3f2a.sock"
-  targets          = discovery.relabel.h_3f2a.output
-  forward_to       = [loki.write.default.receiver]
-  refresh_interval = "15s"
+  host       = "unix:///tunnels/3f2a.sock"
+  targets    = discovery.relabel.h_3f2a.output
+  forward_to = [loki.process.lognix.receiver]
+}
+
+// ---- pipeline comum ----
+loki.process "lognix" {
+  forward_to = [loki.write.default.receiver]
+  stage.drop {
+    older_than          = "2m"
+    drop_counter_reason = "lognix_before_monitoring"
+  }
 }
 
 // ---- destino único ----
@@ -128,10 +136,29 @@ Quando um container é marcado como monitorado, o Alloy passa a ler **a partir d
 anteriores à marcação não são coletados. Motivo: um container com histórico longo despejaria tudo de
 uma vez no Loki e dispararia dezenas de triggers por erros antigos.
 
-O `loki.source.docker` guarda posição de leitura por container em arquivo de posições. Isso evita
-duplicar linhas após reinício do Alloy. Para um container recém-marcado, sem posição anterior, o
-comportamento padrão precisa ser **verificado em protótipo**: se o componente iniciar do começo do
-log em vez de "agora", o backend deve forçar início em "agora". Item obrigatório da fase de protótipo.
+**Verificado em 2026-11-21 (0.3.0):** `loki.source.docker` não tem argumento `since`. Para um
+container recém-marcado, sem posição anterior, o Docker devolve o histórico desde o início. A solução
+adotada é um `loki.process` comum a todos os hosts com `stage.drop { older_than = "2m" }`: linhas com
+timestamp anterior a dois minutos são descartadas antes de chegar ao Loki e contadas na métrica
+`loki_process_dropped_lines_total` com a razão `lognix_before_monitoring`.
+
+Consequência aceita: o histórico antigo ainda **trafega** pelo túnel SSH uma vez, antes de ser
+descartado. Para containers com histórico muito grande isso custa banda na marcação. Evitar esse
+tráfego, por exemplo pré-semeando o arquivo de posições do Alloy, está no roadmap.
+
+Outras verificações: o `refresh_interval` de `loki.source.docker` está obsoleto e foi removido da
+config gerada; o de `discovery.docker` continua válido.
+
+## 6.1 Verificado na prática (0.3.0)
+
+- `discovery.docker` chama `GET /networks` para montar labels de rede. O proxy somente leitura
+  precisou liberar esse caminho; sem ele a descoberta falha inteira. ADR 003 atualizado.
+- Com 93 linhas lidas de um container recém-marcado, 70 foram descartadas pelo `stage.drop`
+  (razão `lognix_before_monitoring`) e 23 gravadas, todas posteriores à marcação.
+- A config gerada passa em `alloy fmt` e o reload por `/-/reload` responde em menos de 1 s.
+- Se o container monitorado é recriado (novo ID Docker), o filtro `keep` deixa de casar e a coleta
+  para em silêncio até o inventário ser sincronizado. A reconciliação por eventos e o redeploy por
+  identidade de serviço (0.5.0) resolvem isso; até lá, a sincronização acontece ao abrir a tela do host.
 
 ## 7. O que o Alloy não faz no Lognix
 
@@ -145,8 +172,8 @@ log em vez de "agora", o backend deve forçar início em "agora". Item obrigató
 
 | Item | Por quê |
 |---|---|
-| Comportamento de `loki.source.docker` em alvo novo sem posição | Seção 6 |
-| Se o label `stream` (`stdout`/`stderr`) é adicionado automaticamente | Modelo de Dados o prevê |
+| ~~Comportamento de `loki.source.docker` em alvo novo sem posição~~ | Verificado, seção 6 |
+| ~~Se o label `stream` (`stdout`/`stderr`) é adicionado automaticamente~~ | Verificado: **não** é. Removido do Modelo de Dados |
 | Latência de descoberta com `refresh_interval = 15s` sobre túnel SSH | Afeta tempo até o primeiro log após marcação |
 | Consumo de memória do Alloy com 10 hosts e 100 containers | Dimensionamento do compose |
 | Comportamento quando um socket espelhado desaparece | Túnel caído, ADR 002 |

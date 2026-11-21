@@ -1,34 +1,12 @@
 import asyncio
 import os
-import tempfile
-from collections.abc import AsyncIterator
 
-import pytest
 from httpx import AsyncClient
 
-from lognix.hosts import supervisor as sup_module
-from lognix.hosts.supervisor import TunnelSupervisor
 from tests.fake_docker import FakeDocker
 from tests.fake_ssh import FakeSshBackend
 
 KEY = "-----BEGIN OPENSSH PRIVATE KEY-----\nfake\n-----END OPENSSH PRIVATE KEY-----\n"
-
-
-@pytest.fixture
-async def fake_env() -> AsyncIterator[tuple[FakeDocker, FakeSshBackend, str]]:
-    tmp = tempfile.mkdtemp(prefix="lgx", dir="/tmp")
-    docker_path = os.path.join(tmp, "docker.sock")
-    fake = FakeDocker(docker_path)
-    await fake.start()
-    backend = FakeSshBackend(docker_path)
-    supervisor = TunnelSupervisor(backend=backend, tunnels_dir=os.path.join(tmp, "tunnels"))
-    sup_module.set_supervisor(supervisor)
-    try:
-        yield fake, backend, tmp
-    finally:
-        await supervisor.stop()
-        sup_module.set_supervisor(None)
-        await fake.stop()
 
 
 async def _wait_validation(client: AsyncClient, vid: str, timeout: float = 10) -> dict:  # type: ignore[type-arg]
@@ -168,3 +146,14 @@ async def test_duplicate_name(
     assert (await authed.post("/api/v1/hosts", json={**HOST, "ssh_port": 1})).status_code == 202
     dup = await authed.post("/api/v1/hosts", json={**HOST, "ssh_port": 1})
     assert dup.status_code == 409
+
+
+async def test_removed_host_frees_its_name(
+    authed: AsyncClient, fake_env: tuple[FakeDocker, FakeSshBackend, str]
+) -> None:
+    first = await authed.post("/api/v1/hosts", json={**HOST, "ssh_port": 1})
+    host_id = first.json()["host"]["id"]
+    assert (await authed.delete(f"/api/v1/hosts/{host_id}")).status_code == 204
+    again = await authed.post("/api/v1/hosts", json={**HOST, "ssh_port": 1})
+    assert again.status_code == 202, again.text
+    assert again.json()["host"]["name"] == HOST["name"]

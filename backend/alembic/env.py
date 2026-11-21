@@ -10,7 +10,8 @@ from sqlalchemy import pool
 from lognix.config import get_settings
 from lognix.db import Base
 import lognix.auth.models
-import lognix.hosts.models  # noqa: F401
+import lognix.hosts.models
+import lognix.containers.models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

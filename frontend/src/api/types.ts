@@ -79,3 +79,56 @@ export interface HostCreated {
   host: Host
   validation_id: string
 }
+
+export type ContainerState = 'created' | 'running' | 'restarting' | 'paused' | 'exited' | 'dead' | 'removed'
+
+export interface Container {
+  id: string
+  host_id: string
+  docker_id: string
+  name: string
+  image: string
+  image_digest: string | null
+  compose_project: string | null
+  compose_service: string | null
+  labels: Record<string, string>
+  state: ContainerState
+  monitored: boolean
+  monitored_since: string | null
+  first_seen_at: string
+  last_seen_at: string
+  kind: 'image' | 'github'
+}
+
+export interface Project extends Container {
+  host_name: string
+  host_status: HostStatus
+}
+
+export interface AlloyApply {
+  version_id: number | null
+  reload_ok: boolean
+  error: string | null
+  hosts_in_config: number
+  containers_in_config: number
+}
+
+export interface MonitoredResult {
+  containers: Container[]
+  alloy: AlloyApply
+}
+
+export interface AlloyConfigVersion {
+  id: number
+  hash: string
+  reason: string
+  applied_at: string
+  reload_ok: boolean
+  error: string | null
+}
+
+export interface AlloyConfig {
+  current: string
+  path: string
+  versions: AlloyConfigVersion[]
+}

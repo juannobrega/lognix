@@ -24,6 +24,7 @@ Chamadas permitidas na v1:
 | `GET /containers/{id}/logs` | Leitura de logs pelo Alloy |
 | `GET /events` | Restart, OOM, exit code |
 | `GET /images/{id}/json` | Digest e metadados da imagem para vínculo com repositório |
+| `GET /networks`, `GET /networks/{id}` | Usado pelo `discovery.docker` do Alloy para labels de rede. Descoberto na 0.3.0: sem ele a descoberta falha inteira |
 
 Isso vira requisito não funcional e teste automatizado: o teste tenta alterar um container através do
 proxy e deve falhar.

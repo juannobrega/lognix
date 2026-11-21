@@ -31,6 +31,10 @@ limits_config:
   max_query_length: 384h
   max_entries_limit_per_query: 5000
   allow_structured_metadata: true
+  # Só os labels gerados pelo Lognix. Sem service_name automático nem nível detectado:
+  # a classificação de nível é feita pelo backend, de forma única e testada.
+  discover_service_name: []
+  discover_log_levels: false
 
 compactor:
   working_directory: /loki/compactor

@@ -288,10 +288,14 @@ Poucos e de baixa cardinalidade. ADR 001.
 | `container_id` | uuid do Container no Lognix, não o do Docker, para sobreviver a recriação | |
 | `compose_project` | label Docker, se existir | `lognix` |
 | `compose_service` | label Docker, se existir | `api` |
-| `stream` | `stdout` ou `stderr` | |
 
 Proibidos como label: request id, user id, nível de log parseado. Esses ficam no conteúdo e são
 extraídos por LogQL quando necessário.
+
+*Verificado na 0.3.0:* `loki.source.docker` **não** adiciona label `stream` (stdout/stderr); a
+distinção não está disponível. O Loki 3 adiciona sozinho `service_name` e `detected_level`; ambos
+foram desligados na configuração do Loki (`discover_service_name: []`, `discover_log_levels: false`)
+para que o conjunto de labels seja exatamente o desta tabela.
 
 ## 4. Retenção
 

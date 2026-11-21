@@ -9,8 +9,8 @@ from typing import Annotated
 from fastapi import APIRouter, Query, status
 from sqlalchemy import select
 
+from lognix.alloy.service import get_alloy_manager
 from lognix.auth.deps import CurrentUser, DbSession
-from lognix.docker.client import DockerApiError, DockerClient, summarize_container
 from lognix.errors import ApiError
 from lognix.hosts import credentials
 from lognix.hosts.models import Host, HostStatus
@@ -74,8 +74,12 @@ async def list_hosts(_: CurrentUser, db: DbSession) -> list[HostOut]:
 @router.post("", response_model=HostCreatedOut, status_code=status.HTTP_202_ACCEPTED)
 async def create_host(body: HostCreate, user: CurrentUser, db: DbSession) -> HostCreatedOut:
     exists = (await db.execute(select(Host).where(Host.name == body.name))).scalar_one_or_none()
-    if exists is not None and exists.status != HostStatus.removed:
-        raise ApiError(409, "name_taken", "Já existe um host com este nome.")
+    if exists is not None:
+        if exists.status != HostStatus.removed:
+            raise ApiError(409, "name_taken", "Já existe um host com este nome.")
+        # Host removido ainda ocupa o nome: libera-o preservando o histórico.
+        exists.name = f"{exists.name}__removed__{str(exists.id)[:8]}"[:63]
+        await db.flush()
     host = Host(
         id=uuid.uuid4(),
         name=body.name,
@@ -191,26 +195,4 @@ async def delete_host(
         host.status = HostStatus.removed
         host.updated_at = datetime.now(UTC)
     await db.commit()
-
-
-@router.get("/{host_id}/containers", response_model=list[ContainerSummary])
-async def list_containers(
-    host_id: uuid.UUID, _: CurrentUser, db: DbSession
-) -> list[ContainerSummary]:
-    host = await _get_host(db, host_id)
-    socket_path = get_supervisor().socket_path(host.id)
-    if socket_path is None:
-        raise ApiError(
-            409,
-            "host_disconnected",
-            "O host não está conectado.",
-            "Use Reconectar e aguarde o túnel ficar ativo.",
-        )
-    client = DockerClient(socket_path)
-    try:
-        raw = await client.containers(all=True)
-    except DockerApiError as exc:
-        raise ApiError(502, "docker_error", str(exc)) from exc
-    finally:
-        await client.aclose()
-    return [ContainerSummary(**summarize_container(c)) for c in raw]
+    await get_alloy_manager().apply(f"host {host.name} removido")

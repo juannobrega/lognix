@@ -1,6 +1,6 @@
 # Instalação
 
-**Versão:** 0.2.0
+**Versão:** 0.3.0
 
 ## Requisitos
 
@@ -28,8 +28,8 @@ aparece. Esse usuário pode cadastrar os demais em Configurações › Usuários
 | frontend | interface e proxy para a API | `LOGNIX_PORT`, padrão 8080 |
 | backend | API, migrações automáticas no início | nenhuma |
 | postgres | metadados | nenhuma |
-| loki | logs, em uso a partir da 0.3.0 | nenhuma |
-| alloy | coleta, em uso a partir da 0.3.0 | nenhuma |
+| loki | armazenamento de logs | nenhuma |
+| alloy | coleta de logs via túneis, config gerada pelo backend | nenhuma |
 
 Só a porta do frontend fica acessível de fora.
 
