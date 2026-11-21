@@ -1,6 +1,6 @@
 # Estrutura do Projeto
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 Layout do monorepo e organização interna do backend.
 

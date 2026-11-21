@@ -1,6 +1,6 @@
 # ADR 008 — Autenticação com JWT e Múltiplos Usuários sem Papéis
 
-**Status:** Aceito · **Data:** 2026-11-21
+**Status:** Aceito, aprovado para construção em 2026-11-21 · **Data:** 2026-11-21
 
 ## Contexto
 

@@ -1,6 +1,6 @@
 # CI/CD
 
-**Status:** Em revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 ## 1. Modelo de branches
 

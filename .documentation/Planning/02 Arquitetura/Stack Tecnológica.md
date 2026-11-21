@@ -1,6 +1,6 @@
 # Stack Tecnológica
 
-**Status:** Em revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 Tecnologias decididas. Versões exatas são fixadas no início da construção e registradas na
 documentação do software, não aqui.

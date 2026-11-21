@@ -1,6 +1,6 @@
 # Ambientes
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 ## 1. Ambientes
 

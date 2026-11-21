@@ -7,7 +7,7 @@ Lognix é um **analisador de logs com IA**. Mapeia instâncias (hosts), conecta-
 coleta logs de containers via **Grafana Alloy**, centraliza tudo e usa modelos de linguagem
 para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 
-- **Fase atual:** planejamento (branch `dev`)
+- **Fase atual:** construção da 0.1.0 Fundação (branch `dev`), iniciada em 2026-11-21. Planejamento completo em rascunho; documentos da 0.1.0 aprovados
 - **Versionamento:** SemVer por label de PR. IA entra em 0.9.0. 1.0.0 é o primeiro release público, só código
 - **Natureza:** código aberto
 - **Alvo inicial:** Docker · **Alvo futuro:** Kubernetes
