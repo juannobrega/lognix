@@ -17,4 +17,9 @@ Define o que a IA faz com os logs, como, a que custo e com quais limites.
 - **A IA nunca roda sozinha.** Ela é acionada por **triggers** programáticos. A rotina de 30 s avalia a janela e, quando um trigger dispara, o backend monta o contexto e chama a IA.
 - **Trigger de erro** é o primeiro e obrigatório: a janela contém linhas classificadas como erro. O backend coleta o contexto, linhas anteriores e posteriores, eventos Docker do período, metadados do workload, monta o prompt e envia. A resposta vira um **insight** com metadados, horário, o que aconteceu e, quando houver repositório vinculado, o trecho de código suspeito.
 - **Janela normal não gasta IA.** Sem trigger, a rotina só agrupa padrões e atualiza estatísticas.
-- Outros triggers previstos para avaliação: anomalia estatística, evento Docker crítico como OOM ou restart em loop, e acionamento manual pela interface. Ver Questões Abertas.
+- **Quatro triggers na v1**, nesta ordem de implementação:
+  1. **Erro:** a janela contém linhas classificadas como erro.
+  2. **Evento Docker crítico:** OOM kill, exit code diferente de zero, restart em loop.
+  3. **Anomalia estatística:** desvio de volume, taxa de erro ou surgimento de padrão inédito frente ao histórico do workload.
+  4. **Manual:** botão "analisar agora" na interface, sobre uma janela e workload escolhidos pelo usuário.
+- **Classificação de erro em duas camadas.** Quando o log é estruturado, por exemplo JSON com campo `level`, usa-se o nível. Quando é texto livre, regex por palavras-chave como `ERROR`, `FATAL`, `Exception`, `Traceback`, `panic`. O conjunto de regex é versionado e extensível pelo usuário no roadmap.

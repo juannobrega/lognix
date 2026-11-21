@@ -14,8 +14,6 @@ recomendação. Quando decidida, vira ADR ou vai para o documento da área, e sa
 | Q-009 | Túnel SSH: biblioteca ou binário | 05 Backend | `asyncssh` · subprocesso `ssh` | A avaliar em protótipo. Binário é mais simples, biblioteca dá mais controle | Aberta |
 | Q-012 | Retenção padrão do Loki | 02 Arquitetura | 7 · 15 · 30 dias | 15 dias, configurável no `.env` | Aberta |
 | Q-013 | Algoritmo de agrupamento de padrões | 04 IA | Drain · implementação própria · IA | Drain, biblioteca existente, sem IA nessa etapa | Aberta |
-| Q-015 | Triggers de IA além do erro na v1 | 04 IA | Anomalia estatística · evento Docker crítico (OOM, restart em loop) · manual pela interface | Incluir os três, com o de erro primeiro | Aberta |
-| Q-016 | Como as linhas são classificadas como erro | 04 IA | Nível de log parseado · regex por palavras-chave · ambos | Ambos: nível quando o log é estruturado, regex como fallback | Aberta |
 
 ## Decididas
 
@@ -30,3 +28,5 @@ Movidas para ADR ou documento de área. Mantidas aqui só como histórico.
 | Q-010 | Gatilhos que acionam a IA na rotina de 30 s | 04 IA | Triggers programáticos. Trigger de erro obrigatório: contexto do log, eventos e metadados viram prompt, resposta vira insight. Janela normal não gasta IA. Área 04 |
 | Q-011 | Deduplicação de issues | 09 GitHub | Uma issue por workload e padrão. Recorrência comenta. Fechada e voltou, reabre. Área 09 |
 | Q-014 | Login no Lognix na v1 | 07 Segurança | Login com usuário e senha, JWT, cadastro de usuários, sem papéis. ADR 008 |
+| Q-015 | Triggers de IA além do erro na v1 | 04 IA | Os quatro: erro, evento Docker crítico, anomalia estatística, manual. Área 04 |
+| Q-016 | Como as linhas são classificadas como erro | 04 IA | Nível quando o log é estruturado, regex por palavras-chave como fallback. Área 04 |
