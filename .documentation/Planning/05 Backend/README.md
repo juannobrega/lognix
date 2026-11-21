@@ -5,10 +5,10 @@ Define o serviço Python que orquestra tudo.
 | Documento | Conteúdo | Status |
 |-----------|----------|--------|
 | [Estrutura do Projeto](Estrutura%20do%20Projeto.md) | Monorepo, pacote por domínio, loops, .env, testes | Rascunho para revisão |
-| API | Endpoints REST, WebSocket/SSE, contratos, versionamento | A criar |
-| Autenticação e Autorização | Usuários, sessões, papéis, permissões | A criar |
-| Workers e Tarefas | Jobs assíncronos: provisionamento, análise de IA, detecção de anomalias | A criar |
-| Integração com Loki | Cliente LogQL, paginação, limites | A criar |
+| [API](API.md) | Convenções, todos os endpoints por domínio, canais WebSocket, limites | Rascunho para revisão |
+| [Autenticação e Autorização](Autenticação%20e%20Autorização.md) | Fluxo, tokens, senhas, preparação para RBAC, proteções | Rascunho para revisão |
+| [Workers e Tarefas](Workers%20e%20Tarefas.md) | Inventário de loops, LoopManager, ciclo em detalhe, periódicos, medição | Rascunho para revisão |
+| [Integração com Loki](Integração%20com%20Loki.md) | Operações, seletores, paginação, tail, labels, config do Loki | Rascunho para revisão |
 
 ## Decisões já tomadas
 
