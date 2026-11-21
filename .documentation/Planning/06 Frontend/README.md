@@ -9,3 +9,10 @@ Define a interface React + Vite + CSS.
 | Componentes | Biblioteca de componentes próprios | A criar |
 | Estado e Dados | Gerenciamento de estado, cache, tempo real | A criar |
 | Design System | Tokens, tipografia, cores, tema claro/escuro | A criar |
+
+## Decisões já tomadas
+
+- **Insights e notificações** ficam na tela principal até o usuário marcar como vistos, um a um ou com "limpar todos". Vistos saem da tela, mas continuam acessíveis em histórico.
+- **Containers excluídos** têm aba própria dentro do host. São containers que desapareceram do Docker remoto. Não são monitorados, mas seus insights e padrões continuam consultáveis.
+- **Container novo** no host aparece como notificação com ação direta "monitorar" ou "ignorar".
+- **Cadastro de host** é um fluxo guiado: credenciais, teste de conexão com motivo de falha legível, lista de containers para seleção.

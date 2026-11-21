@@ -9,6 +9,7 @@
 | **Projeto** | Sinônimo de workload na interface. **Um projeto é um container.** Tem dois tipos: **imagem Docker**, sem repositório vinculado, e **GitHub**, com repositório de código vinculado. |
 | **Monitorado** | Estado de um container selecionado pelo usuário. Só containers monitorados têm logs coletados pelo Alloy e passam pela rotina de análise. Os demais aparecem no inventário, mas nada é coletado. |
 | **Notificação** | Aviso na interface sobre um fato que pede atenção do usuário, por exemplo container novo no host, túnel caído, falha na IA. Fica até ser marcada como vista. |
+| **Container excluído** | Container que existia no host e desapareceu do Docker. Para de ser monitorado automaticamente, vai para aba própria e mantém insights e histórico. |
 | **Visto** | Ação do usuário sobre um insight ou notificação. O item sai da tela principal e fica no histórico. "Limpar todos" marca todos como vistos de uma vez. |
 | **Host monitorado** | Sinônimo de instância. A máquina que o Lognix observa e **nunca altera**. |
 | **Máquina do Lognix** | Onde o Lognix roda: backend, frontend, Alloy, Loki e banco, todos em containers. Qualquer máquina com Docker. |

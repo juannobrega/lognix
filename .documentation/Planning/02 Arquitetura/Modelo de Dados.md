@@ -1,6 +1,6 @@
 # Modelo de Dados
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Em revisão, pontos principais confirmados · **Atualizado:** 2026-11-21
 
 Tudo que o Lognix **produz** fica no PostgreSQL. Linhas de log ficam **só no Loki**. Este documento
 descreve as entidades do Postgres e os labels do Loki.
@@ -92,7 +92,7 @@ Um projeto. Existe para todo container visto no host, monitorado ou não.
 | kind | enum, derivado | `image` sem RepositoryLink, `github` com |
 | first_seen_at, last_seen_at | timestamptz | |
 
-Container que desaparece do host fica com `state = removed`, não é apagado, preservando insights.
+Container que desaparece do host fica com `state = removed` e `monitored = false`, automaticamente. Não é apagado: aparece na aba **Containers excluídos** da interface e seus insights continuam acessíveis. Se um container com o mesmo nome e imagem voltar a aparecer, é tratado como novo e gera notificação.
 
 ### RepositoryLink
 | Campo | Tipo | Nota |
@@ -288,9 +288,9 @@ Campos marcados como criptografados usam uma chave simétrica definida no `.env`
 Perder essa chave torna credenciais SSH, OpenRouter e GitHub irrecuperáveis. A documentação de
 instalação precisa deixar isso explícito.
 
-## 6. Pontos a confirmar na revisão
+## 6. Decisões confirmadas em 2026-11-21
 
-1. Container removido do host fica como `removed` em vez de apagado. Confirma?
-2. Insight "visto" não é apagado, só sai da tela. "Limpar todos" idem. Confirma?
-3. Retenções padrão acima.
-4. `container_id` do Lognix como label no Loki, em vez do ID do Docker, para que um `docker compose up` que recria o container não quebre o histórico. Confirma?
+1. Container removido do host para de ser monitorado e vai para a aba Containers excluídos. Insights se mantêm.
+2. Insight visto não é apagado. Sai da tela principal, continua acessível no histórico.
+3. Retenção padrão: logs 15 dias, eventos Docker e de host 15 dias, ciclos de análise 7 dias, o resto permanente.
+4. O ID do Lognix é a fonte de verdade para container em todo o sistema, inclusive como label no Loki. O ID do Docker é só atributo.
