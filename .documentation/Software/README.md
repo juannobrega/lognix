@@ -1,12 +1,11 @@
 # Lognix — Documentação do Software
 
-Documentação do sistema **construído**. Esta pasta fica vazia até o planejamento em
-[../Planning/](../Planning/README.md) ser aprovado e o código começar.
+Documentação do sistema **construído**. Cresce fase a fase. O planejamento vive em
+[../Planning/](../Planning/README.md).
 
-Conteúdo previsto (a definir quando chegar a hora):
-
-- Guia de instalação e execução
-- Guia de desenvolvimento e contribuição
-- Referência de API
-- Guia de operação (deploy, backup, upgrade)
-- Troubleshooting
+| Documento | Conteúdo | Desde |
+|---|---|---|
+| [Instalação](Instalação.md) | Requisitos, primeiro uso, atualização, backup | 0.1.0 |
+| [Desenvolvimento](Desenvolvimento.md) | Como rodar e testar localmente, estrutura do repositório | 0.1.0 |
+| Operação | Troubleshooting, hosts, túneis | 0.2.0 |
+| Referência de API | Gerada em `/api/docs` na instalação | 0.1.0 |

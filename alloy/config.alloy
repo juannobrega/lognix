@@ -1,0 +1,9 @@
+// Config inicial do Alloy. O backend do Lognix sobrescreve este arquivo no
+// volume compartilhado a cada mudança de hosts ou containers monitorados
+// (fase 0.3.0). Até lá, o Alloy sobe sem pipelines.
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

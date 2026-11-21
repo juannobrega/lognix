@@ -1,0 +1,29 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+.danger {
+  color: var(--error);
+  border-color: var(--error);
+}
+.ghost {
+  background: transparent;
+  border-color: transparent;
+}

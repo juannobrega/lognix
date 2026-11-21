@@ -1,0 +1,79 @@
+/* Design System — tokens. Tema claro em :root, escuro via data-theme e prefers-color-scheme. */
+:root {
+  --bg: #f6f7f9;
+  --bg-elevated: #ffffff;
+  --border: #d9dde3;
+  --fg: #1b1f24;
+  --fg-muted: #5c6670;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+  --sev-critical: #b91c1c;
+  --sev-high: #c2410c;
+  --sev-medium: #a16207;
+  --sev-low: #0e7490;
+  --sev-info: #4b5563;
+  --ok: #15803d;
+  --warn: #b45309;
+  --error: #b91c1c;
+  --neutral: #6b7280;
+  --log-bg: #0f1419;
+  --log-fg: #d6deeb;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --sidebar-width: 220px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1419;
+    --bg-elevated: #171d24;
+    --border: #2a333d;
+    --fg: #e6ebf0;
+    --fg-muted: #94a0ad;
+    --accent: #60a5fa;
+    --accent-fg: #0b1220;
+    --sev-critical: #f87171;
+    --sev-high: #fb923c;
+    --sev-medium: #facc15;
+    --sev-low: #22d3ee;
+    --sev-info: #9ca3af;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --error: #f87171;
+    --neutral: #9ca3af;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1419;
+  --bg-elevated: #171d24;
+  --border: #2a333d;
+  --fg: #e6ebf0;
+  --fg-muted: #94a0ad;
+  --accent: #60a5fa;
+  --accent-fg: #0b1220;
+  --sev-critical: #f87171;
+  --sev-high: #fb923c;
+  --sev-medium: #facc15;
+  --sev-low: #22d3ee;
+  --sev-info: #9ca3af;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --error: #f87171;
+  --neutral: #9ca3af;
+}

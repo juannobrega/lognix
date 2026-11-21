@@ -1,0 +1,35 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { RequireAuth } from './auth/RequireAuth'
+import { AppLayout } from './layout/AppLayout'
+import { DashboardPage } from './pages/DashboardPage'
+import { LoginPage } from './pages/LoginPage'
+import { PlaceholderPage } from './pages/PlaceholderPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { SetupPage } from './pages/SetupPage'
+import { UsersPage } from './pages/UsersPage'
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/setup" element={<SetupPage />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="hosts" element={<PlaceholderPage title="Hosts" phase="0.2.0" />} />
+          <Route path="projects" element={<PlaceholderPage title="Projetos" phase="0.3.0" />} />
+          <Route path="insights" element={<PlaceholderPage title="Insights" phase="0.8.0" />} />
+          <Route path="notifications" element={<PlaceholderPage title="Notificações" phase="0.5.0" />} />
+          <Route path="settings" element={<SettingsPage />}>
+            <Route index element={<Navigate to="users" replace />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="ai" element={<PlaceholderPage title="IA" phase="0.9.0" />} />
+            <Route path="usage" element={<PlaceholderPage title="Consumo de IA" phase="0.9.0" />} />
+            <Route path="system" element={<PlaceholderPage title="Sistema" phase="0.7.0" />} />
+          </Route>
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}

@@ -1,0 +1,109 @@
+# Lognix — instalação padrão.
+#   cp .env.example .env   (gere LOGNIX_SECRET_KEY)
+#   docker compose up -d
+# Só a porta do frontend é exposta. Backend, Postgres, Loki e Alloy ficam na rede interna.
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "${LOGNIX_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    environment:
+      LOGNIX_SECRET_KEY: ${LOGNIX_SECRET_KEY:?defina LOGNIX_SECRET_KEY no .env}
+      LOGNIX_PUBLIC_URL: ${LOGNIX_PUBLIC_URL:-http://localhost:8080}
+      LOGNIX_LOG_LEVEL: ${LOGNIX_LOG_LEVEL:-INFO}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lognix}:${POSTGRES_PASSWORD:-lognix}@postgres:5432/${POSTGRES_DB:-lognix}
+      LOKI_URL: http://loki:3100
+      LOKI_RETENTION_DAYS: ${LOKI_RETENTION_DAYS:-15}
+      ALLOY_URL: http://alloy:12345
+      ALLOY_CONFIG_PATH: /alloy-config/config.alloy
+      TUNNELS_DIR: /tunnels
+    volumes:
+      - tunnels:/tunnels
+      - alloy-config:/alloy-config
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lognix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lognix}
+      POSTGRES_DB: ${POSTGRES_DB:-lognix}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lognix} -d ${POSTGRES_DB:-lognix}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # Loki e Alloy entram em uso na fase 0.3.0. Já sobem aqui para que o compose
+  # final não mude de forma entre fases.
+  loki:
+    image: grafana/loki:3.3.2
+    command: -config.file=/etc/loki/loki-config.yaml -config.expand-env=true
+    environment:
+      LOKI_RETENTION_DAYS: ${LOKI_RETENTION_DAYS:-15}
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3100/ready | grep -q ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:v1.6.1
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    volumes:
+      - alloy-config:/etc/alloy
+      - tunnels:/tunnels
+      - alloy-data:/var/lib/alloy/data
+    depends_on:
+      loki:
+        condition: service_healthy
+      alloy-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Copia a config inicial (vazia) para o volume compartilhado uma única vez.
+  alloy-init:
+    image: busybox:1.36
+    command: sh -c "[ -f /etc/alloy/config.alloy ] || cp /seed/config.alloy /etc/alloy/config.alloy"
+    volumes:
+      - ./alloy/config.alloy:/seed/config.alloy:ro
+      - alloy-config:/etc/alloy
+
+volumes:
+  postgres-data:
+  loki-data:
+  tunnels:
+  alloy-config:
+  alloy-data:
