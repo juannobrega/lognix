@@ -7,13 +7,7 @@ recomendação. Quando decidida, vira ADR ou vai para o documento da área, e sa
 
 | ID | Questão | Área | Opções | Recomendação | Status |
 |----|---------|------|--------|--------------|--------|
-| Q-001 | Framework do backend Python | 05 Backend | FastAPI · Django · Litestar | FastAPI, async nativo, bom para WebSocket e workers | Aberta |
-| Q-002 | Banco de metadados | 02 Arquitetura | PostgreSQL · SQLite | PostgreSQL. SQLite tentador pela instalação, mas limita concorrência dos workers | Aberta |
-| Q-004 | TypeScript ou JavaScript no frontend | 06 Frontend | TS · JS | TypeScript | Aberta |
-| Q-005 | CSS puro, CSS Modules ou outra abordagem | 06 Frontend | CSS puro · CSS Modules · Tailwind | CSS Modules: continua CSS, evita colisão de nomes | Aberta |
-| Q-009 | Túnel SSH: biblioteca ou binário | 05 Backend | `asyncssh` · subprocesso `ssh` | A avaliar em protótipo. Binário é mais simples, biblioteca dá mais controle | Aberta |
-| Q-012 | Retenção padrão do Loki | 02 Arquitetura | 7 · 15 · 30 dias | 15 dias, configurável no `.env` | Aberta |
-| Q-013 | Algoritmo de agrupamento de padrões | 04 IA | Drain · implementação própria · IA | Drain, biblioteca existente, sem IA nessa etapa | Aberta |
+| — | Nenhuma questão aberta no momento | | | | |
 
 ## Decididas
 
@@ -30,3 +24,10 @@ Movidas para ADR ou documento de área. Mantidas aqui só como histórico.
 | Q-014 | Login no Lognix na v1 | 07 Segurança | Login com usuário e senha, JWT, cadastro de usuários, sem papéis. ADR 008 |
 | Q-015 | Triggers de IA além do erro na v1 | 04 IA | Os quatro: erro, evento Docker crítico, anomalia estatística, manual. Área 04 |
 | Q-016 | Como as linhas são classificadas como erro | 04 IA | Nível quando o log é estruturado, regex por palavras-chave como fallback. Área 04 |
+| Q-001 | Framework do backend Python | 05 Backend | FastAPI. Stack Tecnológica |
+| Q-002 | Banco de metadados | 02 Arquitetura | PostgreSQL. Stack Tecnológica |
+| Q-004 | TypeScript ou JavaScript no frontend | 06 Frontend | TypeScript. Stack Tecnológica |
+| Q-005 | CSS puro, CSS Modules ou outra abordagem | 06 Frontend | CSS Modules. Stack Tecnológica |
+| Q-009 | Túnel SSH: biblioteca ou binário | 05 Backend | Decidido em protótipo no início da construção, critérios na área 05 |
+| Q-012 | Retenção padrão do Loki | 02 Arquitetura | 15 dias, configurável no .env. Stack Tecnológica |
+| Q-013 | Algoritmo de agrupamento de padrões | 04 IA | Drain via biblioteca, sem IA. Área 04 |

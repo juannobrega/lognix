@@ -23,3 +23,4 @@ Define o que a IA faz com os logs, como, a que custo e com quais limites.
   3. **Anomalia estatística:** desvio de volume, taxa de erro ou surgimento de padrão inédito frente ao histórico do workload.
   4. **Manual:** botão "analisar agora" na interface, sobre uma janela e workload escolhidos pelo usuário.
 - **Classificação de erro em duas camadas.** Quando o log é estruturado, por exemplo JSON com campo `level`, usa-se o nível. Quando é texto livre, regex por palavras-chave como `ERROR`, `FATAL`, `Exception`, `Traceback`, `panic`. O conjunto de regex é versionado e extensível pelo usuário no roadmap.
+- **Agrupamento de padrões com Drain**, por biblioteca existente, sem IA nessa etapa. A IA recebe padrões e amostras, não linhas brutas em massa.
