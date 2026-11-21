@@ -85,12 +85,17 @@ HTTP sobre socket Unix.
 
 ```
 /tunnels/<host_id>.sock         ← o que Alloy e backend usam (proxy)
-/tunnels/raw/<host_id>.sock     ← saída do túnel SSH, acessível só ao processo do backend
 ```
+
+*Nota de implementação (0.2.0):* não existe socket bruto intermediário. O proxy é o próprio
+ouvinte em `/tunnels/<host_id>.sock`; a cada conexão aceita ele abre, pela sessão SSH
+(`asyncssh`), um canal direto para `/var/run/docker.sock` do host e repassa só o que passou
+pelo filtro. Menos uma peça, mesma garantia.
 
 Comportamento:
 
-- Permite apenas método `GET`, e apenas caminhos da lista do ADR 003.
+- Permite apenas métodos `GET` e `HEAD`, e apenas caminhos da lista do ADR 003, com prefixo de versão opcional (`/v1.47/...`).
+- Conexões persistentes: cada requisição na mesma conexão é inspecionada. Uma requisição negada encerra a conexão com `403`.
 - Qualquer outra requisição recebe `403` e é registrada em log de auditoria com origem e caminho.
 - Streams longos, `logs?follow=1` e `events`, são repassados sem buffer.
 - O diretório `raw/` tem permissão restrita ao usuário do processo do backend.

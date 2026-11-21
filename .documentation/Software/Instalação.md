@@ -1,6 +1,6 @@
 # Instalação
 
-**Versão:** 0.1.0
+**Versão:** 0.2.0
 
 ## Requisitos
 
@@ -62,6 +62,11 @@ docker compose exec postgres pg_dump -U lognix lognix > lognix-$(date +%F).sql
 ```
 
 Restaurar o banco sem o mesmo `LOGNIX_SECRET_KEY` deixa as credenciais ilegíveis.
+
+## Cadastrar o primeiro host
+
+Veja [Operação](Operação.md) para preparar o host. Na interface: Hosts › Cadastrar host. A validação
+mostra seis etapas e, em cada falha, o que fazer.
 
 ## Verificação
 

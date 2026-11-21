@@ -26,7 +26,7 @@ from lognix.auth.routes import login_limiter
 from lognix.db import get_engine
 from lognix.main import app
 
-TABLES = ["refresh_tokens", "users"]
+TABLES = ["tunnel_states", "hosts", "refresh_tokens", "users"]
 
 
 @pytest.fixture(scope="session", autouse=True)

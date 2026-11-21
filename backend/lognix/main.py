@@ -13,6 +13,7 @@ from lognix.api import api_router
 from lognix.config import get_settings
 from lognix.db import get_engine
 from lognix.errors import install_error_handlers
+from lognix.hosts.supervisor import get_supervisor
 from lognix.logging_setup import setup_logging
 
 log = logging.getLogger("lognix")
@@ -23,7 +24,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     setup_logging(settings.lognix_log_level)
     log.info("lognix starting", extra={"version": __version__})
+    await get_supervisor().start()
     yield
+    await get_supervisor().stop()
     await get_engine().dispose()
     log.info("lognix stopped")
 

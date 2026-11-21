@@ -41,6 +41,7 @@ encerra túneis.
 - Requisitos no host: aceitar SSH e o usuário ter acesso ao `docker.sock`, tipicamente via grupo `docker`.
 - O Lognix precisa alcançar o host por SSH. O host não precisa alcançar o Lognix.
 - Logs trafegam inteiros pelo SSH. Adequado para dezenas de hosts. Centenas exigem o modelo com agente.
-- Em Python, o túnel pode ser feito com `asyncssh` ou com o binário `ssh` como subprocesso. Decisão
-  de implementação, não de arquitetura.
+- Implementado com `asyncssh` (0.2.0). O sshd do host precisa permitir encaminhamento:
+  `AllowTcpForwarding` e `AllowStreamLocalForwarding` não podem estar como `no`. A validação
+  detecta isso na etapa 4 e orienta o usuário.
 - Se o túnel cair, a coleta daquele host para até reconectar. O supervisor precisa registrar e exibir isso.

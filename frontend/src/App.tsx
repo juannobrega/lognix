@@ -2,6 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layout/AppLayout'
 import { DashboardPage } from './pages/DashboardPage'
+import { HostDetailPage } from './pages/HostDetailPage'
+import { HostsPage } from './pages/HostsPage'
+import { NewHostPage } from './pages/NewHostPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -16,7 +19,9 @@ export function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
-          <Route path="hosts" element={<PlaceholderPage title="Hosts" phase="0.2.0" />} />
+          <Route path="hosts" element={<HostsPage />} />
+          <Route path="hosts/new" element={<NewHostPage />} />
+          <Route path="hosts/:id" element={<HostDetailPage />} />
           <Route path="projects" element={<PlaceholderPage title="Projetos" phase="0.3.0" />} />
           <Route path="insights" element={<PlaceholderPage title="Insights" phase="0.8.0" />} />
           <Route path="notifications" element={<PlaceholderPage title="Notificações" phase="0.5.0" />} />

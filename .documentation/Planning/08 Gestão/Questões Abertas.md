@@ -28,6 +28,6 @@ Movidas para ADR ou documento de área. Mantidas aqui só como histórico.
 | Q-002 | Banco de metadados | 02 Arquitetura | PostgreSQL. Stack Tecnológica |
 | Q-004 | TypeScript ou JavaScript no frontend | 06 Frontend | TypeScript. Stack Tecnológica |
 | Q-005 | CSS puro, CSS Modules ou outra abordagem | 06 Frontend | CSS Modules. Stack Tecnológica |
-| Q-009 | Túnel SSH: biblioteca ou binário | 05 Backend | Decidido em protótipo no início da construção, critérios na área 05 |
+| Q-009 | Túnel SSH: biblioteca ou binário | 05 Backend | **asyncssh**, decidido na 0.2.0: senha, chave e passphrase sem binário externo, encaminhamento de socket Unix nativo, e a chave do servidor é obtida antes de autenticar, o que torna a verificação de fingerprint segura |
 | Q-012 | Retenção padrão do Loki | 02 Arquitetura | 15 dias, configurável no .env. Stack Tecnológica |
 | Q-013 | Algoritmo de agrupamento de padrões | 04 IA | Drain via biblioteca, sem IA. Área 04 |

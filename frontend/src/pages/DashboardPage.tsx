@@ -11,8 +11,7 @@ export function DashboardPage() {
       <h1>Painel</h1>
       <EmptyState title="Nenhum host cadastrado ainda">
         <p>
-          Cadastre o primeiro host para começar a coletar logs. Disponível na fase 0.2.0.{' '}
-          <Link to="/hosts">Ir para Hosts</Link>
+          Cadastre o primeiro host para começar. <Link to="/hosts/new">Cadastrar host</Link>
         </p>
       </EmptyState>
       {health.data && (
