@@ -182,6 +182,11 @@ Retenção curta, 7 dias, serve para medir a rotina e detectar anomalia de volum
 | suggested_action | text | |
 | evidence | jsonb | referências às linhas: labels + timestamps + texto, e eventos |
 | code_diagnosis | jsonb, nulo | arquivo, trecho, linhas, explicação. Só `kind = github` |
+| confidence | numeric(3,2) | 0 a 1, vindo da IA |
+| context_truncated | bool | contexto cortado por limite de tokens |
+| occurrences | int | recorrências dentro da janela de deduplicação |
+| last_seen_at | timestamptz | última recorrência |
+| sent_context | text | contexto exato enviado à IA, para transparência |
 | status | enum | `new`, `seen` |
 | seen_by | uuid → User, nulo | |
 | seen_at | timestamptz, nulo | |
@@ -197,6 +202,8 @@ Retenção curta, 7 dias, serve para medir a rotina e detectar anomalia de volum
 | insight_id | uuid → Insight, nulo se falhou |
 | provider | enum: `openrouter` |
 | model | text |
+| prompt_version | text |
+| schema_retry | bool, true se foi o retry de esquema |
 | purpose | enum: `analyze`, `code_diagnosis`, `issue_text` |
 | input_tokens, output_tokens | int |
 | cost_usd | numeric(12,6) |

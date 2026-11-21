@@ -55,7 +55,8 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Chat sobre logs** em linguagem natural, com histórico por investigação.
 - **Aprendizado de padrões normais** por serviço para reduzir falsos positivos.
 - **Embeddings de logs** para busca semântica.
-- **Orçamento de IA** com limite por período e alerta de consumo.
+- **Orçamento de IA** com alerta e bloqueio opcional por período.
+- **Redação de dados sensíveis** antes do envio ao provider: chaves, tokens, cartões, e-mails, sempre ligada, com regex extra configurável. Decidido fora da v1 em 2026-11-21.
 
 ### Produto e acesso
 - **Permissionamento e papéis.** Admin, operador, leitor. Visibilidade por host.

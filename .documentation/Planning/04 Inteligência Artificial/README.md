@@ -4,12 +4,12 @@ Define o que a IA faz com os logs, como, a que custo e com quais limites.
 
 | Documento | Conteúdo | Status |
 |-----------|----------|--------|
-| Casos de Uso | Resumo, agrupamento de padrões, anomalias, causa raiz, perguntas em linguagem natural | A criar |
-| Pipeline de Análise | Do LogQL ao insight: seleção, redução, prompt, saída estruturada, rastreabilidade | A criar |
-| Providers | Abstração de provider, modelos suportados, fallback, modelo local | A criar |
-| Prompts | Catálogo versionado de prompts por caso de uso | A criar |
-| Custos e Limites | Estimativa por chamada, cotas, orçamento por usuário/organização | A criar |
-| Guardrails | Dados sensíveis, redação, alucinação, o que a IA nunca faz | A criar |
+| [Casos de Uso](Casos%20de%20Uso.md) | Os quatro casos da v1, o que a IA não faz, princípios | Rascunho para revisão |
+| [Pipeline de Análise](Pipeline%20de%20Análise.md) | Do tick ao insight: contexto, redução, chamada, validação com retry, esquema, deduplicação | Rascunho para revisão |
+| [Providers](Providers.md) | Interface AIProvider, implementação OpenRouter, tela de configuração | Rascunho para revisão |
+| [Prompts](Prompts.md) | Estrutura, regras, versionamento e avaliação dos prompts | Rascunho para revisão |
+| [Custos e Limites](Custos%20e%20Limites.md) | Registro, tela de consumo, limites padrão, estimativas | Rascunho para revisão |
+| [Guardrails](Guardrails.md) | Dados sensíveis sem redação na v1, alucinação, ações, custo, falhas, prompt injection | Rascunho para revisão |
 
 ## Decisões já tomadas
 
