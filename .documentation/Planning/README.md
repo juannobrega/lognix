@@ -8,6 +8,7 @@ coleta logs de containers via **Grafana Alloy**, centraliza tudo e usa modelos d
 para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 
 - **Fase atual:** planejamento (branch `dev`)
+- **Versionamento:** SemVer por label de PR. IA entra em 0.9.0. 1.0.0 é o primeiro release público, só código
 - **Natureza:** código aberto
 - **Alvo inicial:** Docker · **Alvo futuro:** Kubernetes
 - **Diferencial:** diagnóstico de erro ligado ao código no GitHub, com abertura de issue
@@ -23,7 +24,7 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Rascunhos para revisão |
 | 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Decisões iniciais |
 | 06 | [Frontend](06%20Frontend/README.md) | Telas, navegação, componentes, estado, design system | Pendente |
-| 07 | [Infraestrutura e Segurança](07%20Infraestrutura%20e%20Segurança/README.md) | Ambientes, compose, CI/CD, segredos, RBAC | Pendente |
+| 07 | [Infraestrutura e Segurança](07%20Infraestrutura%20e%20Segurança/README.md) | Ambientes, compose, CI/CD, segredos, RBAC | CI/CD em revisão |
 | 08 | [Gestão](08%20Gestão/README.md) | Roadmap, fases, questões abertas | Em revisão |
 | 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Decisões iniciais |
 

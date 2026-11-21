@@ -72,7 +72,7 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Redis e fila dedicada** se a medição do ADR 009 mostrar necessidade.
 - **Alta disponibilidade.** Hoje é instância única.
 - **Backup e restauração** de Postgres e Loki.
-- **Imagens oficiais publicadas** e release versionado.
+- **Imagens oficiais publicadas.** O 1.0.0 publica só código. Release versionado por tag já existe desde o início.
 - **Helm chart** quando houver suporte a Kubernetes.
 - **Modo demo** com dados sintéticos para quem quer avaliar sem cadastrar host.
 

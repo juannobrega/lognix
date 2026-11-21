@@ -1,0 +1,175 @@
+# Tag a release when a pull request is merged into main.
+#
+# The size of the bump is chosen on the pull request, with exactly one of
+# these labels:
+#
+#   release:major   breaking change
+#   release:minor   new capability, backwards compatible
+#   release:patch   fix or internal change
+#
+# A label rather than a commit convention because it is visible while the
+# change is still being reviewed: whoever approves can see which version it
+# will cut. A merge with no label fails this workflow on purpose -- the
+# alternative is guessing patch and silently shipping a breaking change as
+# one.
+#
+# To merge without cutting a release, label the pull request release:skip.
+# That is a decision someone made and can be seen on the pull request;
+# leaving the label off is an omission, and the two should not look alike.
+#
+# Recovering from a missing label: add it to the merged pull request, then
+# re-run this workflow from the Actions tab. Nothing else needs redoing.
+
+name: release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+# Two merges landing together must not race for the same version number.
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    # `closed` fires on abandoned pull requests too; only a merge releases.
+    # release:skip opts a merge out deliberately -- the job is skipped, not
+    # failed, so a green run means "no release was wanted" rather than
+    # "something went wrong".
+    if: >-
+      github.event.pull_request.merged == true &&
+      !contains(github.event.pull_request.labels.*.name, 'release:skip')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          # The whole history, or `git describe` cannot see existing tags.
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read the bump from the pull request label
+        id: bump
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          kinds=$(jq -r '.[] | select(startswith("release:")) | sub("release:"; "")' <<< "$LABELS")
+          count=$(wc -w <<< "$kinds" | tr -d ' ')
+
+          if [ "$count" -eq 0 ]; then
+            echo "::error::This pull request carries no release: label, so there is no way to know whether it is a patch, a minor or a major. Add release:patch, release:minor or release:major to the merged pull request and re-run this workflow."
+            exit 1
+          fi
+          if [ "$count" -gt 1 ]; then
+            echo "::error::More than one release: label ($kinds). Exactly one decides the version."
+            exit 1
+          fi
+          case "$kinds" in
+            major|minor|patch) ;;
+            *) echo "::error::Unknown bump '$kinds'. Use release:major, release:minor or release:patch."; exit 1 ;;
+          esac
+
+          echo "kind=$kinds" >> "$GITHUB_OUTPUT"
+          echo "Bump: $kinds"
+
+      - name: Work out the next version
+        id: version
+        run: |
+          set -euo pipefail
+          # No tags yet means this is the first release; 0.0.0 is the base
+          # it counts up from, so a patch cuts v0.0.1.
+          latest=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          current=${latest#v}
+          current=${current:-0.0.0}
+
+          IFS=. read -r major minor patch <<< "$current"
+          case "${{ steps.bump.outputs.kind }}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+
+          next="$major.$minor.$patch"
+          if git rev-parse "v$next" >/dev/null 2>&1; then
+            echo "::error::Tag v$next already exists. Someone released by hand, or two runs raced."
+            exit 1
+          fi
+
+          echo "previous=${latest:-none}" >> "$GITHUB_OUTPUT"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "tag=v$next" >> "$GITHUB_OUTPUT"
+          echo "$latest -> v$next"
+
+      - name: Set the version in pyproject.toml
+        run: |
+          set -euo pipefail
+          # The file and the tag must agree. Writing it here keeps one
+          # visible source of truth rather than a tag that silently
+          # disagrees with what pip installs.
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          path = Path("pyproject.toml")
+          text = path.read_text(encoding="utf-8")
+          updated, count = re.subn(
+              r'(?m)^version = "[^"]*"$', f'version = "{version}"', text, count=1
+          )
+          if count != 1:
+              raise SystemExit("could not find a single version line in pyproject.toml")
+          path.write_text(updated, encoding="utf-8")
+          PY
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Commit, tag and push
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add pyproject.toml
+          if git diff --cached --quiet; then
+            echo "pyproject.toml already at $VERSION; tagging the merge itself."
+          else
+            git commit -m "Release $TAG" -m "Merged #$PR: $TITLE"
+          fi
+
+          git tag -a "$TAG" -m "$TAG" -m "Merged #$PR: $TITLE"
+          git push origin HEAD:main
+          git push origin "$TAG"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          notes="Merged #$PR: $TITLE"
+          if [ "$PREVIOUS" != "none" ]; then
+            notes="$notes
+
+          Changes since $PREVIOUS are listed below."
+          fi
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes "$notes" \
+            --generate-notes
