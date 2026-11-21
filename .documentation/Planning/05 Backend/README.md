@@ -4,7 +4,7 @@ Define o serviço Python que orquestra tudo.
 
 | Documento | Conteúdo | Status |
 |-----------|----------|--------|
-| Estrutura do Projeto | Organização de módulos, camadas, convenções | A criar |
+| [Estrutura do Projeto](Estrutura%20do%20Projeto.md) | Monorepo, pacote por domínio, loops, .env, testes | Rascunho para revisão |
 | API | Endpoints REST, WebSocket/SSE, contratos, versionamento | A criar |
 | Autenticação e Autorização | Usuários, sessões, papéis, permissões | A criar |
 | Workers e Tarefas | Jobs assíncronos: provisionamento, análise de IA, detecção de anomalias | A criar |

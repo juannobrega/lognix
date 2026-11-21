@@ -35,11 +35,11 @@ verbatim em [Release Workflow.yml](Release%20Workflow.yml). Resumo do comportame
 
 O workflow altera `pyproject.toml` **na raiz** do repositório. Isso impõe:
 
-1. O `pyproject.toml` do backend fica na raiz, ou existe um `pyproject.toml` na raiz que é a fonte da
-   versão. A estrutura do monorepo em Backend/Estrutura do Projeto precisa refletir isso.
-2. O frontend tem `package.json` com `version` própria. Para não divergir, o build do frontend lê a
-   versão do `pyproject.toml` da raiz, ou o workflow passa a atualizar os dois arquivos. **A decidir** na
-   fase 0.1.0. Recomendação: o workflow atualiza ambos, mantendo um único passo de versão.
+1. **Decidido em 2026-11-21:** backend em `backend/`, frontend em `frontend/`, e um `pyproject.toml`
+   **mínimo na raiz** que é a fonte da versão. Ver Backend/Estrutura do Projeto.
+2. O workflow passa a atualizar também `frontend/package.json`, no mesmo passo de versão. O arquivo
+   guardado em Release Workflow.yml precisa desse ajuste ao ser copiado para `.github/workflows/`.
+   O passo "Set the version" ganha a escrita no `package.json` e o `git add` inclui os dois arquivos.
 3. A versão aparece na interface, no rodapé, e na resposta de `GET /api/health`, lida do pacote
    instalado. Permite saber qual release está rodando.
 

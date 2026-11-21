@@ -12,6 +12,15 @@ Será publicado como projeto aberto e divulgado pelo autor no LinkedIn. Isso imp
 produto: ser **instalável por qualquer pessoa com um `docker compose up`** e ter um **diferencial claro**,
 que é o diagnóstico de causa raiz ligado ao código-fonte.
 
+O produto é entregue em duas camadas, decisão de 2026-11-21:
+
+| Camada | O que é | Versão |
+|---|---|---|
+| **Núcleo** | Coleta sem agente, Loki, inventário, eventos, ciclo de análise, insights de IA por log | **1.0.0**, primeiro release público |
+| **Diferencial** | GitHub App, diagnóstico no código, abertura de issues | **1.1.0 a 1.3.0**, logo após |
+
+O 1.0.0 promete o núcleo. O diferencial é anunciado como próximo passo, não como parte do release.
+
 ## 2. Problema
 
 Equipes que operam serviços em containers têm logs espalhados por vários hosts e dependem de `docker logs`,

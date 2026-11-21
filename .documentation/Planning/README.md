@@ -22,8 +22,8 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 9 ADRs aceitos |
 | 03 | [Coleta de Logs](03%20Coleta%20de%20Logs/README.md) | Alloy, inventário e conexão de instâncias, Docker, Kubernetes | Rascunhos para revisão |
 | 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Rascunhos para revisão |
-| 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Decisões iniciais |
-| 06 | [Frontend](06%20Frontend/README.md) | Telas, navegação, componentes, estado, design system | Pendente |
+| 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Estrutura rascunhada |
+| 06 | [Frontend](06%20Frontend/README.md) | Telas, navegação, componentes, estado, design system | Mapa de telas rascunhado |
 | 07 | [Infraestrutura e Segurança](07%20Infraestrutura%20e%20Segurança/README.md) | Ambientes, compose, CI/CD, segredos, RBAC | CI/CD em revisão |
 | 08 | [Gestão](08%20Gestão/README.md) | Roadmap, fases, questões abertas | Em revisão |
 | 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Decisões iniciais |

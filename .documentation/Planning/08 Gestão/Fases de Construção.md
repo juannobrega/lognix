@@ -1,6 +1,6 @@
 # Fases de Construção
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Em revisão · **Atualizado:** 2026-11-21
 
 Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA entra na **0.9.0**; a **1.0.0**
 é o primeiro release público e, por ora, publica **apenas o código**, sem imagens Docker publicadas.
@@ -37,10 +37,8 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 | 1.3.0 | **Issues** | IA-3, template, abrir, comentar, reabrir, `GithubIssue` |
 | 1.x | Roadmap | Conforme [Roadmap](Roadmap.md), começando por deduplicação de insights e imagens publicadas |
 
-**A confirmar:** a integração GitHub é o diferencial descrito na Visão e Escopo. Ficar fora do 1.0.0
-significa que o release público promete menos do que a Visão descreve. Alternativas: incluir 1.1 a 1.3
-antes do 1.0.0, renumerando, ou ajustar a Visão para separar "núcleo" e "diferencial" e aceitar que o
-1.0.0 é o núcleo. Decisão do dono do projeto.
+**Decidido em 2026-11-21:** GitHub fica depois do 1.0.0. A Visão e Escopo foi ajustada para separar
+**núcleo**, entregue no 1.0.0, de **diferencial**, entregue em 1.1.0 a 1.3.0.
 
 ## 4. O que cada fase precisa ter aprovado antes de começar
 

@@ -4,7 +4,7 @@ Define a interface React + Vite + CSS.
 
 | Documento | Conteúdo | Status |
 |-----------|----------|--------|
-| Mapa de Telas | Todas as telas, navegação entre elas | A criar |
+| [Mapa de Telas](Mapa%20de%20Telas.md) | Navegação, todas as telas com rota e fase, estados obrigatórios, tempo real | Rascunho para revisão |
 | Telas Detalhadas | Wireframe textual e comportamento de cada tela | A criar |
 | Componentes | Biblioteca de componentes próprios | A criar |
 | Estado e Dados | Gerenciamento de estado, cache, tempo real | A criar |
@@ -19,3 +19,4 @@ Define a interface React + Vite + CSS.
 - **Executor** visível na interface: o que está rodando agora, por projeto, com tipo de trigger, fase e tempo decorrido. Inclui análises manuais e automáticas. Alimentado por WebSocket.
 - **Ocorrências sem análise**: lista de triggers disparados enquanto a IA estava desativada ou sem chave.
 - **Idioma:** português apenas na v1.
+- **Tela inicial após o login é o Painel:** insights novos, notificações, estado dos hosts e executor. Decidido em 2026-11-21.
