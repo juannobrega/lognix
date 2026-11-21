@@ -1,6 +1,6 @@
 # Integração com Loki
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 Único módulo que fala com o Loki: `lognix/loki/`. Base: ADR 001, ADR 004.
 

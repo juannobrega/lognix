@@ -1,6 +1,6 @@
 # API
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 (endpoints até a 0.4.0) · **Atualizado:** 2026-11-21
 
 REST sob `/api/v1`, JSON, autenticado por JWT exceto onde indicado. WebSocket sob `/ws`. OpenAPI gerado
 pelo FastAPI em `/api/docs`.

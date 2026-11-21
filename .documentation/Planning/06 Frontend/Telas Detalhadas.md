@@ -1,6 +1,6 @@
 # Telas Detalhadas
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 (telas da 0.4.0) · **Atualizado:** 2026-11-21
 
 Wireframe textual e comportamento das telas principais. Rotas e fases em [Mapa de Telas](Mapa%20de%20Telas.md).
 

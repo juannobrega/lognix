@@ -1,6 +1,6 @@
 # Mapa de Telas
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-21
 
 Todas as telas da v1 e a navegação entre elas. Detalhes de cada uma em Telas Detalhadas.
 
