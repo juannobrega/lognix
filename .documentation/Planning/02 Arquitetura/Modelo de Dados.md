@@ -41,6 +41,15 @@ erDiagram
 
 Sem papéis na v1. ADR 008.
 
+### RefreshToken
+| Campo | Tipo |
+|---|---|
+| jti | uuid, pk |
+| user_id | uuid → User |
+| family_id | uuid, para invalidar a família em reuso |
+| expires_at | timestamptz |
+| revoked_at | timestamptz, nulo |
+
 ### Host
 Uma máquina com Docker alcançável por SSH. Abstração neutra para Kubernetes futuro via `runtime`.
 
@@ -106,6 +115,7 @@ Container que desaparece do host fica com `state = removed` e `monitored = false
 | provider | enum | `github` na v1 |
 | owner, repo | text | |
 | default_ref | text | branch ou commit a usar quando a imagem não informa |
+| subpath | text, nulo | subdiretório do serviço em monorepo, restringe a leitura de código |
 | source_hint | enum | `oci_label`, `manual` |
 | installation_id | text | instalação do GitHub App que cobre o repo |
 | created_at | timestamptz | |
@@ -141,6 +151,7 @@ Templates do Drain por container.
 | count_total | bigint |
 | first_seen_at, last_seen_at | timestamptz |
 | sample | text, última linha real |
+| ignored | bool | padrão `false`. Marcado pelo usuário: não abre nem reabre issue para este padrão |
 
 ### AnalysisRun
 Um ciclo de 30 s para um container.

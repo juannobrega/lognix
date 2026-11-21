@@ -7,12 +7,12 @@ e repositório, leitura de código, e a ação de abrir issue.
 
 | Documento | Conteúdo | Status |
 |-----------|----------|--------|
-| Vínculo Container e Repositório | Como o Lognix descobre qual repositório e commit um container está rodando: labels OCI na imagem, configuração manual, convenções | A criar |
-| Autenticação | GitHub App vs. token pessoal, permissões mínimas, armazenamento da credencial | A criar |
-| Leitura de Código | Como selecionar os arquivos relevantes a partir de um erro: stack trace, nome de módulo, busca no repositório, limites de tamanho | A criar |
-| Diagnóstico de Código | Como a IA combina log, evento Docker e código para apontar arquivo e trecho, e como a saída é estruturada | A criar |
-| Abertura de Issues | Template da issue, deduplicação, quando abrir e quando só comentar, rastreabilidade de volta ao Lognix | A criar |
-| Limites e Custos | Tamanho máximo de código enviado à IA, cotas da API do GitHub, cache | A criar |
+| [Vínculo Container e Repositório](Vínculo%20Container%20e%20Repositório.md) | Pré-preenchimento OCI, validação de repositório de código, qual commit usar, redeploy | Rascunho para revisão |
+| [Autenticação](Autenticação.md) | Registro do App, permissões, tokens, múltiplas instalações, falhas | Rascunho para revisão |
+| [Leitura de Código](Leitura%20de%20Código.md) | Pistas sem IA, seleção de arquivos em ordem, cache, limites | Rascunho para revisão |
+| [Diagnóstico de Código](Diagnóstico%20de%20Código.md) | Fluxo IA-2, esquema, regras do prompt, interface | Rascunho para revisão |
+| [Abertura de Issues](Abertura%20de%20Issues.md) | Quando, deduplicação com reabertura, template, labels, rastreabilidade, falhas | Rascunho para revisão |
+| [Limites e Custos](Limites%20e%20Custos.md) | Limites da API do GitHub, tokens, custo por erro, privacidade | Rascunho para revisão |
 
 ## Decisões já tomadas
 
