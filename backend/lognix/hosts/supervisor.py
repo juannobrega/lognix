@@ -62,6 +62,7 @@ class TunnelRunner:
         self.status = HostStatus.pending
         self._task: asyncio.Task[None] | None = None
         self._wake = asyncio.Event()
+        self._inflight: set[asyncio.Future[None]] = set()
 
     def start(self) -> None:
         self._task = asyncio.create_task(self._run(), name=f"tunnel:{self.host_id}")
@@ -72,6 +73,10 @@ class TunnelRunner:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await self._task
             self._task = None
+        for fut in list(self._inflight):
+            if not fut.done():
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await asyncio.wait_for(asyncio.shield(fut), timeout=30)
         await self.tunnel.close()
 
     def reconnect_now(self) -> None:
@@ -146,7 +151,10 @@ class TunnelRunner:
     async def _persist(self, *, fingerprint: str | None = None) -> None:
         # Blindado contra cancelamento: uma tarefa cancelada no meio de uma transação deixaria
         # a conexão "idle in transaction" no pool e travaria quem precisasse de lock nas tabelas.
-        await asyncio.shield(self._persist_unshielded(fingerprint=fingerprint))
+        fut = asyncio.ensure_future(self._persist_unshielded(fingerprint=fingerprint))
+        self._inflight.add(fut)
+        fut.add_done_callback(self._inflight.discard)
+        await asyncio.shield(fut)
 
     async def _persist_unshielded(self, *, fingerprint: str | None = None) -> None:
         previous = self._last_notified

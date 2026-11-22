@@ -10,6 +10,7 @@ from fastapi import FastAPI
 
 from lognix import __version__
 from lognix.alloy.service import get_alloy_manager
+from lognix.analysis.manager import get_analysis_manager
 from lognix.api import api_router
 from lognix.config import get_settings
 from lognix.db import get_engine
@@ -32,11 +33,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     supervisor.on_status = get_host_workers().on_host_status
     await supervisor.start()
     get_tail_hub().start()
+    await get_analysis_manager().start()
     try:
         await get_alloy_manager().apply("inicialização do backend")
     except Exception:
         log.exception("alloy config apply on startup failed")
     yield
+    await get_analysis_manager().stop()
     await get_tail_hub().stop()
     await get_host_workers().stop()
     await get_supervisor().stop()

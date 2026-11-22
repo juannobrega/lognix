@@ -188,3 +188,58 @@ export interface DockerEvent {
   new_image: string | null
   occurred_at: string
 }
+
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'unknown'
+
+export interface Pattern {
+  id: string
+  template: string
+  level: LogLevel
+  count_total: number
+  sample: string
+  ignored: boolean
+  first_seen_at: string
+  last_seen_at: string
+}
+
+export interface AnalysisRun {
+  id: number
+  window_start: string
+  window_end: string
+  lines_count: number
+  error_lines_count: number
+  warn_lines_count: number
+  new_patterns_count: number
+  duration_ms: number
+  truncated: boolean
+  manual: boolean
+  status: 'ok' | 'skipped' | 'failed'
+  error: string | null
+  created_at: string
+}
+
+export interface TriggerFired {
+  id: string
+  analysis_run_id: number | null
+  container_id: string
+  type: 'error' | 'docker_event' | 'anomaly' | 'manual'
+  reason: Record<string, unknown>
+  fired_at: string
+  window_start: string
+  window_end: string
+  sample_lines: { ts_ns: string; line: string }[]
+  note: string | null
+  insight_id: string | null
+  container_name?: string | null
+  host_name?: string | null
+}
+
+export interface ExecutorRunning {
+  container_id: string
+  container_name: string
+  host_name: string
+  trigger: 'cycle' | 'manual'
+  phase: string
+  elapsed_ms: number
+  detail: Record<string, unknown>
+}

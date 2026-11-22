@@ -53,6 +53,8 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 ### IA
 - **Deduplicação de insights.** Erro persistente hoje gera insight e chamada de IA a cada ciclo. Primeira melhoria de IA a fazer. Decidido fora da v1 em 2026-11-21.
 - **Intervalo entre ciclos configurável.** Hoje 30 s fixo.
+- **Unificar padrões cujo template evoluiu.** Hoje a evolução do template no Drain cria uma linha nova.
+- **Persistir o estado do Drain** em vez de reconstruir das amostras no reinício.
 - **Outros providers além do OpenRouter.** Anthropic e OpenAI diretos, Azure, Bedrock.
 - **Modelo local via Ollama** como alternativa sem custo externo.
 - **Chat sobre logs** em linguagem natural, com histórico por investigação.

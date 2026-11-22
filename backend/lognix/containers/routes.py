@@ -7,6 +7,7 @@ import uuid
 from fastapi import APIRouter
 
 from lognix.alloy.service import get_alloy_manager
+from lognix.analysis.manager import get_analysis_manager
 from lognix.auth.deps import CurrentUser, DbSession
 from lognix.containers import service
 from lognix.containers.models import Container
@@ -75,6 +76,7 @@ async def set_monitored(
     worker = get_host_workers().get(host.id)
     if worker is not None:
         worker.request_sync()  # inspeção dos recém-marcados
+    await get_analysis_manager().reconcile()
     return MonitoredOut(
         containers=[_out(c) for c in containers],
         alloy=AlloyApplyOut(

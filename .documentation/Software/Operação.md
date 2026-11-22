@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.5.0
+**Versão:** 0.6.0
 
 ## Preparar um host para o Lognix
 
@@ -125,3 +125,38 @@ marca todas. O contador na barra lateral mostra quantas estão novas.
 API: `GET /notifications`, `/notifications/history`, `/notifications/count`,
 `POST /notifications/{id}/seen`, `POST /notifications/seen-all`; `GET /hosts/{id}/events`,
 `GET /projects/{id}/events`, `GET /projects/excluded`, `GET /hosts/{id}/containers/excluded`.
+
+## Ciclo de análise
+
+Cada projeto monitorado tem um loop próprio. O ciclo consulta no Loki a janela desde o fim do ciclo
+anterior (ou desde a marcação, limitada a 15 minutos no primeiro), agrupa as linhas em **padrões**
+com o algoritmo Drain, classifica o nível de cada linha, grava um registro do ciclo e avalia os
+**triggers**. Terminado o ciclo, espera 30 s e recomeça. Se o Loki falhar, a janela não avança e
+nenhuma linha é pulada.
+
+Classificação de nível: em linhas JSON usa-se o campo `level`, `severity`, `lvl` ou equivalente,
+inclusive numérico (pino, bunyan). Em texto livre, regex por palavras inteiras como `ERROR`, `FATAL`,
+`Exception`, `Traceback`, `panic`, `[error]`, `level=error`.
+
+Triggers da v1, sem IA ainda:
+
+| Trigger | Dispara quando |
+|---|---|
+| erro | a janela tem ao menos uma linha classificada como erro |
+| evento Docker | `die` com exit code diferente de zero, `oom`, healthcheck `unhealthy`, ou 3 restarts em 5 min |
+| anomalia | com ao menos 10 ciclos anteriores: volume acima de média + 3 desvios e 2× a média; taxa de erro idem; 3 ou mais padrões novos num ciclo |
+| manual | botão **Analisar agora** no projeto, janela escolhida, limite de 1 por minuto por projeto |
+
+Enquanto a IA não está configurada, cada trigger fica em **Insights › Ocorrências sem análise**,
+com as linhas de erro da janela. A aba **Padrões** do projeto lista os templates com contagem;
+**Ignorar** marca um padrão para não abrir issues no futuro. A aba **Ciclos** mostra os registros.
+
+O **Executor**, painel no canto da tela, mostra as análises em andamento com fase e tempo.
+
+Limitações conhecidas: o template de um padrão evolui conforme o Drain vê variações; quando muda,
+nasce uma linha nova e a antiga fica com a contagem até então. Os clusters do Drain vivem em memória e
+são reconstruídos a partir das amostras guardadas quando o backend reinicia.
+
+API: `GET /projects/{id}/patterns`, `PUT /projects/{id}/patterns/{pid}/ignore`,
+`GET /projects/{id}/analysis-runs`, `GET /projects/{id}/triggers`, `POST /projects/{id}/analyze`,
+`GET /insights/unanalyzed`, `GET /executor`; WebSocket canal `executor`.

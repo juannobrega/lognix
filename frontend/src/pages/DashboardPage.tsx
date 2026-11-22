@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { Health, Host, Project } from '../api/types'
+import type { Health, Host, Project, TriggerFired } from '../api/types'
+import { TriggerList } from '../analysis/TriggerList'
 import { EmptyState } from '../components/EmptyState'
 import { HostStatusBadge } from '../components/StatusBadge'
 import { useNotifications } from '../notifications/useNotifications'
@@ -12,6 +13,7 @@ export function DashboardPage() {
   const hosts = useQuery({ queryKey: ['hosts'], queryFn: () => api<Host[]>('/hosts'), refetchInterval: 15_000 })
   const projects = useQuery({ queryKey: ['projects'], queryFn: () => api<Project[]>('/projects'), refetchInterval: 30_000 })
   const { list, seen } = useNotifications(false)
+  const unanalyzed = useQuery({ queryKey: ['insights', 'unanalyzed'], queryFn: () => api<TriggerFired[]>('/insights/unanalyzed?limit=5'), refetchInterval: 30_000 })
 
   if (hosts.data?.length === 0) {
     return (
@@ -74,10 +76,11 @@ export function DashboardPage() {
           </section>
         </div>
         <section>
-          <h2 style={{ marginBottom: 'var(--space-3)' }}>Insights</h2>
-          <EmptyState title="Insights chegam na fase 0.9.0">
-            <p>Até lá, a coleta e o inventário já estão em andamento.</p>
-          </EmptyState>
+          <div className="row" style={{ justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
+            <h2>Ocorrências recentes</h2>
+            <Link to="/insights">ver todas</Link>
+          </div>
+          <TriggerList triggers={unanalyzed.data ?? []} showProject />
         </section>
       </div>
     </>

@@ -4,6 +4,7 @@ import { AppLayout } from './layout/AppLayout'
 import { DashboardPage } from './pages/DashboardPage'
 import { HostDetailPage } from './pages/HostDetailPage'
 import { HostsPage } from './pages/HostsPage'
+import { InsightsPage } from './pages/InsightsPage'
 import { NewHostPage } from './pages/NewHostPage'
 import { NotificationsPage } from './pages/NotificationsPage'
 import { ProjectPage } from './pages/ProjectPage'
@@ -27,7 +28,7 @@ export function App() {
           <Route path="hosts/:id" element={<HostDetailPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectPage />} />
-          <Route path="insights" element={<PlaceholderPage title="Insights" phase="0.8.0" />} />
+          <Route path="insights" element={<InsightsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<SettingsPage />}>
             <Route index element={<Navigate to="users" replace />} />

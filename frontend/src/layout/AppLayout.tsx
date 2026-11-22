@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { Button } from '../components/Button'
 import { useNotificationCount } from '../notifications/useNotifications'
+import { ExecutorPanel } from '../analysis/ExecutorPanel'
 import { Icons } from './icons'
 import { useTheme } from './useTheme'
 import styles from './AppLayout.module.css'
@@ -66,6 +67,7 @@ export function AppLayout() {
       <main className={styles.main}>
         <Outlet />
       </main>
+      <ExecutorPanel />
     </div>
   )
 }

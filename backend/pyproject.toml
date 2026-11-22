@@ -23,6 +23,7 @@ dependencies = [
   "python-json-logger>=2.0",
   "asyncssh>=2.14",
   "websockets>=12",
+  "drain3>=0.9",
 ]
 
 [project.optional-dependencies]

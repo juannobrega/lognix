@@ -154,6 +154,16 @@ Consequências:
 O trigger **manual** roda fora desse ciclo, na hora, sobre a janela escolhida pelo usuário, respeitando
 o limite de 1 por projeto por minuto e a concorrência global.
 
+## 8.1 Implementado na 0.6.0
+
+- Drain via `drain3`, um minerador por container em memória, reconstruído das amostras guardadas no
+  reinício. O template de um cluster evolui; o texto final só é resolvido ao fim da janela. Quando
+  evolui entre ciclos, nasce um `Pattern` novo. Limitação aceita; unificação fica no roadmap.
+- Primeiro ciclo após a marcação limitado a 15 minutos de janela.
+- Teto de 50 000 linhas por ciclo, com marca `truncated`.
+- Anomalia exige 10 ciclos de base; critérios em `triggers.py`.
+- Trigger manual limitado a 1 por minuto por projeto.
+
 ## 9. Indicador de execução
 
 A interface mostra um **executor**: lista do que está rodando agora, por projeto, com tipo de trigger,

@@ -10,7 +10,8 @@ import contextlib
 import logging
 import time
 import uuid
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
+from typing import Any, TypeVar
 
 from sqlalchemy import select
 
@@ -27,6 +28,7 @@ from lognix.notifications.service import notify
 log = logging.getLogger(__name__)
 
 RECONCILE_INTERVAL = 60
+T = TypeVar("T")
 INVENTORY_ACTIONS = {"start", "destroy", "die", "create", "rename"}
 SocketResolver = Callable[[uuid.UUID], str | None]
 
@@ -43,6 +45,7 @@ class HostWorker:
         self.stream_restarts = 0
         self.last_sync_at: float | None = None
         self.last_error: str | None = None
+        self._inflight: set[asyncio.Future[Any]] = set()
 
     def start(self) -> None:
         if self._listener is None:
@@ -60,6 +63,16 @@ class HostWorker:
                     # Fechar um stream HTTP cancelado pode demorar; não trava quem chamou.
                     await asyncio.wait_for(task, timeout=5)
         self._listener = self._reconciler = None
+        for fut in list(self._inflight):
+            if not fut.done():
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await asyncio.wait_for(asyncio.shield(fut), timeout=30)
+
+    def _track(self, coro: Coroutine[Any, Any, T]) -> asyncio.Future[T]:
+        fut: asyncio.Future[T] = asyncio.ensure_future(coro)
+        self._inflight.add(fut)
+        fut.add_done_callback(self._inflight.discard)
+        return fut
 
     def request_sync(self) -> None:
         self._sync_now.set()
@@ -72,7 +85,7 @@ class HostWorker:
             # (ex.: `start` logo após `destroy` num redeploy) dispara a próxima rodada.
             self._sync_now.clear()
             try:
-                await asyncio.shield(self.sync_once())
+                await asyncio.shield(self._track(self.sync_once()))
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
@@ -164,7 +177,7 @@ class HostWorker:
         if event.get("time"):
             self.last_event_time = int(event["time"])
         action = str(event.get("Action") or event.get("status") or "").split(":", 1)[0]
-        await asyncio.shield(self._record(event))
+        await asyncio.shield(self._track(self._record(event)))
         if action in INVENTORY_ACTIONS:
             self.request_sync()
 

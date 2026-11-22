@@ -16,6 +16,7 @@ from lognix.auth import service as auth_service
 from lognix.containers.models import Container
 from lognix.db import get_sessionmaker
 from lognix.loki.client import LogLine
+from lognix.realtime.bus import get_bus
 from lognix.realtime.hub import get_tail_hub
 
 log = logging.getLogger(__name__)
@@ -71,6 +72,19 @@ async def websocket_endpoint(ws: WebSocket) -> None:
 
             unsubscribers[channel] = get_tail_hub().subscribe(project_id, on_lines)
             await send({"type": "subscribed", "channel": channel})
+        elif channel in ("executor", "notifications", "insights", "hosts"):
+
+            async def on_event(payload: dict[str, Any], _channel: str = channel) -> None:
+                await send({**payload, "channel": _channel})
+
+            unsubscribers[channel] = get_bus().subscribe(channel, on_event)
+            await send({"type": "subscribed", "channel": channel})
+            if channel == "executor":
+                from lognix.analysis.executor import get_executor
+
+                await send(
+                    {"type": "executor", "channel": channel, "running": get_executor().snapshot()}
+                )
         else:
             await send({"type": "error", "channel": channel, "message": "canal desconhecido"})
 

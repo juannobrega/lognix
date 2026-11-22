@@ -189,9 +189,10 @@ async def _validate(run: ValidationRun, host: Host, supervisor: TunnelSupervisor
     finally:
         await client.aclose()
 
+    # Persiste antes de marcar como concluída: quem consulta a validação já vê o host atualizado.
+    await _persist_success(host.id, version.get("Version"), raw)
     run.status = "ok"
     run.finished_at = datetime.now(UTC)
-    await _persist_success(host.id, version.get("Version"), raw)
 
 
 async def _persist_success(

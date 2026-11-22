@@ -28,6 +28,8 @@ os.environ.setdefault("ALLOY_CONFIG_PATH", "/tmp/lgx-test-alloy/config.alloy")
 os.environ.setdefault("TUNNELS_DIR", "/tmp/lgx-test-tunnels")
 
 from lognix.alloy import service as alloy_service
+from lognix.analysis import manager as analysis_manager_module
+from lognix.analysis.manager import AnalysisManager
 from lognix.auth.routes import login_limiter
 from lognix.db import get_engine
 from lognix.events import workers as workers_module
@@ -120,6 +122,18 @@ async def authed(client: AsyncClient) -> AsyncClient:
     return client
 
 
+class _NoLoki:
+    """Loki ausente nos testes que não o configuram: o ciclo registra falha e não avança."""
+
+    async def query_range(self, *a, **k):  # type: ignore[no-untyped-def]
+        from lognix.loki.client import LokiError
+
+        raise LokiError("sem Loki no teste")
+
+    async def aclose(self) -> None:
+        return None
+
+
 _tcp_servers: list[asyncio.base_events.Server] = []
 
 
@@ -141,11 +155,15 @@ async def fake_env() -> AsyncIterator[tuple[FakeDocker, FakeSshBackend, str]]:
     supervisor = TunnelSupervisor(backend=backend, tunnels_dir=os.path.join(tmp, "tunnels"))
     workers = HostWorkers(supervisor.socket_path)
     supervisor.on_status = workers.on_host_status
+    analysis = AnalysisManager(client_factory=_NoLoki, pause_seconds=3600)
+    analysis_manager_module.set_analysis_manager(analysis)
     sup_module.set_supervisor(supervisor)
     workers_module.set_host_workers(workers)
     try:
         yield fake, backend, tmp
     finally:
+        await analysis.stop()
+        analysis_manager_module.set_analysis_manager(None)
         await workers.stop()
         await supervisor.stop()
         workers_module.set_host_workers(None)
