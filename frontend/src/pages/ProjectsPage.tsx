@@ -9,7 +9,12 @@ export function ProjectsPage() {
   const projects = useQuery({ queryKey: ['projects'], queryFn: () => api<Project[]>('/projects'), refetchInterval: 30_000 })
   return (
     <>
-      <h1>Projetos</h1>
+      <div className="page-header">
+        <div>
+          <h1>Projetos</h1>
+          <p className="subtitle">Containers monitorados. Cada um é um projeto, com logs, eventos e, em breve, insights.</p>
+        </div>
+      </div>
       {projects.data?.length === 0 && (
         <EmptyState title="Nenhum container monitorado">
           <p>
@@ -18,36 +23,42 @@ export function ProjectsPage() {
         </EmptyState>
       )}
       {projects.data && projects.data.length > 0 && (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', color: 'var(--fg-muted)' }}>
-              <th>Projeto</th>
-              <th>Host</th>
-              <th>Imagem</th>
-              <th>Estado</th>
-              <th>Tipo</th>
-              <th>Monitorado desde</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.data.map((p) => (
-              <tr key={p.id} style={{ borderTop: '1px solid var(--border)' }}>
-                <td>
-                  <Link to={`/projects/${p.id}`}>{p.name}</Link>
-                </td>
-                <td>
-                  <Link to={`/hosts/${p.host_id}`}>{p.host_name}</Link> <HostStatusBadge status={p.host_status} />
-                </td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{p.image}</td>
-                <td>
-                  <ContainerStateBadge state={p.state} />
-                </td>
-                <td style={{ color: 'var(--fg-muted)' }}>{p.kind === 'github' ? 'GitHub' : 'imagem Docker'}</td>
-                <td style={{ color: 'var(--fg-muted)' }}>{p.monitored_since ? new Date(p.monitored_since).toLocaleString('pt-BR') : '—'}</td>
+        <div className="card">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Projeto</th>
+                <th>Host</th>
+                <th>Imagem</th>
+                <th>Estado</th>
+                <th>Tipo</th>
+                <th>Monitorado desde</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {projects.data.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <Link to={`/projects/${p.id}`} style={{ fontWeight: 600 }}>
+                      {p.name}
+                    </Link>
+                  </td>
+                  <td>
+                    <span className="row" style={{ gap: 8 }}>
+                      <Link to={`/hosts/${p.host_id}`}>{p.host_name}</Link> <HostStatusBadge status={p.host_status} />
+                    </span>
+                  </td>
+                  <td className="mono">{p.image}</td>
+                  <td>
+                    <ContainerStateBadge state={p.state} />
+                  </td>
+                  <td className="muted">{p.kind === 'github' ? 'GitHub' : 'imagem Docker'}</td>
+                  <td className="muted">{p.monitored_since ? new Date(p.monitored_since).toLocaleString('pt-BR') : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   )

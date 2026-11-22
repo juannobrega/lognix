@@ -33,22 +33,26 @@ export function ContainerPicker({ containers, onSave, saving }: Props) {
   return (
     <>
       <div className={styles.bar}>
-        <Button variant="ghost" onClick={() => setSelected(new Set(containers.map((c) => c.id)))}>
+        <span className={styles.muted} style={{ fontSize: 'var(--text-sm)' }}>
+          {selected.size} de {containers.length} monitorados
+        </span>
+        <span style={{ flex: 1 }} />
+        <Button variant="ghost" size="sm" onClick={() => setSelected(new Set(containers.map((c) => c.id)))}>
           Selecionar todos
         </Button>
-        <Button variant="ghost" onClick={() => setSelected(new Set())}>
+        <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
           Limpar
         </Button>
         {projects.map((p) => (
-          <Button key={p} variant="ghost" onClick={() => selectProject(p)}>
-            + projeto {p}
+          <Button key={p} variant="ghost" size="sm" onClick={() => selectProject(p)}>
+            + {p}
           </Button>
         ))}
       </div>
-      <table className={styles.table}>
+      <table className="table">
         <thead>
           <tr>
-            <th>Monitorar</th>
+            <th style={{ width: 90 }}>Monitorar</th>
             <th>Nome</th>
             <th>Imagem</th>
             <th>Estado</th>
@@ -61,13 +65,14 @@ export function ContainerPicker({ containers, onSave, saving }: Props) {
             <tr key={c.id}>
               <td>
                 <input
+                  className={styles.check}
                   type="checkbox"
                   aria-label={`Monitorar ${c.name}`}
                   checked={selected.has(c.id)}
                   onChange={() => toggle(c.id)}
                 />
               </td>
-              <td>{c.name}</td>
+              <td style={{ fontWeight: 500 }}>{c.name}</td>
               <td className={styles.mono}>{c.image}</td>
               <td>
                 <ContainerStateBadge state={c.state} />
@@ -78,7 +83,7 @@ export function ContainerPicker({ containers, onSave, saving }: Props) {
           ))}
         </tbody>
       </table>
-      <div className={styles.bar}>
+      <div className={styles.footer}>
         <Button variant="primary" disabled={!dirty} loading={saving} onClick={() => onSave([...selected])}>
           Salvar monitoramento
         </Button>

@@ -92,6 +92,7 @@ export interface Container {
   compose_project: string | null
   compose_service: string | null
   labels: Record<string, string>
+  env: Record<string, unknown>
   state: ContainerState
   monitored: boolean
   monitored_since: string | null
@@ -146,4 +147,44 @@ export interface LogsResponse {
   newest_ts_ns: string | null
   query: string
   monitored_since: string | null
+}
+
+export type NotificationType =
+  | 'new_container'
+  | 'host_disconnected'
+  | 'host_reconnected'
+  | 'fingerprint_changed'
+  | 'alloy_reload_failed'
+  | 'events_stream_failed'
+  | 'analysis_skipped'
+  | 'ai_error'
+  | 'github_error'
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  host_id: string | null
+  container_id: string | null
+  title: string
+  payload: Record<string, unknown>
+  status: 'new' | 'seen'
+  created_at: string
+  seen_at: string | null
+}
+
+export interface HostEvent {
+  id: number
+  type: string
+  attributes: Record<string, unknown>
+  occurred_at: string
+}
+
+export interface DockerEvent {
+  id: number
+  type: string
+  exit_code: number | null
+  attributes: Record<string, unknown>
+  previous_image: string | null
+  new_image: string | null
+  occurred_at: string
 }

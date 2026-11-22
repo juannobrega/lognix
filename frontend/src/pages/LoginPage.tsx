@@ -44,7 +44,8 @@ export function LoginPage() {
     <div className={styles.wrap}>
       <form className={styles.card} onSubmit={onSubmit} aria-labelledby="login-title">
         <div className={styles.brand} id="login-title">
-          Lognix
+          <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
+          
         </div>
         <p className={styles.sub}>Entre para continuar.</p>
         {error && <Alert kind="error" message={error.message} action={error.action} />}

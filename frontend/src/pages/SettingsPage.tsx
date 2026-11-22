@@ -10,10 +10,14 @@ const tabs = [
 export function SettingsPage() {
   return (
     <>
-      <h1>Configurações</h1>
-      <nav aria-label="Configurações" style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-5)' }}>
+      <div className="page-header">
+        <div>
+          <h1>Configurações</h1>
+        </div>
+      </div>
+      <nav aria-label="Configurações" className="tabs">
         {tabs.map((t) => (
-          <NavLink key={t.to} to={t.to} style={({ isActive }) => ({ fontWeight: isActive ? 700 : 400 })}>
+          <NavLink key={t.to} to={t.to} className={({ isActive }) => ['tab', isActive ? 'active' : ''].join(' ')}>
             {t.label}
           </NavLink>
         ))}

@@ -1,17 +1,25 @@
 .button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  height: 34px;
+  padding: 0 14px;
   border-radius: var(--radius-sm);
-  border: 1px solid transparent;
+  border: 1px solid var(--border-strong);
   cursor: pointer;
   font-weight: 500;
+  font-size: var(--text-sm);
   background: var(--bg-elevated);
-  border-color: var(--border);
+  color: var(--fg);
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.button:hover:not(:disabled) {
+  background: var(--bg-subtle);
 }
 .button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 .primary {
@@ -19,11 +27,29 @@
   color: var(--accent-fg);
   border-color: var(--accent);
 }
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
 .danger {
   color: var(--error);
   border-color: var(--error);
+  background: transparent;
+}
+.danger:hover:not(:disabled) {
+  background: var(--error-soft);
 }
 .ghost {
   background: transparent;
   border-color: transparent;
+  color: var(--fg-muted);
+}
+.ghost:hover:not(:disabled) {
+  background: var(--bg-subtle);
+  color: var(--fg);
+}
+.sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: var(--text-xs);
 }

@@ -1,11 +1,12 @@
 .viewer {
   background: var(--log-bg);
   color: var(--log-fg);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   line-height: 1.5;
-  height: 60vh;
+  height: 62vh;
   overflow: auto;
   position: relative;
 }
@@ -21,21 +22,21 @@
   background: rgba(255, 255, 255, 0.04);
 }
 .ts {
-  color: #7d8a99;
+  color: var(--log-muted);
   user-select: none;
 }
 .error {
-  background: rgba(248, 113, 113, 0.12);
+  background: var(--log-error-bg);
 }
 .error .text {
-  color: #fca5a5;
+  color: var(--log-error-fg);
 }
 .empty {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  color: #94a0ad;
+  color: var(--log-muted);
   text-align: center;
   padding: var(--space-6);
 }

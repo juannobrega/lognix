@@ -8,22 +8,35 @@
 }
 .step {
   display: grid;
-  grid-template-columns: 24px 1fr;
-  gap: var(--space-2);
+  grid-template-columns: 28px 1fr;
+  gap: var(--space-3);
   align-items: start;
+  padding: var(--space-2) 0;
+}
+.step + .step {
+  border-top: 1px solid var(--border);
 }
 .icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
   font-weight: 700;
-  text-align: center;
+  background: var(--bg-subtle);
 }
 .ok {
   color: var(--ok);
+  background: var(--ok-soft);
 }
 .failed {
   color: var(--error);
+  background: var(--error-soft);
 }
 .running {
   color: var(--accent);
+  background: var(--accent-soft);
 }
 .pending {
   color: var(--fg-muted);

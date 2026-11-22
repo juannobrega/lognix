@@ -62,8 +62,15 @@ export function NewHostPage() {
     const v = validation.data
     return (
       <>
-        <h1>Conectando a {created.host.name}</h1>
-        {v ? <ValidationSteps steps={v.steps} /> : <p>Iniciando validação…</p>}
+        <div className="page-header">
+          <div>
+            <h1>Conectando a {created.host.name}</h1>
+            <p className="subtitle">Validação em seis etapas. Cada falha vem com o que fazer.</p>
+          </div>
+        </div>
+        <div className="card card-body" style={{ maxWidth: 720, marginBottom: 'var(--space-5)' }}>
+          {v ? <ValidationSteps steps={v.steps} /> : <p>Iniciando validação…</p>}
+        </div>
         {v?.status === 'failed' && (
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
             <Button variant="primary" onClick={() => retry.mutate()} loading={retry.isPending}>
@@ -78,9 +85,10 @@ export function NewHostPage() {
           <>
             <Alert message="Host conectado. Escolha os containers a monitorar na tela do host." />
             <h2>Containers encontrados ({v.containers?.length ?? 0})</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 'var(--space-5)' }}>
+            <div className="card" style={{ marginBottom: 'var(--space-5)' }}>
+            <table className="table">
               <thead>
-                <tr style={{ textAlign: 'left', color: 'var(--fg-muted)' }}>
+                <tr>
                   <th>Nome</th>
                   <th>Imagem</th>
                   <th>Estado</th>
@@ -89,19 +97,18 @@ export function NewHostPage() {
               </thead>
               <tbody>
                 {v.containers?.map((c) => (
-                  <tr key={c.docker_id} style={{ borderTop: '1px solid var(--border)' }}>
-                    <td>{c.name}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{c.image}</td>
+                  <tr key={c.docker_id}>
+                    <td style={{ fontWeight: 500 }}>{c.name}</td>
+                    <td className="mono">{c.image}</td>
                     <td>
                       <ContainerStateBadge state={c.state} />
                     </td>
-                    <td style={{ color: 'var(--fg-muted)' }}>
-                      {c.compose_project ? `${c.compose_project} / ${c.compose_service ?? ''}` : '—'}
-                    </td>
+                    <td className="muted">{c.compose_project ? `${c.compose_project} / ${c.compose_service ?? ''}` : '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
             <Button variant="primary" onClick={() => navigate(`/hosts/${created.host.id}`)}>
               Ir para o host e escolher containers
             </Button>
@@ -113,13 +120,17 @@ export function NewHostPage() {
 
   return (
     <>
-      <h1>Cadastrar host</h1>
-      <p style={{ color: 'var(--fg-muted)' }}>
-        Uma máquina com Docker acessível por SSH. O usuário SSH precisa ter acesso ao socket do Docker. Nada será instalado nela e nenhum
-        comando de alteração será enviado.
-      </p>
+      <div className="page-header">
+        <div>
+          <h1>Cadastrar host</h1>
+          <p className="subtitle">
+            Uma máquina com Docker acessível por SSH. O usuário SSH precisa ter acesso ao socket do Docker. Nada será instalado nela e nenhum
+            comando de alteração será enviado.
+          </p>
+        </div>
+      </div>
       {error && <Alert kind="error" message={error.message} action={error.action} />}
-      <form onSubmit={onSubmit} style={{ maxWidth: 560 }}>
+      <form onSubmit={onSubmit} className="card card-body" style={{ maxWidth: 600 }}>
         <Field label="Nome" help="Identifica o host no Lognix. Letras, números, - e _." value={name} onChange={(e) => setName(e.target.value)} required pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,62}" />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 'var(--space-3)' }}>
           <Field label="Endereço" help="IP ou DNS" value={address} onChange={(e) => setAddress(e.target.value)} required />
@@ -130,7 +141,7 @@ export function NewHostPage() {
           <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 500, marginBottom: 4 }} htmlFor="method">
             Autenticação
           </label>
-          <select id="method" value={method} onChange={(e) => setMethod(e.target.value as SshAuthMethod)} style={{ padding: '8px 12px' }}>
+          <select id="method" value={method} onChange={(e) => setMethod(e.target.value as SshAuthMethod)} style={{ width: '100%' }}>
             <option value="key">Chave privada (recomendado)</option>
             <option value="key_passphrase">Chave privada com passphrase</option>
             <option value="password">Senha</option>
@@ -152,7 +163,7 @@ export function NewHostPage() {
               required
               spellCheck={false}
               placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', padding: 8, border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg-elevated)' }}
+              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}
             />
           </div>
         )}

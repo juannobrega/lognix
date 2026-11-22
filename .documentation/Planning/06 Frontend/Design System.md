@@ -1,6 +1,6 @@
 # Design System
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Em revisão. Primeiro passe aplicado em 2026-11-22 · **Atualizado:** 2026-11-21
 
 Mínimo necessário para a interface ser consistente. Sem biblioteca externa.
 
@@ -38,6 +38,14 @@ em `localStorage`. Logs em fundo escuro por padrão nos dois temas, por legibili
 - Interface: fonte do sistema.
 - Logs e código: monoespaçada do sistema, 13 px, altura de linha 1,5.
 - Sem fontes externas: nada carregado de CDN.
+
+## 4.1 Aplicado em 2026-11-22
+
+- Tokens completos em `tokens.css`, incluindo variantes `*-soft` para fundos de selo e alerta.
+- Classes utilitárias globais: `.page-header`, `.card`, `.table`, `.list`, `.kv`, `.tabs`, `.segmented`.
+- Barra lateral com ícones SVG inline, avatar com iniciais, contador de notificações.
+- Selos de estado com fundo suave e ponto colorido. Botões com tamanhos `md` e `sm`.
+- Páginas de host e projeto reorganizadas em abas.
 
 ## 5. Identidade
 

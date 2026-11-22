@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import type { Project } from '../api/types'
+import type { DockerEvent, Project } from '../api/types'
+import { EventTimeline } from '../components/EventTimeline'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { ContainerStateBadge, HostStatusBadge } from '../components/StatusBadge'
@@ -11,7 +12,9 @@ import { useProjectLogs, type Period } from '../logs/useProjectLogs'
 
 export function ProjectPage() {
   const { id = '' } = useParams()
-  const project = useQuery({ queryKey: ['project', id], queryFn: () => api<Project>(`/projects/${id}`) })
+  const project = useQuery({ queryKey: ['project', id], queryFn: () => api<Project>(`/projects/${id}`), refetchInterval: 30_000 })
+  const events = useQuery({ queryKey: ['project', id, 'events'], queryFn: () => api<DockerEvent[]>(`/projects/${id}/events`), refetchInterval: 30_000 })
+  const [tab, setTab] = useState<'logs' | 'events' | 'env'>('logs')
   const [live, setLive] = useState(true)
   const [follow, setFollow] = useState(true)
   const [period, setPeriod] = useState<Period>('15m')
@@ -40,25 +43,63 @@ export function ProjectPage() {
 
   return (
     <>
-      <h1 style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-        {p.name} <ContainerStateBadge state={p.state} />
-      </h1>
-      <p style={{ color: 'var(--fg-muted)' }}>
-        <Link to={`/hosts/${p.host_id}`}>{p.host_name}</Link> <HostStatusBadge status={p.host_status} /> · <code>{p.image}</code>
-        {p.image_digest && <> · {p.image_digest.replace('sha256:', '').slice(0, 12)}</>} · tipo {p.kind === 'github' ? 'GitHub' : 'imagem Docker'}
-        {p.monitored_since && <> · monitorado desde {new Date(p.monitored_since).toLocaleString('pt-BR')}</>}
-      </p>
+      <div className="page-header">
+        <div>
+          <h1 className="row">
+            {p.name} <ContainerStateBadge state={p.state} />
+          </h1>
+          <p className="subtitle">
+            <Link to={`/hosts/${p.host_id}`}>{p.host_name}</Link> <HostStatusBadge status={p.host_status} />
+            <span>· </span>
+            <code>{p.image}</code>
+            {p.image_digest && <span className="mono muted">{p.image_digest.replace('sha256:', '').slice(0, 12)}</span>}
+            <span>· {p.kind === 'github' ? 'GitHub' : 'imagem Docker'}</span>
+            {p.monitored_since && <span>· monitorado desde {new Date(p.monitored_since).toLocaleString('pt-BR')}</span>}
+          </p>
+        </div>
+      </div>
 
-      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap', margin: 'var(--space-3) 0' }}>
-        <Button variant={live ? 'primary' : 'secondary'} onClick={() => setLive(true)} aria-pressed={live}>
-          ● ao vivo
-        </Button>
-        <Button variant={!live ? 'primary' : 'secondary'} onClick={() => setLive(false)} aria-pressed={!live}>
-          histórico
-        </Button>
-        <label style={{ color: 'var(--fg-muted)' }}>
+      {p.state === 'removed' && <Alert kind="error" message="Este container desapareceu do host. Está em Containers excluídos; logs e eventos continuam acessíveis." />}
+      <div role="tablist" className="tabs">
+        {(['logs', 'events', 'env'] as const).map((t) => (
+          <button key={t} role="tab" className="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
+            {{ logs: 'Logs', events: `Eventos (${events.data?.length ?? 0})`, env: 'Ambiente' }[t]}
+          </button>
+        ))}
+      </div>
+      {tab === 'events' && (
+        <div className="card card-body">
+          <EventTimeline events={events.data ?? []} />
+        </div>
+      )}
+      {tab === 'env' && (
+        <div className="card card-body">
+          <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>
+            Variáveis de ambiente do container, só por nome. Valores aparecem apenas para nomes seguros como APP_VERSION e NODE_ENV.
+          </p>
+          {!(p.env?.names as string[] | undefined)?.length && <p style={{ color: 'var(--fg-muted)' }}>Ainda não inspecionado.</p>}
+          <ul style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>
+            {((p.env?.names as string[] | undefined) ?? []).map((n) => (
+              <li key={n}>
+                {n}
+                {(p.env?.safe as Record<string, string> | undefined)?.[n] !== undefined && <span style={{ color: 'var(--fg-muted)' }}> = {(p.env.safe as Record<string, string>)[n]}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div style={{ display: tab === 'logs' ? 'flex' : 'none', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap', margin: 'var(--space-3) 0' }}>
+        <div className="segmented" role="group" aria-label="Modo">
+          <button onClick={() => setLive(true)} aria-pressed={live}>
+            ● ao vivo
+          </button>
+          <button onClick={() => setLive(false)} aria-pressed={!live}>
+            histórico
+          </button>
+        </div>
+        <label className="muted">
           período{' '}
-          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} style={{ padding: '6px 8px' }}>
+          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
             <option value="15m">últimos 15 min</option>
             <option value="1h">última 1 h</option>
             <option value="6h">últimas 6 h</option>
@@ -73,13 +114,7 @@ export function ProjectPage() {
           }}
           style={{ display: 'flex', gap: 'var(--space-2)', flex: 1, minWidth: 240 }}
         >
-          <input
-            aria-label="Filtrar texto"
-            placeholder="filtrar texto (contém)"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            style={{ flex: 1, padding: '6px 10px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg-elevated)' }}
-          />
+          <input aria-label="Filtrar texto" placeholder="filtrar texto (contém)" value={draft} onChange={(e) => setDraft(e.target.value)} style={{ flex: 1 }} />
           <Button type="submit">Filtrar</Button>
         </form>
         {live && (
@@ -98,7 +133,7 @@ export function ProjectPage() {
           </Button>
         </div>
       )}
-      <LogViewer lines={logs.lines} follow={live && follow} onFollowChange={setFollow} empty={empty} onReachTop={logs.loadOlder} />
+      {tab === 'logs' && <LogViewer lines={logs.lines} follow={live && follow} onFollowChange={setFollow} empty={empty} onReachTop={logs.loadOlder} />}
     </>
   )
 }

@@ -40,52 +40,64 @@ export function UsersPage() {
   }
 
   return (
-    <>
-      <h1>Usuários</h1>
-      {error && <Alert kind="error" message={error} />}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 'var(--space-6)' }}>
-        <thead>
-          <tr style={{ textAlign: 'left', color: 'var(--fg-muted)' }}>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Criado em</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.data?.map((u) => (
-            <tr key={u.id} style={{ borderTop: '1px solid var(--border)' }}>
-              <td>{u.name}</td>
-              <td>{u.email}</td>
-              <td>{new Date(u.created_at).toLocaleString('pt-BR')}</td>
-              <td style={{ textAlign: 'right' }}>
-                {u.id !== me?.id && (
-                  <Button variant="danger" onClick={() => remove.mutate(u.id)} loading={remove.isPending}>
-                    Remover
-                  </Button>
-                )}
-              </td>
+    <div className="grid-2">
+      <div className="card">
+        <div className="card-header">
+          <h2>Usuários</h2>
+        </div>
+        {error && (
+          <div style={{ padding: 'var(--space-4) var(--space-5) 0' }}>
+            <Alert kind="error" message={error} />
+          </div>
+        )}
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Criado em</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <h2>Novo usuário</h2>
-      <form onSubmit={onSubmit} style={{ maxWidth: 400 }}>
-        <Field label="Nome" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
-        <Field label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <Field
-          label="Senha inicial"
-          type="password"
-          minLength={10}
-          help="Mínimo de 10 caracteres."
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <Button type="submit" variant="primary" loading={create.isPending}>
-          Criar
-        </Button>
-      </form>
-    </>
+          </thead>
+          <tbody>
+            {users.data?.map((u) => (
+              <tr key={u.id}>
+                <td style={{ fontWeight: 500 }}>{u.name}</td>
+                <td className="muted">{u.email}</td>
+                <td className="muted">{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+                <td className="right">
+                  {u.id !== me?.id && (
+                    <Button variant="danger" size="sm" onClick={() => remove.mutate(u.id)} loading={remove.isPending}>
+                      Remover
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="card">
+        <div className="card-header">
+          <h2>Novo usuário</h2>
+        </div>
+        <form onSubmit={onSubmit} className="card-body">
+          <Field label="Nome" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
+          <Field label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Field
+            label="Senha inicial"
+            type="password"
+            minLength={10}
+            help="Mínimo de 10 caracteres."
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="primary" loading={create.isPending}>
+            Criar usuário
+          </Button>
+        </form>
+      </div>
+    </div>
   )
 }

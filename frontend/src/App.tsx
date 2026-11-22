@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { HostDetailPage } from './pages/HostDetailPage'
 import { HostsPage } from './pages/HostsPage'
 import { NewHostPage } from './pages/NewHostPage'
+import { NotificationsPage } from './pages/NotificationsPage'
 import { ProjectPage } from './pages/ProjectPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { LoginPage } from './pages/LoginPage'
@@ -27,7 +28,7 @@ export function App() {
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectPage />} />
           <Route path="insights" element={<PlaceholderPage title="Insights" phase="0.8.0" />} />
-          <Route path="notifications" element={<PlaceholderPage title="Notificações" phase="0.5.0" />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<SettingsPage />}>
             <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<UsersPage />} />
