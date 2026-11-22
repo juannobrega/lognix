@@ -9,7 +9,10 @@ from lognix.auth.routes import auth_router, setup_router, users_router
 from lognix.containers.logs_routes import router as logs_router
 from lognix.containers.routes import hosts_router as containers_hosts_router
 from lognix.containers.routes import projects_router
+from lognix.events.routes import hosts_router as events_hosts_router
+from lognix.events.routes import projects_router as events_projects_router
 from lognix.hosts.routes import router as hosts_router
+from lognix.notifications.routes import router as notifications_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(health_router)
@@ -20,3 +23,6 @@ api_router.include_router(hosts_router)
 api_router.include_router(containers_hosts_router)
 api_router.include_router(projects_router)
 api_router.include_router(logs_router)
+api_router.include_router(events_hosts_router)
+api_router.include_router(events_projects_router)
+api_router.include_router(notifications_router)

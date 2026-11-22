@@ -38,6 +38,8 @@ class Container(Base):
     compose_project: Mapped[str | None] = mapped_column(String(255), nullable=True)
     compose_service: Mapped[str | None] = mapped_column(String(255), nullable=True)
     labels: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    # {"names": [...], "safe": {NOME: valor}} — valores só para nomes da lista segura
+    env: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     state: Mapped[ContainerState] = mapped_column(
         Enum(ContainerState, name="container_state"), nullable=False
     )

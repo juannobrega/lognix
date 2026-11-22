@@ -119,6 +119,7 @@ async def _validate(run: ValidationRun, host: Host, supervisor: TunnelSupervisor
     except FingerprintMismatchError as exc:
         run.step(2).status = "ok"
         run.fail(3, exc.message, exc.action)
+        await _mark_fingerprint_error(host.id, host.name, exc.message, supervisor)
         return
     except SshError as exc:
         run.fail(2, exc.message, exc.action)
@@ -212,3 +213,32 @@ async def _persist_success(
         from lognix.alloy.service import get_alloy_manager
 
         await get_alloy_manager().apply(f"host {host.name}: inventário mudou na validação")
+
+
+async def _mark_fingerprint_error(
+    host_id: uuid.UUID, host_name: str, message: str, supervisor: TunnelSupervisor
+) -> None:
+    """Fingerprint divergente: host em erro, túnel encerrado, notificação para aceite humano."""
+    from lognix.db import get_sessionmaker
+    from lognix.events.models import HostEventType
+    from lognix.events.service import record_host_event
+    from lognix.notifications.models import NotificationType
+    from lognix.notifications.service import notify
+
+    await supervisor.remove(host_id)
+    async with get_sessionmaker()() as db:
+        host = await db.get(Host, host_id)
+        if host is None:
+            return
+        host.status = HostStatus.error
+        host.last_error = message
+        await db.commit()
+        await record_host_event(db, host_id, HostEventType.disconnected, error=message)
+        await notify(
+            db,
+            NotificationType.fingerprint_changed,
+            f"Fingerprint de {host_name} mudou",
+            host_id=host_id,
+            payload={"error": message},
+        )
+        await db.commit()

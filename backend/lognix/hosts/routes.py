@@ -182,7 +182,7 @@ async def delete_host(
     body: PurgeIn | None = None,
 ) -> None:
     host = await _get_host(db, host_id, include_removed=purge)
-    await get_supervisor().remove(host.id)
+    await get_supervisor().remove(host.id, removed=True)
     if purge:
         if body is None or body.confirm_name != host.name:
             raise ApiError(

@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.4.0
+**Versão:** 0.5.0
 
 ## Preparar um host para o Lognix
 
@@ -67,9 +67,10 @@ timestamp anterior a dois minutos são descartadas pelo Alloy e contadas na mét
 Containers marcados viram **projetos** e aparecem em Projetos. Os logs ficam no Loki com os labels
 `host`, `host_id`, `container`, `container_id`, `compose_project` e `compose_service`.
 
-Se um container monitorado for recriado, por exemplo por um `docker compose up` após build, o ID
-Docker muda e a coleta para até o inventário ser sincronizado, o que acontece ao abrir a tela do
-host. A reconciliação automática por eventos chega na 0.5.0.
+Se um container monitorado for recriado, por exemplo por um `docker compose up` após build, o Lognix
+reconhece o **redeploy** pela identidade de serviço (mesmo projeto e serviço do Compose, ou mesmo nome
+sem Compose): mantém o projeto, atualiza a imagem, continua monitorando e registra um evento
+`redeploy` com a imagem anterior e a nova. Nenhuma notificação é gerada.
 
 A configuração atual do Alloy e as últimas versões aplicadas ficam visíveis na tela do host.
 
@@ -93,3 +94,34 @@ marcação não são coletadas.
 
 API: `GET /api/v1/projects/{id}/logs?start=&end=&q=&limit=&direction=` e WebSocket `/ws?token=`
 com mensagem `{"type":"subscribe","channel":"logs:<id>"}`.
+
+## Inventário, eventos e notificações
+
+Com o host conectado, o Lognix mantém dois processos por host:
+
+- **Ouvinte de eventos**: um stream `GET /events` do Docker, filtrado por containers. Se cair, é
+  reaberto a partir do último evento recebido. Eventos de containers **monitorados** são gravados:
+  `start`, `die` com exit code, `oom`, `restart`, `kill`, `stop`, `pause`, `unpause`, `health_status`,
+  `destroy`. Containers não monitorados só alimentam o inventário.
+- **Reconciliação**: a cada 60 s, e imediatamente após eventos de `start`, `destroy`, `die`, `create` ou
+  `rename`, a lista de containers é comparada com o banco.
+
+Resultados da reconciliação:
+
+| Situação | O que acontece |
+|---|---|
+| Container novo | criado como não monitorado; notificação "Novo container X em HOST" com ação **Monitorar** ou **Ignorar** |
+| Container sumiu | vai para **Containers excluídos** na tela do host; deixa de ser monitorado; config do Alloy reaplicada; logs e eventos continuam acessíveis |
+| Redeploy | mesmo projeto, imagem atualizada, evento `redeploy`; sem notificação |
+
+Ao marcar um container, o Lognix o inspeciona e guarda os **nomes** das variáveis de ambiente. Valores
+só são guardados para nomes seguros como `APP_VERSION`, `NODE_ENV`, `GIT_COMMIT`. Aparecem na aba
+Ambiente do projeto.
+
+Notificações também são geradas quando um host desconecta e reconecta, quando o fingerprint SSH muda
+e quando o reload do Alloy falha. Ficam em Notificações até serem marcadas como vistas; "Limpar todas"
+marca todas. O contador na barra lateral mostra quantas estão novas.
+
+API: `GET /notifications`, `/notifications/history`, `/notifications/count`,
+`POST /notifications/{id}/seen`, `POST /notifications/seen-all`; `GET /hosts/{id}/events`,
+`GET /projects/{id}/events`, `GET /projects/excluded`, `GET /hosts/{id}/containers/excluded`.

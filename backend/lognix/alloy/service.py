@@ -17,6 +17,8 @@ from lognix.containers.models import AlloyConfigVersion
 from lognix.containers.service import monitored_by_host
 from lognix.db import get_sessionmaker
 from lognix.hosts.tunnel import socket_path_for
+from lognix.notifications.models import NotificationType
+from lognix.notifications.service import notify
 
 log = logging.getLogger(__name__)
 
@@ -78,6 +80,13 @@ class AlloyManager:
                 content=content, hash=digest, reason=reason[:255], reload_ok=ok, error=error
             )
             db.add(version)
+            if not ok:
+                await notify(
+                    db,
+                    NotificationType.alloy_reload_failed,
+                    "Falha ao recarregar o Alloy; configuração anterior restaurada",
+                    payload={"reason": reason, "error": error or ""},
+                )
             await db.commit()
             await db.refresh(version)
             log.info(

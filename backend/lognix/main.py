@@ -14,6 +14,7 @@ from lognix.api import api_router
 from lognix.config import get_settings
 from lognix.db import get_engine
 from lognix.errors import install_error_handlers
+from lognix.events.workers import get_host_workers
 from lognix.hosts.supervisor import get_supervisor
 from lognix.logging_setup import setup_logging
 from lognix.realtime.hub import get_tail_hub
@@ -27,7 +28,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     setup_logging(settings.lognix_log_level)
     log.info("lognix starting", extra={"version": __version__})
-    await get_supervisor().start()
+    supervisor = get_supervisor()
+    supervisor.on_status = get_host_workers().on_host_status
+    await supervisor.start()
     get_tail_hub().start()
     try:
         await get_alloy_manager().apply("inicialização do backend")
@@ -35,6 +38,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         log.exception("alloy config apply on startup failed")
     yield
     await get_tail_hub().stop()
+    await get_host_workers().stop()
     await get_supervisor().stop()
     await get_engine().dispose()
     log.info("lognix stopped")

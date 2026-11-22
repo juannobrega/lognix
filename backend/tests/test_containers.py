@@ -3,19 +3,17 @@ import os
 
 from httpx import AsyncClient
 
-from tests.conftest import FakeAlloy
+from tests.conftest import FakeAlloy, open_tcp_port
 from tests.fake_docker import FakeDocker
 from tests.fake_ssh import FakeSshBackend
 from tests.test_hosts import HOST, _wait_validation
 
 
 async def _connected_host(authed: AsyncClient) -> str:
-    server = await asyncio.start_server(lambda r, w: w.close(), "127.0.0.1", 0)
-    port = server.sockets[0].getsockname()[1]
+    port = await open_tcp_port()
     resp = await authed.post("/api/v1/hosts", json={**HOST, "ssh_port": port})
     result = await _wait_validation(authed, resp.json()["validation_id"])
     assert result["status"] == "ok", result
-    server.close()
     return str(resp.json()["host"]["id"])
 
 
@@ -141,12 +139,16 @@ async def test_monitored_container_disappearing_regenerates_config(
     original = list(fake_docker.CONTAINERS)
     fake_docker.CONTAINERS[:] = [c for c in original if c["Names"] != ["/api"]]
     try:
-        reloads = fake_alloy.reloads
         inv2 = (await authed.get(f"/api/v1/hosts/{host_id}/containers")).json()
         assert {c["name"] for c in inv2} == {"db"}
-        assert fake_alloy.reloads == reloads + 1
-        content = open(os.environ["ALLOY_CONFIG_PATH"], encoding="utf-8").read()
+        # A reaplicação pode vir da rota ou do worker de reconciliação; o que importa é o arquivo.
+        for _ in range(50):
+            content = open(os.environ["ALLOY_CONFIG_PATH"], encoding="utf-8").read()
+            if api["docker_id"] not in content:
+                break
+            await asyncio.sleep(0.1)
         assert api["docker_id"] not in content and "discovery.docker" not in content
+        assert fake_alloy.reloads >= 2
         assert (await authed.get("/api/v1/projects")).json() == []
     finally:
         fake_docker.CONTAINERS[:] = original

@@ -99,6 +99,21 @@ excluídos no mesmo host, o Lognix trata como **o mesmo projeto**: mantém o `Co
 Isso também dá à IA o dado mais valioso para diagnóstico: "o erro começou logo após o redeploy da
 imagem X para a imagem Y".
 
+## 6.1 Implementado na 0.5.0
+
+- Janela de reconhecimento de redeploy: o container antigo precisa ter sumido **no mesmo ciclo de
+  reconciliação** ou há menos de **10 minutos**. Fora disso, é container novo.
+- Reconciliação a cada 60 s e disparada por eventos `start`, `destroy`, `die`, `create`, `rename`.
+- Notificação de container novo é deduplicada enquanto houver uma `new` para o mesmo container.
+- `restart` em loop (3 em 5 min) ainda não dispara nada: os eventos ficam gravados para a 0.6.0.
+- **Rename do Compose.** `docker compose up` renomeia o container antigo para `<12 hex>_<nome>` antes de
+  criar o novo e só depois o destrói. Durante a coexistência, a linha renomeada é candidata preferencial
+  ao redeploy e o zumbi não vira linha nova. Descoberto na stack real; sem isso o projeto perdia a
+  identidade a cada deploy.
+- **Candidato preferido** quando há várias linhas removidas com a mesma identidade: a monitorada e vista
+  mais recentemente.
+- Pedidos de sincronização que chegam durante uma sincronização em curso disparam a rodada seguinte.
+
 ## 7. Limites
 
 - Sem métricas de CPU e memória. Roadmap.

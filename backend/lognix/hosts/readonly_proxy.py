@@ -114,6 +114,7 @@ class ReadOnlyProxy:
         self.label = label or listen_path
         self._server: asyncio.base_events.Server | None = None
         self.rejected_count = 0
+        self._clients: set[asyncio.StreamWriter] = set()
 
     async def start(self) -> None:
         directory = os.path.dirname(self.listen_path)
@@ -128,7 +129,13 @@ class ReadOnlyProxy:
     async def stop(self) -> None:
         if self._server is not None:
             self._server.close()
-            await self._server.wait_closed()
+            # Streams longos (logs?follow, events) mantêm conexões abertas; wait_closed()
+            # esperaria por elas para sempre. Derruba os clientes e limita a espera.
+            for writer in list(self._clients):
+                with contextlib.suppress(Exception):
+                    writer.close()
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(self._server.wait_closed(), timeout=2)
             self._server = None
         if os.path.exists(self.listen_path):
             os.unlink(self.listen_path)
@@ -136,6 +143,7 @@ class ReadOnlyProxy:
     async def _handle(self, client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter) -> None:
         upstream: tuple[asyncio.StreamReader, asyncio.StreamWriter] | None = None
         pump: asyncio.Task[None] | None = None
+        self._clients.add(client_w)
         try:
             while True:
                 try:
@@ -191,6 +199,7 @@ class ReadOnlyProxy:
         except (ConnectionError, asyncio.CancelledError, OSError) as exc:
             log.debug("proxy connection ended", extra={"host": self.label, "reason": repr(exc)})
         finally:
+            self._clients.discard(client_w)
             if pump is not None and not pump.done():
                 pump.cancel()
             if upstream is not None:

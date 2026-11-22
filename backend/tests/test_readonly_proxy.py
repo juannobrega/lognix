@@ -89,15 +89,26 @@ async def test_proxy_passes_get_and_blocks_mutations(proxied: tuple[FakeDocker, 
 
 
 async def test_proxy_streams_chunked_responses(proxied: tuple[FakeDocker, str]) -> None:
-    _, proxy_path = proxied
+    fake, proxy_path = proxied
+
+    async def emitter() -> None:
+        await asyncio.sleep(0.1)
+        for i in range(3):
+            fake.emit({"Type": "container", "Action": "start", "n": i})
+            await asyncio.sleep(0.02)
+        for q in fake.event_queues:
+            q.put_nowait(None)
+
     async with httpx.AsyncClient(
         transport=httpx.AsyncHTTPTransport(uds=proxy_path), base_url="http://d", timeout=5
     ) as c:
+        task = asyncio.create_task(emitter())
         lines = []
         async with c.stream("GET", "/events") as resp:
             async for line in resp.aiter_lines():
                 if line:
                     lines.append(line)
+        await task
         assert len(lines) == 3
 
 

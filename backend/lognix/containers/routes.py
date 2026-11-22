@@ -21,6 +21,7 @@ from lognix.containers.schemas import (
 )
 from lognix.docker.client import DockerApiError, DockerClient
 from lognix.errors import ApiError
+from lognix.events.workers import get_host_workers
 from lognix.hosts.models import Host, HostStatus
 from lognix.hosts.supervisor import get_supervisor
 
@@ -71,6 +72,9 @@ async def set_monitored(
     containers = await service.set_monitored(db, host, set(body.container_ids))
     names = ", ".join(c.name for c in containers if c.monitored) or "nenhum"
     result = await get_alloy_manager().apply(f"host {host.name}: monitorados = {names}")
+    worker = get_host_workers().get(host.id)
+    if worker is not None:
+        worker.request_sync()  # inspeção dos recém-marcados
     return MonitoredOut(
         containers=[_out(c) for c in containers],
         alloy=AlloyApplyOut(
@@ -92,6 +96,23 @@ async def alloy_config(host_id: uuid.UUID, _: CurrentUser, db: DbSession) -> All
         path=manager.config_path,
         versions=[AlloyConfigVersionOut.model_validate(v) for v in await manager.versions()],
     )
+
+
+@projects_router.get("/excluded", response_model=list[ProjectOut])
+async def list_excluded(_: CurrentUser, db: DbSession) -> list[ProjectOut]:
+    out = []
+    for c in await service.list_excluded(db):
+        base = _out(c).model_dump()
+        out.append(ProjectOut(**base, host_name=c.host.name, host_status=c.host.status))
+    return out
+
+
+@hosts_router.get("/{host_id}/containers/excluded", response_model=list[ContainerOut])
+async def list_excluded_for_host(
+    host_id: uuid.UUID, _: CurrentUser, db: DbSession
+) -> list[ContainerOut]:
+    host = await _host(db, host_id)
+    return [_out(c) for c in await service.list_excluded_for_host(db, host.id)]
 
 
 @projects_router.get("", response_model=list[ProjectOut])

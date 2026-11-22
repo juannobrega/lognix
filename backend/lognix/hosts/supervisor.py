@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import logging
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -27,6 +28,8 @@ from lognix.hosts.tunnel import Tunnel
 log = logging.getLogger(__name__)
 
 CHECK_INTERVAL = 15
+
+StatusListener = Callable[[uuid.UUID, HostStatus | None, HostStatus, str | None], Awaitable[None]]
 BACKOFF_START = 2
 BACKOFF_MAX = 300
 
@@ -34,8 +37,16 @@ BACKOFF_MAX = 300
 class TunnelRunner:
     """Mantém o túnel de um host vivo enquanto a tarefa existir."""
 
-    def __init__(self, host: Host, backend: SshBackend, tunnels_dir: str) -> None:
+    def __init__(
+        self,
+        host: Host,
+        backend: SshBackend,
+        tunnels_dir: str,
+        on_status: StatusListener | None = None,
+    ) -> None:
         self.host_id = host.id
+        self._on_status = on_status
+        self._last_notified: HostStatus | None = None
         self.tunnel = Tunnel(
             host.id,
             host.name,
@@ -133,6 +144,18 @@ class TunnelRunner:
         await self._persist()
 
     async def _persist(self, *, fingerprint: str | None = None) -> None:
+        # Blindado contra cancelamento: uma tarefa cancelada no meio de uma transação deixaria
+        # a conexão "idle in transaction" no pool e travaria quem precisasse de lock nas tabelas.
+        await asyncio.shield(self._persist_unshielded(fingerprint=fingerprint))
+
+    async def _persist_unshielded(self, *, fingerprint: str | None = None) -> None:
+        previous = self._last_notified
+        if self._on_status is not None and self.status != previous:
+            self._last_notified = self.status
+            try:
+                await self._on_status(self.host_id, previous, self.status, self.last_error)
+            except Exception:
+                log.exception("status listener failed", extra={"host_id": str(self.host_id)})
         async with get_sessionmaker()() as db:
             host = await db.get(Host, self.host_id)
             if host is None or host.status == HostStatus.removed:
@@ -152,9 +175,15 @@ class TunnelRunner:
 
 
 class TunnelSupervisor:
-    def __init__(self, backend: SshBackend | None = None, tunnels_dir: str | None = None) -> None:
+    def __init__(
+        self,
+        backend: SshBackend | None = None,
+        tunnels_dir: str | None = None,
+        on_status: StatusListener | None = None,
+    ) -> None:
         self.backend: SshBackend = backend or AsyncsshBackend()
         self.tunnels_dir = tunnels_dir or get_settings().tunnels_dir
+        self.on_status = on_status
         self._runners: dict[uuid.UUID, TunnelRunner] = {}
 
     async def start(self) -> None:
@@ -172,7 +201,7 @@ class TunnelSupervisor:
     def ensure(self, host: Host) -> TunnelRunner:
         runner = self._runners.get(host.id)
         if runner is None:
-            runner = TunnelRunner(host, self.backend, self.tunnels_dir)
+            runner = TunnelRunner(host, self.backend, self.tunnels_dir, self.on_status)
             self._runners[host.id] = runner
             runner.start()
         return runner
@@ -181,10 +210,13 @@ class TunnelSupervisor:
         await self.remove(host.id)
         return self.ensure(host)
 
-    async def remove(self, host_id: uuid.UUID) -> None:
+    async def remove(self, host_id: uuid.UUID, *, removed: bool = False) -> None:
         runner = self._runners.pop(host_id, None)
         if runner is not None:
             await runner.stop()
+            if removed and self.on_status is not None:
+                with contextlib.suppress(Exception):
+                    await self.on_status(host_id, runner.status, HostStatus.removed, None)
 
     def get(self, host_id: uuid.UUID) -> TunnelRunner | None:
         return self._runners.get(host_id)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -18,6 +19,7 @@ class ContainerOut(BaseModel):
     compose_project: str | None
     compose_service: str | None
     labels: dict[str, str]
+    env: dict[str, Any] = Field(default_factory=dict)
     state: ContainerState
     monitored: bool
     monitored_since: datetime | None

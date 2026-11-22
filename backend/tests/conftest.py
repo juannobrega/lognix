@@ -6,6 +6,7 @@ Alembic uma vez por sessão e as tabelas são esvaziadas entre testes.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import tempfile
 from collections.abc import AsyncIterator
@@ -29,6 +30,8 @@ os.environ.setdefault("TUNNELS_DIR", "/tmp/lgx-test-tunnels")
 from lognix.alloy import service as alloy_service
 from lognix.auth.routes import login_limiter
 from lognix.db import get_engine
+from lognix.events import workers as workers_module
+from lognix.events.workers import HostWorkers
 from lognix.hosts import supervisor as sup_module
 from lognix.hosts.supervisor import TunnelSupervisor
 from lognix.main import app
@@ -94,6 +97,8 @@ async def _clean_tables() -> AsyncIterator[None]:
     yield
     alloy_service.set_alloy_manager(None)
     async with get_engine().begin() as conn:
+        # Falha rápido em vez de travar a suíte se alguma conexão ficou com transação aberta.
+        await conn.execute(text("SET LOCAL lock_timeout = '5s'"))
         for table in TABLES:
             await conn.execute(text(f"TRUNCATE TABLE {table} CASCADE"))
 
@@ -115,6 +120,17 @@ async def authed(client: AsyncClient) -> AsyncClient:
     return client
 
 
+_tcp_servers: list[asyncio.base_events.Server] = []
+
+
+async def open_tcp_port() -> int:
+    """Porta TCP local que aceita conexões, para a etapa 1 da validação. Fica aberta até o
+    fim do teste (fechada no teardown de fake_env)."""
+    server = await asyncio.start_server(lambda r, w: w.close(), "127.0.0.1", 0)
+    _tcp_servers.append(server)
+    return int(server.sockets[0].getsockname()[1])
+
+
 @pytest.fixture
 async def fake_env() -> AsyncIterator[tuple[FakeDocker, FakeSshBackend, str]]:
     tmp = tempfile.mkdtemp(prefix="lgx", dir="/tmp")
@@ -123,10 +139,20 @@ async def fake_env() -> AsyncIterator[tuple[FakeDocker, FakeSshBackend, str]]:
     await fake.start()
     backend = FakeSshBackend(docker_path)
     supervisor = TunnelSupervisor(backend=backend, tunnels_dir=os.path.join(tmp, "tunnels"))
+    workers = HostWorkers(supervisor.socket_path)
+    supervisor.on_status = workers.on_host_status
     sup_module.set_supervisor(supervisor)
+    workers_module.set_host_workers(workers)
     try:
         yield fake, backend, tmp
     finally:
+        await workers.stop()
         await supervisor.stop()
+        workers_module.set_host_workers(None)
         sup_module.set_supervisor(None)
         await fake.stop()
+        for server in _tcp_servers:
+            server.close()
+        _tcp_servers.clear()
+        # Garante que nenhuma conexão do pool ficou presa por tarefa cancelada.
+        await get_engine().dispose()

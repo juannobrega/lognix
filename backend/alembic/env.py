@@ -11,7 +11,9 @@ from lognix.config import get_settings
 from lognix.db import Base
 import lognix.auth.models
 import lognix.hosts.models
-import lognix.containers.models  # noqa: F401
+import lognix.containers.models
+import lognix.events.models
+import lognix.notifications.models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
