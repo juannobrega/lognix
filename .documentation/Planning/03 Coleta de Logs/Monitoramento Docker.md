@@ -1,6 +1,6 @@
 # Monitoramento Docker
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-22 · **Atualizado:** 2026-11-21
 
 O que o backend lê da Docker API de cada host, além dos logs que o Alloy coleta. Base: ADR 003 e 004.
 

@@ -1,6 +1,6 @@
 # Modelo de Dados
 
-**Status:** Em revisão. Host, TunnelState, Container e AlloyConfigVersion aprovados em 2026-11-21 · **Atualizado:** 2026-11-21
+**Status:** Em revisão. Host, TunnelState, Container, AlloyConfigVersion aprovados em 2026-11-21; DockerEvent, HostEvent e Notification aprovados em 2026-11-22 · **Atualizado:** 2026-11-21
 
 Tudo que o Lognix **produz** fica no PostgreSQL. Linhas de log ficam **só no Loki**. Este documento
 descreve as entidades do Postgres e os labels do Loki.
