@@ -1,6 +1,6 @@
 # Pipeline de Análise
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-22 (parte determinística) · **Atualizado:** 2026-11-21
 
 Do tick de 30 s ao insight gravado. Base: ADR 005, ADR 006, decisões de 2026-11-21 sobre contexto e esquema.
 

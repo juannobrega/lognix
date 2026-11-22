@@ -1,6 +1,6 @@
 # Casos de Uso de IA
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-22 · **Atualizado:** 2026-11-21
 
 O que a IA faz no Lognix e, igualmente importante, o que ela não faz. A IA nunca roda sozinha: só por trigger.
 

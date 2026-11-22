@@ -1,6 +1,6 @@
 # ADR 009 — Sem Redis na Primeira Fase
 
-**Status:** Aceito, condicionado a medição · **Data:** 2026-11-21
+**Status:** Aceito, condicionado a medição; aprovado para construção em 2026-11-22 · **Data:** 2026-11-21
 
 ## Contexto
 
