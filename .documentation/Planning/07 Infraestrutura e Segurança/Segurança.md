@@ -1,6 +1,6 @@
 # Segurança
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-23 · **Atualizado:** 2026-11-21
 
 Consolida o que já está nos ADRs e adiciona o que falta.
 

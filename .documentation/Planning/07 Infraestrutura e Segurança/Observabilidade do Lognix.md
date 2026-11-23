@@ -1,6 +1,6 @@
 # Observabilidade do Lognix
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-23 · **Atualizado:** 2026-11-21
 
 Como o Lognix monitora a si mesmo. Sem isso, a fase 0.7.0 não consegue medir o ADR 009.
 
