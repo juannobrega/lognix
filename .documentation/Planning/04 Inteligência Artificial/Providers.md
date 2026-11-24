@@ -31,6 +31,19 @@ O resto do backend não conhece OpenRouter.
 - Orçamento de entrada por chamada e concorrência, com padrões. Ver Custos e Limites.
 - Estado: "IA ativa" ou "IA desativada, motivo". Sem chave, o Lognix funciona sem IA e diz isso.
 
+## 3.1 Implementado na 0.9.0
+
+- `AiProvider` é um `Protocol`; `OpenRouterProvider` é a única implementação. O resto do backend
+  não importa nada de `openrouter.py`.
+- `usage: {include: true}` no corpo faz o OpenRouter devolver o custo real. Quando não vem, o custo
+  é estimado pela tabela de preços obtida de `/models`, e `cost_source` registra qual foi.
+- `response_format` com `json_schema` e `strict` quando o modelo suporta; o esquema também vai no
+  prompt, então modelos sem suporte continuam funcionando.
+- Cabeçalhos `HTTP-Referer` e `X-Title` identificam o Lognix, como o OpenRouter pede.
+- Erros com tratamento distinto: 401 e 403 falam da chave, 404 fala do modelo, 5xx e rede têm duas
+  tentativas, 429 pausa a IA por cinco minutos.
+- O provider é recriado quando a chave muda, sem reiniciar o backend.
+
 ## 4. Roadmap
 
 Anthropic e OpenAI diretos, Azure, Bedrock, Ollama local. Cada um é uma implementação de `AIProvider`.

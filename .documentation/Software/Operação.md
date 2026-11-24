@@ -280,9 +280,10 @@ dizendo o que falta.
 O aviso sobre dados sensíveis fica fixo no topo da tela: trechos de log saem para o OpenRouter e
 para o fabricante do modelo escolhido, sem redação automática nesta versão.
 
-O botão **Testar** faz uma chamada mínima ao provider e mostra modelo, latência e custo. O seletor
-de modelo lista o catálogo do OpenRouter com preço por milhão de tokens, assim que houver uma chave
-salva.
+O botão **Testar** faz uma chamada mínima ao provider e mostra modelo, latência e custo real. Use
+antes de salvar: é a forma mais rápida de saber se a chave e o modelo estão certos. O botão
+**Escolher da lista** abre o catálogo do OpenRouter com preço por milhão de tokens, disponível
+assim que houver uma chave salva.
 
 ## Insights
 

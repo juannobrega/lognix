@@ -170,6 +170,18 @@ o limite de 1 por projeto por minuto e a concorrência global.
   template, as contagens somam em vez de falhar.
 - Marcar um container dispara um ciclo imediato, antes da primeira pausa.
 
+## 8.2 Implementado na 0.9.0
+
+- O orçamento de tokens é estimado por caracteres divididos por quatro. Não é o tokenizador do
+  modelo, mas erra para o lado seguro e não acrescenta dependência.
+- A ordem de corte é a da seção 3: contexto anterior cai primeiro, depois linhas repetidas são
+  colapsadas, depois padrões não novos, depois eventos antigos.
+- Linhas acima de 2000 caracteres são truncadas no meio, preservando início e fim.
+- As evidências são renumeradas de zero após cada corte, então os índices que a IA vê sempre existem.
+- O validador confere os índices contra o contexto real: citar `log_line 9` quando só há três linhas
+  é recusado com a faixa válida na mensagem, e isso vai no retry.
+- Falha de rede ou recusa do provider **não** dispara o retry de esquema: só respostas malformadas.
+
 ## 9. Indicador de execução
 
 A interface mostra um **executor**: lista do que está rodando agora, por projeto, com tipo de trigger,
