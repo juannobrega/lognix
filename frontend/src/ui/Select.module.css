@@ -20,7 +20,7 @@
 .trigger:focus-visible {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--glow) var(--accent-ring);
 }
 .trigger[data-placeholder] {
   color: var(--fg-faint);
@@ -33,7 +33,7 @@
   overflow: hidden;
   background: var(--panel);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-well);
   box-shadow: var(--shadow-pop);
   z-index: 60;
   max-height: var(--radix-select-content-available-height);

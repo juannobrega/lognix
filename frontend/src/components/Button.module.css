@@ -1,83 +1,85 @@
-/* Botão com aresta inferior de profundidade: levanta 1px no hover, afunda ao clicar.
- * É a assinatura visual do Coolify e o que separa um controle "desenhado" de um <button> cru. */
+/* Botão do Lognix.
+ *
+ * Nada de aresta de profundidade: a hierarquia vem da superfície e da cor. O primário usa o
+ * azul da marca com um brilho interno no topo, como um painel iluminado por cima. O realce
+ * no hover é luz, não deslocamento: num painel de operação, botão que pula cansa. */
 .button {
-  --depth-color: var(--depth);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   height: var(--control-h);
-  padding: 0 10px;
-  border-radius: 6px;
+  padding: 0 11px;
+  border-radius: var(--radius-control);
   border: 1px solid var(--control-border);
-  background: var(--panel);
+  background: var(--control-bg);
   color: var(--fg);
   cursor: pointer;
   font-family: inherit;
   font-size: var(--text-ui);
   font-weight: 500;
   white-space: nowrap;
-  box-shadow: 0 2px 0 var(--depth-color);
-  transition: box-shadow 80ms, transform 80ms, background 80ms, border-color 80ms;
+  transition: background 110ms, border-color 110ms, box-shadow 110ms, color 110ms;
 }
 .button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 0 var(--depth-color);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--control-border));
+  background: color-mix(in srgb, var(--accent) 7%, var(--control-bg));
 }
 .button:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: none;
+  background: color-mix(in srgb, var(--accent) 13%, var(--control-bg));
+}
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--glow) var(--accent-ring);
 }
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
-  box-shadow: none;
-}
-
-:global(:root[data-theme='dark']) .button:not(.primary),
-:global(:root:not([data-theme='light'])) .button:not(.primary) {
-  background: rgb(255 255 255 / 6%);
-  border-color: rgb(255 255 255 / 8%);
 }
 
 .primary {
-  --depth-color: var(--accent-edge);
-  border-color: var(--accent-bottom);
-  background: linear-gradient(to bottom, var(--accent-top), var(--accent-bottom));
+  border-color: transparent;
+  background: var(--accent);
   color: var(--accent-fg);
+  /* brilho interno no topo: dá volume sem sombra externa */
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%);
 }
 .primary:hover:not(:disabled) {
-  background: linear-gradient(to bottom, var(--accent-top), var(--accent-top));
+  background: var(--accent-hover);
+  border-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 28%),
+    0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.primary:active:not(:disabled) {
+  background: var(--accent);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 22%);
 }
 
 .danger {
   color: var(--error);
-  border-color: color-mix(in srgb, var(--error) 35%, transparent);
+  border-color: color-mix(in srgb, var(--error) 32%, transparent);
   background: transparent;
 }
 .danger:hover:not(:disabled) {
   background: var(--error-soft);
+  border-color: color-mix(in srgb, var(--error) 50%, transparent);
 }
 
 .ghost {
   background: transparent;
   border-color: transparent;
-  box-shadow: none;
   color: var(--fg-faint);
 }
 .ghost:hover:not(:disabled) {
   background: var(--hover);
+  border-color: transparent;
   color: var(--fg);
-  transform: none;
-  box-shadow: none;
-}
-.ghost:active:not(:disabled) {
-  transform: none;
 }
 
 .sm {
   height: var(--control-h-sm);
-  padding: 0 8px;
+  padding: 0 9px;
   font-size: var(--text-sm);
 }
 .icon {

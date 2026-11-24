@@ -1,72 +1,86 @@
 /* Design system do Lognix.
  *
- * Linguagem visual inspirada no Coolify: camadas em vez de caixas. A profundidade vem de
- * alguns degraus de superfície (canvas → card → well → controle), bordas de 1px e uma aresta
- * inferior nos controles. Nunca bordas grossas nem sombras flutuantes pesadas.
+ * A identidade nasce da marca: azul elétrico → ciano → violeta, e as barras verticais de
+ * altura variável do símbolo, que são um gráfico de sinal. Esse motivo volta na interface
+ * como a "barra de sinal" que marca o item ativo, e como o fio de marca no topo dos blocos
+ * em destaque.
  *
- * Valores de referência: github.com/coollabsio/coolify/blob/main/DESIGN.md
+ * Três ideias sustentam o resto:
+ *   1. Profundidade por camadas, não por sombra. canvas → painel → bloco → poço → controle.
+ *   2. Densidade de sala de controle. Texto de 13px, controles de 32px, respiro curto.
+ *   3. O fundo puxa para o azul, nunca cinza neutro. A marca vive no escuro.
  */
 
 :root {
-  /* superfícies, do fundo para a frente */
-  --canvas: oklch(98.5% 0 0);
+  /* marca */
+  --brand-blue: #2f6bff;
+  --brand-cyan: #22d3ee;
+  --brand-violet: #a855f7;
+  --brand-gradient: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan) 52%, var(--brand-violet));
+  --brand-gradient-soft: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--brand-blue) 22%, transparent),
+    color-mix(in srgb, var(--brand-cyan) 22%, transparent) 52%,
+    color-mix(in srgb, var(--brand-violet) 22%, transparent)
+  );
+
+  /* superfícies, do fundo para a frente. No claro o azul aparece só como um sopro. */
+  --canvas: #f5f7fb;
   --panel: #ffffff;
   --sidebar: #ffffff;
-  --card-bg: rgb(0 0 0 / 0.75%);
-  --card-border: rgb(0 0 0 / 9%);
+  --block-bg: rgb(16 28 56 / 2.5%);
+  --block-border: rgb(16 28 56 / 10%);
   --well-bg: #ffffff;
-  --well-border: rgb(0 0 0 / 8%);
-  --control-bg: oklch(96% 0 0);
-  --control-border: oklch(14.5% 0 0 / 0.12);
-  --divider: rgb(0 0 0 / 7%);
-  --hover: rgb(0 0 0 / 3%);
+  --well-border: rgb(16 28 56 / 8%);
+  --control-bg: #eef1f7;
+  --control-border: rgb(16 28 56 / 13%);
+  --divider: rgb(16 28 56 / 8%);
+  --hover: rgb(16 28 56 / 4%);
 
-  /* texto, três níveis */
-  --fg: oklch(14.5% 0 0);
-  --fg-dim: oklch(40% 0 0);
-  --fg-faint: oklch(50% 0 0);
+  /* texto em três níveis */
+  --fg: #0f1729;
+  --fg-dim: #46506a;
+  --fg-faint: #6b7693;
 
-  /* acento: o roxo do Coolify, com as paradas do gradiente e a aresta */
-  --accent: oklch(49.65% 0.2709 289.33);
-  --accent-top: oklch(52.34% 0.287 289.16);
-  --accent-bottom: oklch(43.76% 0.2369 289.82);
-  --accent-edge: oklch(38.04% 0.2031 290.47);
+  /* acento: o azul da marca, calibrado para texto pequeno e foco */
+  --accent: #2060e6;
+  --accent-hover: #1a52cc;
   --accent-fg: #ffffff;
-  --accent-soft: oklch(49.65% 0.2709 289.33 / 10%);
+  --accent-soft: rgb(32 96 230 / 12%);
+  --accent-ring: rgb(32 96 230 / 28%);
 
-  /* aresta de profundidade dos controles */
-  --depth: rgb(0 0 0 / 8%);
+  /* semântica. Amarelo só para aviso de verdade. */
+  --ok: #10814a;
+  --warn: #9a5b00;
+  --error: #c0273a;
+  --info: var(--accent);
+  --ok-soft: rgb(16 129 74 / 12%);
+  --warn-soft: rgb(154 91 0 / 13%);
+  --error-soft: rgb(192 39 58 / 11%);
 
-  /* semântica: amarelo é só para aviso de verdade */
-  --ok: oklch(55% 0.15 149);
-  --warn: oklch(66% 0.15 70);
-  --error: oklch(55% 0.21 25);
-  --info: oklch(55% 0.19 258);
-  --ok-soft: oklch(55% 0.15 149 / 12%);
-  --warn-soft: oklch(66% 0.15 70 / 14%);
-  --error-soft: oklch(55% 0.21 25 / 12%);
-
-  /* severidade dos insights */
-  --sev-critical: oklch(52% 0.22 22);
-  --sev-high: oklch(60% 0.19 44);
-  --sev-medium: oklch(66% 0.15 70);
-  --sev-low: oklch(60% 0.12 220);
+  /* severidade dos insights, da marca para o alarme */
+  --sev-critical: #c0273a;
+  --sev-high: #c2521c;
+  --sev-medium: #9a5b00;
+  --sev-low: #0e7490;
   --sev-info: var(--fg-faint);
 
-  /* terminal de logs: escuro nos dois temas, por legibilidade */
-  --log-bg: #0a0a0a;
-  --log-fg: #d4d4d4;
-  --log-muted: #6b6b6b;
-  --log-error-bg: oklch(55% 0.21 25 / 14%);
-  --log-error-fg: oklch(72% 0.17 25);
+  /* terminal: escuro nos dois temas, por legibilidade em sessão longa */
+  --log-bg: #0a0d14;
+  --log-fg: #c8d2e4;
+  --log-muted: #5b6782;
+  --log-error-bg: rgb(224 72 92 / 13%);
+  --log-error-fg: #ff8b9b;
+  --log-hover: rgb(255 255 255 / 4%);
 
-  /* medidas: controles de 32px, raios pequenos, texto denso */
+  /* medidas */
   --control-h: 32px;
   --control-h-sm: 26px;
-  --radius-control: 8px;
-  --radius-well: 8px;
-  --radius-card: 12px;
+  --radius-control: 7px;
+  --radius-well: 9px;
+  --radius-block: 13px;
   --radius-pill: 999px;
+  --signal-w: 3px;
 
   --space-1: 4px;
   --space-2: 6px;
@@ -85,100 +99,98 @@
   --text-ui: 13px;
   --text-input: 14px;
   --text-lg: 16px;
-  --text-title: 24px;
+  --text-title: 23px;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 4%);
-  --shadow-well: 0 1px 1px rgb(0 0 0 / 3%);
-  --shadow-pop: 0 10px 30px rgb(0 0 0 / 12%), 0 2px 8px rgb(0 0 0 / 6%);
+  --shadow-block: 0 1px 2px rgb(16 28 56 / 5%);
+  --shadow-well: 0 1px 1px rgb(16 28 56 / 3%);
+  --shadow-pop: 0 12px 32px rgb(16 28 56 / 14%), 0 2px 6px rgb(16 28 56 / 7%);
+  --glow: 0 0 0 3px;
 
-  --sidebar-w: 232px;
+  --sidebar-w: 228px;
   color-scheme: light;
 }
 
+/* O escuro é o desenho principal: a marca foi feita para ele. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --canvas: #0a0a0a;
-    --panel: #121212;
-    --sidebar: #120e1a;
-    --card-bg: color-mix(in srgb, #121212 66%, black);
-    --card-border: rgb(255 255 255 / 8%);
-    --well-bg: #121212;
-    --well-border: rgb(255 255 255 / 7%);
-    --control-bg: rgb(255 255 255 / 6%);
-    --control-border: rgb(255 255 255 / 10%);
-    --divider: rgb(255 255 255 / 7%);
-    --hover: rgb(255 255 255 / 4%);
+    --canvas: #080b11;
+    --panel: #0f141d;
+    --sidebar: #0b0f16;
+    --block-bg: #0c1118;
+    --block-border: rgb(146 180 255 / 10%);
+    --well-bg: #0f141d;
+    --well-border: rgb(146 180 255 / 8%);
+    --control-bg: rgb(146 180 255 / 7%);
+    --control-border: rgb(146 180 255 / 13%);
+    --divider: rgb(146 180 255 / 9%);
+    --hover: rgb(146 180 255 / 6%);
 
-    --fg: oklch(97% 0 0);
-    --fg-dim: oklch(72% 0 0);
-    --fg-faint: oklch(56% 0 0);
+    --fg: #e8edf7;
+    --fg-dim: #a3b0c9;
+    --fg-faint: #76829c;
 
-    --accent: #6b16ed;
-    --accent-top: #7317ff;
-    --accent-bottom: #5a12c7;
-    --accent-edge: #4a0fa3;
-    --accent-soft: rgb(107 22 237 / 18%);
-    --depth: rgb(0 0 0 / 35%);
+    --accent: #4d8bff;
+    --accent-hover: #6fa2ff;
+    --accent-fg: #061024;
+    --accent-soft: rgb(77 139 255 / 16%);
+    --accent-ring: rgb(77 139 255 / 32%);
 
-    --ok: oklch(72% 0.17 149);
-    --warn: oklch(80% 0.15 80);
-    --error: oklch(68% 0.19 25);
-    --info: oklch(70% 0.15 250);
-    --ok-soft: oklch(72% 0.17 149 / 14%);
-    --warn-soft: oklch(80% 0.15 80 / 14%);
-    --error-soft: oklch(68% 0.19 25 / 14%);
+    --ok: #2ed196;
+    --warn: #ffb545;
+    --error: #ff6b80;
+    --ok-soft: rgb(46 209 150 / 14%);
+    --warn-soft: rgb(255 181 69 / 14%);
+    --error-soft: rgb(255 107 128 / 14%);
 
-    --sev-critical: oklch(70% 0.19 22);
-    --sev-high: oklch(75% 0.16 50);
-    --sev-medium: oklch(82% 0.14 80);
-    --sev-low: oklch(75% 0.12 220);
+    --sev-critical: #ff6b80;
+    --sev-high: #ff9254;
+    --sev-medium: #ffc861;
+    --sev-low: #4fd1e8;
 
-    --shadow-card: none;
+    --shadow-block: none;
     --shadow-well: none;
-    --shadow-pop: 0 16px 40px rgb(0 0 0 / 55%);
+    --shadow-pop: 0 18px 44px rgb(0 0 0 / 60%);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --canvas: #0a0a0a;
-  --panel: #121212;
-  --sidebar: #120e1a;
-  --card-bg: color-mix(in srgb, #121212 66%, black);
-  --card-border: rgb(255 255 255 / 8%);
-  --well-bg: #121212;
-  --well-border: rgb(255 255 255 / 7%);
-  --control-bg: rgb(255 255 255 / 6%);
-  --control-border: rgb(255 255 255 / 10%);
-  --divider: rgb(255 255 255 / 7%);
-  --hover: rgb(255 255 255 / 4%);
+  --canvas: #080b11;
+  --panel: #0f141d;
+  --sidebar: #0b0f16;
+  --block-bg: #0c1118;
+  --block-border: rgb(146 180 255 / 10%);
+  --well-bg: #0f141d;
+  --well-border: rgb(146 180 255 / 8%);
+  --control-bg: rgb(146 180 255 / 7%);
+  --control-border: rgb(146 180 255 / 13%);
+  --divider: rgb(146 180 255 / 9%);
+  --hover: rgb(146 180 255 / 6%);
 
-  --fg: oklch(97% 0 0);
-  --fg-dim: oklch(72% 0 0);
-  --fg-faint: oklch(56% 0 0);
+  --fg: #e8edf7;
+  --fg-dim: #a3b0c9;
+  --fg-faint: #76829c;
 
-  --accent: #6b16ed;
-  --accent-top: #7317ff;
-  --accent-bottom: #5a12c7;
-  --accent-edge: #4a0fa3;
-  --accent-soft: rgb(107 22 237 / 18%);
-  --depth: rgb(0 0 0 / 35%);
+  --accent: #4d8bff;
+  --accent-hover: #6fa2ff;
+  --accent-fg: #061024;
+  --accent-soft: rgb(77 139 255 / 16%);
+  --accent-ring: rgb(77 139 255 / 32%);
 
-  --ok: oklch(72% 0.17 149);
-  --warn: oklch(80% 0.15 80);
-  --error: oklch(68% 0.19 25);
-  --info: oklch(70% 0.15 250);
-  --ok-soft: oklch(72% 0.17 149 / 14%);
-  --warn-soft: oklch(80% 0.15 80 / 14%);
-  --error-soft: oklch(68% 0.19 25 / 14%);
+  --ok: #2ed196;
+  --warn: #ffb545;
+  --error: #ff6b80;
+  --ok-soft: rgb(46 209 150 / 14%);
+  --warn-soft: rgb(255 181 69 / 14%);
+  --error-soft: rgb(255 107 128 / 14%);
 
-  --sev-critical: oklch(70% 0.19 22);
-  --sev-high: oklch(75% 0.16 50);
-  --sev-medium: oklch(82% 0.14 80);
-  --sev-low: oklch(75% 0.12 220);
+  --sev-critical: #ff6b80;
+  --sev-high: #ff9254;
+  --sev-medium: #ffc861;
+  --sev-low: #4fd1e8;
 
-  --shadow-card: none;
+  --shadow-block: none;
   --shadow-well: none;
-  --shadow-pop: 0 16px 40px rgb(0 0 0 / 55%);
+  --shadow-pop: 0 18px 44px rgb(0 0 0 / 60%);
   color-scheme: dark;
 }

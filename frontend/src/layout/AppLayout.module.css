@@ -26,24 +26,24 @@
   width: auto;
   display: block;
 }
-/* A logo tem texto branco. No tema claro ela precisa de um fundo escuro próprio. */
+/* A logo tem texto branco, então no tema claro ela ganha um painel escuro da própria marca. */
 :global(:root[data-theme='light']) .brand,
 :global(:root:not([data-theme='dark'])) .brand {
-  background: #120e1a;
-  border-radius: var(--radius-control);
-  padding: var(--space-3);
+  background: #080b11;
+  border-radius: var(--radius-well);
+  padding: var(--space-4);
   justify-content: center;
 }
 @media (prefers-color-scheme: dark) {
   :global(:root:not([data-theme='light'])) .brand {
     background: none;
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-3);
     justify-content: flex-start;
   }
 }
 :global(:root[data-theme='dark']) .brand {
   background: none;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3);
   justify-content: flex-start;
 }
 
@@ -61,45 +61,62 @@
   padding: var(--space-3) var(--space-3) var(--space-2);
 }
 
-/* A linha é sempre transparente; só o tile ganha o acento. */
+/* Barra de sinal: o item ativo ganha uma barra vertical com o gradiente da marca, que é o
+ * motivo das barras do símbolo. O fundo fica apenas levemente aceso. */
 .link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 5px;
-  border-radius: 9px;
+  padding: 7px var(--space-3) 7px 11px;
+  border-radius: var(--radius-control);
   color: var(--fg-dim);
   text-decoration: none;
   font-size: var(--text-ui);
   font-weight: 500;
+  transition: background 110ms, color 110ms;
 }
 .link:hover {
   background: var(--hover);
   color: var(--fg);
   text-decoration: none;
 }
+.link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: var(--signal-w);
+  height: 17px;
+  border-radius: 0 var(--signal-w) var(--signal-w) 0;
+  background: var(--brand-gradient);
+  transition: transform 140ms ease-out;
+}
+.active {
+  color: var(--fg);
+  background: var(--accent-soft);
+}
+.active::before {
+  transform: translateY(-50%) scaleY(1);
+}
 .tile {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  border: 1px solid transparent;
   color: var(--fg-faint);
   flex-shrink: 0;
-  transition: background 80ms, color 80ms, box-shadow 80ms;
+  transition: color 110ms;
 }
 .link:hover .tile {
   color: var(--fg-dim);
 }
-.active {
-  color: var(--fg);
-}
 .active .tile {
-  color: #fff;
-  border-color: #8a4dff;
-  background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
-  box-shadow: 0 2px 0 var(--accent-edge);
+  color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .link::before {
+    transition: none;
+  }
 }
 .count {
   margin-left: auto;
@@ -135,7 +152,7 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
+  background: var(--brand-gradient);
   color: #fff;
   display: grid;
   place-items: center;

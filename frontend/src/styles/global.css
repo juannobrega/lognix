@@ -81,14 +81,27 @@ pre {
   font-family: var(--font-mono);
 }
 
-/* ---------- camadas: canvas → card → well ---------- */
+/* ---------- camadas: canvas → bloco → poço ---------- */
 
 .card {
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
+  position: relative;
+  border: 1px solid var(--block-border);
+  border-radius: var(--radius-block);
   padding: var(--space-2);
-  background: var(--card-bg);
-  box-shadow: var(--shadow-card);
+  background: var(--block-bg);
+  box-shadow: var(--shadow-block);
+}
+
+/* Fio de marca: um gradiente de 1px no topo. Usado nos blocos que lideram a tela,
+ * como o resumo do painel. É a assinatura discreta do Lognix. */
+.card-brand::before {
+  content: '';
+  position: absolute;
+  inset: -1px -1px auto;
+  height: 2px;
+  border-radius: var(--radius-block) var(--radius-block) 0 0;
+  background: var(--brand-gradient);
+  opacity: 0.85;
 }
 .card-header {
   display: flex;
@@ -188,13 +201,14 @@ pre {
   font-size: var(--text-ui);
 }
 .table th {
-  height: 40px;
+  height: 38px;
   text-align: left;
-  font-size: var(--text-ui);
+  font-size: var(--text-sm);
   font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--fg-faint);
   padding: 0 var(--space-5);
-  background: var(--card-bg);
+  background: var(--block-bg);
   border-bottom: 1px solid var(--divider);
   white-space: nowrap;
 }
@@ -206,8 +220,15 @@ pre {
 .table tbody tr:last-child td {
   border-bottom: 0;
 }
+.table tbody tr {
+  transition: background 90ms;
+}
 .table tbody tr:hover td {
   background: var(--hover);
+}
+/* Números alinham pela direita com largura fixa de dígito: colunas de métrica ficam legíveis. */
+.table td {
+  font-variant-numeric: tabular-nums;
 }
 .table .right {
   text-align: right;
@@ -285,7 +306,7 @@ textarea:focus-visible,
 select:focus-visible {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--glow) var(--accent-ring);
 }
 input::placeholder,
 textarea::placeholder {
@@ -329,7 +350,9 @@ input[type='number'] {
 .tab[aria-selected='true'],
 .tab.active {
   color: var(--fg);
-  border-bottom-color: var(--accent);
+  border-image: var(--brand-gradient) 1;
+  border-bottom-color: transparent;
+  border-bottom-width: 2px;
 }
 
 /* ---------- controle segmentado ---------- */
@@ -359,9 +382,9 @@ input[type='number'] {
   color: var(--fg);
 }
 .segmented button[aria-pressed='true'] {
-  background: var(--panel);
-  color: var(--fg);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 /* ---------- bloco de log e código ---------- */
@@ -408,15 +431,23 @@ input[type='number'] {
 .sev-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-size: var(--text-meta);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 2px 9px;
+  padding: 3px 10px 3px 8px;
   border-radius: var(--radius-pill);
-  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 13%, transparent);
   white-space: nowrap;
+}
+.sev-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 20%, transparent);
 }
 
 /* Barra de ferramentas acima de uma tabela ou lista. */
@@ -471,4 +502,28 @@ input[type='number'] {
   height: 1px;
   background: var(--divider);
   margin: var(--space-5) 0;
+}
+
+/* ---------- barras de sinal: o motivo da marca como gráfico ---------- */
+
+/* Minigráfico de barras, usado para mostrar atividade recente sem trazer uma biblioteca
+ * de charts. Cada barra é um valor normalizado de 0 a 1 em --v. */
+.sparkbars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 28px;
+}
+.sparkbars i {
+  display: block;
+  width: 4px;
+  min-height: 2px;
+  height: calc(var(--v) * 100%);
+  border-radius: 1px;
+  background: var(--brand-gradient);
+  opacity: 0.85;
+}
+.sparkbars i.empty {
+  background: var(--divider);
+  opacity: 1;
 }

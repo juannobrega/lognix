@@ -72,9 +72,12 @@ export function DashboardPage() {
       </div>
 
       <div className="stack">
-        <section className="card">
+        <section className="card card-brand">
           <div className="card-header">
             <h2>Últimas 24 horas</h2>
+            {s && s.cycles_24h > 0 && (
+              <span className="meta">{s.cycles_24h} ciclos de análise</span>
+            )}
           </div>
           <div className="card-body">
             {!s ? (

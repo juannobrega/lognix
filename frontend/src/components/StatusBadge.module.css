@@ -1,19 +1,20 @@
-/* Selo cru: ponto colorido de 6px e texto. Sem borda, sem fundo, sem padding.
- * O Coolify faz assim e fica muito mais limpo em tabelas densas. */
+/* Estado do Lognix: um ponto com halo. O halo é o "sinal vivo" — um painel de monitoramento
+ * mostra coisas que estão acontecendo agora, e o ponto chapado não transmite isso. */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 24px;
+  gap: 7px;
+  height: 22px;
   font-size: var(--text-ui);
   white-space: nowrap;
   color: var(--fg-dim);
 }
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: var(--radius-pill);
   background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
   flex-shrink: 0;
 }
 .ok {
@@ -28,19 +29,23 @@
 .neutral {
   color: var(--fg-faint);
 }
+.neutral .dot {
+  box-shadow: none;
+}
 .label {
   color: var(--fg-dim);
 }
+/* Em transição, o halo pulsa. */
 .pulsing .dot {
-  animation: blink 1.6s ease-in-out infinite;
+  animation: signal 1.8s ease-in-out infinite;
 }
-@keyframes blink {
+@keyframes signal {
   0%,
   100% {
-    opacity: 1;
+    box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 22%, transparent);
   }
   50% {
-    opacity: 0.3;
+    box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 6%, transparent);
   }
 }
 @media (prefers-reduced-motion: reduce) {

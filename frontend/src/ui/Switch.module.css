@@ -10,12 +10,12 @@
   flex-shrink: 0;
 }
 .root[data-state='checked'] {
-  background: linear-gradient(to bottom, var(--accent-top), var(--accent-bottom));
-  border-color: var(--accent-bottom);
+  background: var(--accent);
+  border-color: transparent;
 }
 .root:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--glow) var(--accent-ring);
 }
 .root:disabled {
   opacity: 0.5;
