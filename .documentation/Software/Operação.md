@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.6.0
+**Versão:** 0.7.0
 
 ## Preparar um host para o Lognix
 
@@ -160,3 +160,91 @@ são reconstruídos a partir das amostras guardadas quando o backend reinicia.
 API: `GET /projects/{id}/patterns`, `PUT /projects/{id}/patterns/{pid}/ignore`,
 `GET /projects/{id}/analysis-runs`, `GET /projects/{id}/triggers`, `POST /projects/{id}/analyze`,
 `GET /insights/unanalyzed`, `GET /executor`; WebSocket canal `executor`.
+
+## Tela Sistema
+
+Em Configurações › Sistema: versão, tempo no ar, retenção, intervalo entre ciclos, estado de
+Postgres, Loki e Alloy, contadores do banco, processos em execução por host (túnel conectado,
+reconexões, eventos recebidos, reaberturas do stream, último erro) e uso de disco dos volumes.
+
+O campo **Requisições bloqueadas pelo proxy** conta quantas chamadas não permitidas à Docker API
+foram recusadas desde que o backend subiu. Em operação normal fica em zero. Qualquer número acima
+disso merece olhar o log do backend, logger `lognix.audit.docker_proxy`, que registra método e
+caminho de cada recusa.
+
+## Métricas
+
+`GET /api/v1/metrics` responde no formato Prometheus. A porta do backend não é exposta: a rota só é
+alcançável dentro da rede do compose. Principais séries:
+
+| Série | O que mostra |
+|---|---|
+| `lognix_cycle_duration_seconds` por fase | duração do ciclo em loki, drain, persist e triggers |
+| `lognix_cycles_total` por status | ciclos concluídos: ok, failed, truncated |
+| `lognix_triggers_total` por tipo | triggers disparados |
+| `lognix_analysis_loops` | loops de análise ativos |
+| `lognix_tunnels` por estado | túneis conectados, desconectados, em erro |
+| `lognix_tunnel_reconnects_total` | reconexões de túnel |
+| `lognix_docker_proxy_requests_total` por desfecho | chamadas à Docker API permitidas e recusadas |
+| `lognix_docker_events_total` por tipo | eventos Docker recebidos |
+| `lognix_loki_query_duration_seconds` | latência das consultas ao Loki |
+| `http_request_duration_seconds` por rota | latência da API |
+
+Para ver isso em painéis, há um compose auxiliar em `measure/`, com Prometheus e Grafana. Não faz
+parte da instalação padrão.
+
+## Backup e restauração
+
+Três coisas precisam ser salvas: o banco, os logs e a chave.
+
+```bash
+# 1. Banco: hosts, credenciais criptografadas, padrões, ocorrências
+docker compose exec -T postgres pg_dump -U lognix -Fc lognix > lognix-$(date +%F).dump
+
+# 2. Logs, volume do Loki. Pare o Loki para uma cópia consistente.
+docker compose stop loki
+docker run --rm -v lognix_loki-data:/data -v "$PWD":/out alpine \
+  tar czf /out/loki-$(date +%F).tar.gz -C /data .
+docker compose start loki
+
+# 3. A chave. Sem ela o banco restaurado tem credenciais ilegíveis.
+grep LOGNIX_SECRET_KEY .env
+```
+
+Restauração:
+
+```bash
+docker compose up -d postgres
+docker compose exec -T postgres psql -U lognix -d postgres -c 'DROP DATABASE IF EXISTS lognix'
+docker compose exec -T postgres psql -U lognix -d postgres -c 'CREATE DATABASE lognix'
+docker compose exec -T postgres pg_restore -U lognix -d lognix < lognix-AAAA-MM-DD.dump
+docker run --rm -v lognix_loki-data:/data -v "$PWD":/in alpine \
+  sh -c 'rm -rf /data/* && tar xzf /in/loki-AAAA-MM-DD.tar.gz -C /data'
+docker compose up -d
+```
+
+Depois de restaurar, confira em Sistema que os três componentes estão ok e que os hosts
+reconectaram. Se a chave do backup for diferente da que está no `.env`, os hosts falham na etapa de
+autenticação e as credenciais precisam ser recadastradas.
+
+## Desempenho
+
+Medido em 2026-11-24 com 10 hosts e 100 containers monitorados, 200 linhas por janela:
+
+| Medida | Valor |
+|---|---|
+| Ciclo determinístico, p95 | 948 ms |
+| Latência da API, p95, regime normal | 42 ms |
+| Latência da API, p95, ciclos sem pausa | 118 ms |
+| Memória do backend | 206 MB |
+| Banco após 2000 ciclos | 12 MB |
+
+Botões de ajuste no `.env`, raramente necessários:
+
+| Variável | Padrão | Para quê |
+|---|---|---|
+| `LOGNIX_ANALYSIS_CONCURRENCY` | 8 | ciclos de análise simultâneos |
+| `LOGNIX_DB_POOL_SIZE` | 20 | conexões no pool do banco |
+| `LOGNIX_DB_MAX_OVERFLOW` | 10 | conexões extras sob pico |
+
+Aumentar a concorrência acima do número de núcleos não acelera: o trabalho é CPU e banco.

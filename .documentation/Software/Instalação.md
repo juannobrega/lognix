@@ -1,6 +1,6 @@
 # Instalação
 
-**Versão:** 0.3.0
+**Versão:** 0.7.0
 
 ## Requisitos
 
@@ -43,6 +43,16 @@ Só a porta do frontend fica acessível de fora.
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | não | lognix | credenciais do banco interno |
 | `LOKI_RETENTION_DAYS` | não | 15 | retenção de logs e eventos |
 | `LOGNIX_LOG_LEVEL` | não | INFO | nível de log do backend |
+| `LOGNIX_ANALYSIS_CONCURRENCY` | não | 8 | ciclos de análise simultâneos |
+| `LOGNIX_DB_POOL_SIZE` | não | 20 | conexões no pool do banco |
+| `LOGNIX_DB_MAX_OVERFLOW` | não | 10 | conexões extras sob pico |
+
+## Requisitos de máquina
+
+Medido em 2026-11-24 com 10 hosts e 100 containers monitorados: o backend usa cerca de 206 MB de
+memória e o banco cresce poucos megabytes por milhar de ciclos. Para esse porte, 2 vCPU e 4 GB
+bastam, mais o disco da retenção de logs no Loki. O consumo de disco depende do volume de log dos
+containers, não do número deles.
 
 ## Atualização
 
@@ -55,13 +65,8 @@ As migrações de banco rodam automaticamente quando o backend inicia.
 
 ## Backup
 
-Salve três coisas: o volume `postgres-data`, o volume `loki-data` e o arquivo `.env`.
-
-```bash
-docker compose exec postgres pg_dump -U lognix lognix > lognix-$(date +%F).sql
-```
-
-Restaurar o banco sem o mesmo `LOGNIX_SECRET_KEY` deixa as credenciais ilegíveis.
+Salve três coisas: o banco, o volume `loki-data` e o arquivo `.env`, em especial a
+`LOGNIX_SECRET_KEY`. Procedimento completo, com restauração, em [Operação](Operação.md).
 
 ## Cadastrar o primeiro host
 

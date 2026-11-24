@@ -24,7 +24,7 @@ Como o Lognix monitora a si mesmo. Sem isso, a fase 0.7.0 não consegue medir o 
 | `lognix_ai_calls_total{status,purpose}` | contador | |
 | `lognix_ai_semaphore_waiting` | gauge | fila por concorrência |
 | `lognix_tunnels{state}` | gauge | connected, disconnected, error |
-| `lognox_tunnel_reconnects_total` | contador | |
+| `lognix_tunnel_reconnects_total` | contador | |
 | `lognix_events_stream_restarts_total` | contador | |
 | `lognix_loki_query_duration_seconds` | histograma | |
 | `http_request_duration_seconds{route,status}` | histograma | p95 da API, ADR 009 |

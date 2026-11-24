@@ -69,5 +69,7 @@ O que precisa ser salvo: volume `postgres-data`, volume `loki-data`, e o `.env`,
 
 ## 7. Requisitos de máquina
 
-Referência para 10 hosts e 100 containers monitorados com volume moderado: 2 vCPU, 4 GB RAM, 20 GB
-de disco para 15 dias de logs. Medido na fase 0.7.0 e ajustado.
+**Medido em 2026-11-24** com 10 hosts e 100 containers monitorados, 200 linhas por janela: backend
+em 206 MB de memória, banco em 12 MB após 2000 ciclos, ciclo determinístico com p95 de
+948 ms. Para esse porte, 2 vCPU e 4 GB bastam. O disco é dominado pela retenção de logs no
+Loki, que depende do volume dos containers e não do número deles.
