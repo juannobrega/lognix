@@ -7,7 +7,7 @@ import logging
 import time
 import uuid
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lognix.ai.service import analyze_trigger
 from lognix.analysis import triggers as trig
 from lognix.analysis.classifier import classify
 from lognix.analysis.models import (
@@ -60,6 +61,8 @@ def drop_cycle_lock(container_id: uuid.UUID) -> None:
 class CycleResult:
     run: AnalysisRun
     fired: list[TriggerFired]
+    insights: list[Any] = field(default_factory=list)
+    ai_error: str | None = None
 
 
 async def fetch_window(
@@ -307,12 +310,41 @@ async def run_cycle(
         fired.append(tf)
 
     observe_phase("triggers", t_trig)
-    run.duration_ms = int((time.monotonic() - t0) * 1000)
     await db.commit()
     cycles_total.labels("truncated" if truncated else "ok").inc()
     for tf in fired:
         triggers_total.labels(tf.type.value).inc()
+
+    # IA: um insight por trigger, quando a IA estiver ativa. O ciclo espera a resposta;
+    # é o que garante no máximo uma chamada por ciclo por container. ADR 005.
+    insights: list[Any] = []
+    ai_error: str | None = None
+    if fired:
+        phase("aguardando IA")
+        t_ai = time.monotonic()
+        level_by_index = {i: classify(ln.line) for i, ln in enumerate(lines)}
+        for tf in fired:
+            outcome = await analyze_trigger(
+                db,
+                container=container,
+                trigger=tf,
+                lines=lines,
+                levels=level_by_index,
+                new_pattern_templates=stats.new_pattern_templates,
+                state=None,
+            )
+            if outcome.insight is not None:
+                insights.append(outcome.insight)
+            if outcome.error:
+                ai_error = outcome.error
+        if insights or ai_error:
+            run.ai_called = True
+            run.ai_duration_ms = int((time.monotonic() - t_ai) * 1000)
+            observe_phase("ai", t_ai)
+
+    run.duration_ms = int((time.monotonic() - t0) * 1000)
+    await db.commit()
     for tf in fired:
         await db.refresh(tf)
     await db.refresh(run)
-    return CycleResult(run, fired)
+    return CycleResult(run, fired, insights, ai_error)

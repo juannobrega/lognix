@@ -1,64 +1,16 @@
 import asyncio
 import uuid
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 
 import pytest
 from httpx import AsyncClient
 
-from lognix.analysis import manager as manager_module
 from lognix.analysis.manager import AnalysisManager
-from lognix.loki.client import LogLine, LokiClient
-from tests.conftest import FakeAlloy
+from tests.conftest import FakeAlloy, ScriptedLoki
 from tests.fake_docker import FakeDocker, make_event
 from tests.fake_ssh import FakeSshBackend
 from tests.test_containers import _connected_host
 from tests.test_events import _mark, _wait
-
-
-class ScriptedLoki(LokiClient):
-    """Devolve linhas fixas para qualquer janela; conta chamadas."""
-
-    lines: list[str] = []
-    calls = 0
-
-    def __init__(self) -> None:  # não abre conexão
-        self.base_url = "http://loki.test"
-
-    async def aclose(self) -> None:
-        return None
-
-    async def query_range(
-        self,
-        query: str,
-        *,
-        start_ns: int,
-        end_ns: int,
-        limit: int = 1000,
-        direction: str = "backward",
-    ) -> list[LogLine]:
-        ScriptedLoki.calls += 1
-        base = start_ns
-        return [
-            LogLine(base + i, line, {"container": "api"})
-            for i, line in enumerate(ScriptedLoki.lines)
-        ]
-
-
-@pytest.fixture
-async def scripted_loki(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[AnalysisManager]:
-    ScriptedLoki.lines = []
-    ScriptedLoki.calls = 0
-    monkeypatch.setattr("lognix.analysis.routes.LokiClient", ScriptedLoki)
-    previous = manager_module.get_analysis_manager()
-    await previous.stop()
-    manager = AnalysisManager(client_factory=ScriptedLoki, pause_seconds=1)
-    manager_module.set_analysis_manager(manager)
-    try:
-        yield manager
-    finally:
-        await manager.stop()
-        manager_module.set_analysis_manager(previous)
 
 
 async def test_manual_analysis_creates_run_patterns_and_trigger(

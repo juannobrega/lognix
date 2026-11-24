@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.8.0
+**Versão:** 0.9.0
 
 ## Preparar um host para o Lognix
 
@@ -280,5 +280,81 @@ dizendo o que falta.
 O aviso sobre dados sensíveis fica fixo no topo da tela: trechos de log saem para o OpenRouter e
 para o fabricante do modelo escolhido, sem redação automática nesta versão.
 
-A análise por IA em si entra na fase 0.9.0. Até lá, a tela guarda a configuração e Consumo mostra
-a estrutura do que será contado: chamadas, tokens e custo por período.
+O botão **Testar** faz uma chamada mínima ao provider e mostra modelo, latência e custo. O seletor
+de modelo lista o catálogo do OpenRouter com preço por milhão de tokens, assim que houver uma chave
+salva.
+
+## Insights
+
+Com a IA ativa, cada ocorrência detectada pelo ciclo vira um insight. O caminho é sempre o mesmo:
+
+```
+trigger dispara → backend monta o contexto → chama o provider → valida a resposta
+    → insight com evidências, ou erro registrado e notificação
+```
+
+Um insight traz severidade, título, resumo, causa provável, ação sugerida, confiança e as
+**evidências**: as linhas de log, eventos e padrões que embasaram a conclusão. As evidências não são
+escritas pela IA. Ela cita índices do contexto e o backend troca por linhas e eventos reais, então
+não há como inventar uma evidência.
+
+Cada insight mostra também o **contexto exato enviado ao provider** e o custo da chamada. Isso não é
+enfeite: é como você confere o que saiu do seu ambiente.
+
+Severidades, e o que significam:
+
+| | |
+|---|---|
+| critical | o serviço está fora do ar ou perdendo dados agora |
+| high | funcionalidade importante quebrada, ou falha repetida que vai piorar |
+| medium | erros que afetam parte dos usuários ou degradam o serviço |
+| low | erros isolados, sem impacto perceptível |
+| info | não é um problema; é um fato que vale registrar |
+
+Confiança abaixo de 0,4 ganha um selo de baixa confiança na interface. Insights ficam na lista até
+serem marcados como vistos, um a um ou com "limpar todos", e seguem acessíveis no histórico.
+
+### Quando a IA falha
+
+Nada falha em silêncio. Se o provider recusar a chave, ficar indisponível, ou responder fora do
+formato duas vezes seguidas, o Lognix registra a chamada com o erro, gera uma notificação e deixa a
+ocorrência marcada como **sem análise**. Você vê o que não foi analisado e por quê.
+
+Se o OpenRouter responder com limite de uso, a IA pausa por cinco minutos. A pausa aparece na tela
+de Consumo.
+
+Resposta fora do esquema tem **um** retry, com o erro anexado para o modelo se corrigir. O segundo
+erro encerra a tentativa.
+
+## Consumo
+
+Configurações › Consumo mostra chamadas, tokens e custo em hoje, 7 dias, 30 dias e total, mais o
+detalhamento por dia, projeto, tipo de trigger e propósito. Abaixo, as chamadas individuais, com
+filtro para ver só as que falharam.
+
+O custo vem da resposta do OpenRouter quando ele informa; caso contrário é estimado pela tabela de
+preços do modelo, e a origem fica registrada em cada chamada.
+
+Nesta versão **não há orçamento com bloqueio**: você vê o gasto, mas o Lognix não para de chamar
+sozinho. Para controlar o custo, os botões são a concorrência, os limites de tokens e, no limite,
+desligar a IA.
+
+### O que custa
+
+A IA só é chamada quando um trigger dispara, e no máximo uma vez por ciclo por container. Um
+projeto quieto não gasta nada. Um projeto com erro contínuo gasta a cada ciclo, porque esta versão
+**não deduplica insights**: o mesmo erro persistente gera um insight por ciclo. Essa é a primeira
+melhoria do roadmap de IA. Até lá, marcar o padrão como ignorado na aba Padrões do projeto é a
+válvula de escape.
+
+## Privacidade
+
+Trechos de log saem do seu ambiente para o OpenRouter e, por ele, para o fabricante do modelo
+escolhido. Não há redação automática nesta versão. Variáveis de ambiente nunca são enviadas por
+valor, apenas por nome, exceto uma lista curta de nomes seguros como `APP_VERSION` e `GIT_COMMIT`.
+
+O aviso fica fixo na tela de configuração da IA. Se os logs de um projeto contêm dados que não podem
+sair do seu ambiente, não ative a IA.
+
+Fora o provider de IA, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a
+serviços do autor.

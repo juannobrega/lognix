@@ -1,17 +1,22 @@
 # Instalação
 
-**Versão:** 0.7.0
+**Versão:** 0.9.0
 
 ## Requisitos
 
-- Docker 24+ e Docker Compose v2 em qualquer máquina Linux ou macOS.
-- Acesso de saída à internet para baixar imagens.
-- Para monitorar hosts (fase 0.2.0): acesso SSH do Lognix até cada host.
+- Docker 24 ou mais novo e Docker Compose v2, em qualquer máquina Linux ou macOS.
+- Acesso de saída à internet para baixar as imagens.
+- Para monitorar hosts: acesso SSH da máquina do Lognix até cada host.
+- Para a análise por IA: uma chave do OpenRouter. Opcional; o resto funciona sem.
+
+Porte medido: 10 hosts e 100 containers monitorados cabem em 2 vCPU e 4 GB. O backend usa cerca de
+200 MB de memória. O disco é dominado pela retenção de logs no Loki, que depende do volume dos
+containers e não do número deles.
 
 ## Primeiro uso
 
 ```bash
-git clone https://github.com/devjuannobrega/lognix.git
+git clone https://github.com/juannobrega/lognix.git
 cd lognix
 cp .env.example .env
 openssl rand -base64 48      # cole o resultado em LOGNIX_SECRET_KEY no .env
@@ -21,15 +26,18 @@ docker compose up -d
 Abra `http://localhost:8080`. Como o sistema está vazio, a tela de criação do primeiro usuário
 aparece. Esse usuário pode cadastrar os demais em Configurações › Usuários.
 
+Em seguida, cadastre o primeiro host. O guia de [Operação](Operação.md) mostra como preparar a
+máquina alvo, o que leva dois comandos.
+
 ## O que sobe
 
 | Container | Função | Porta exposta |
 |---|---|---|
 | frontend | interface e proxy para a API | `LOGNIX_PORT`, padrão 8080 |
-| backend | API, migrações automáticas no início | nenhuma |
-| postgres | metadados | nenhuma |
-| loki | armazenamento de logs | nenhuma |
-| alloy | coleta de logs via túneis, config gerada pelo backend | nenhuma |
+| backend | API, túneis, ciclos, IA; migrações rodam no início | nenhuma |
+| postgres | metadados, insights, custos | nenhuma |
+| loki | armazenamento dos logs | nenhuma |
+| alloy | coleta, com config gerada pelo backend | nenhuma |
 
 Só a porta do frontend fica acessível de fora.
 
@@ -37,7 +45,7 @@ Só a porta do frontend fica acessível de fora.
 
 | Variável | Obrigatória | Padrão | Uso |
 |---|---|---|---|
-| `LOGNIX_SECRET_KEY` | **sim** | — | criptografa credenciais e assina sessões. **Faça backup.** Perder a chave torna credenciais guardadas irrecuperáveis |
+| `LOGNIX_SECRET_KEY` | **sim** | — | criptografa credenciais e assina sessões. **Faça backup.** Sem ela, credenciais guardadas são irrecuperáveis |
 | `LOGNIX_PORT` | não | 8080 | porta da interface |
 | `LOGNIX_PUBLIC_URL` | não | http://localhost:8080 | URL pública, usada em links. Com `https://` os cookies passam a ser `Secure` |
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | não | lognix | credenciais do banco interno |
@@ -47,12 +55,8 @@ Só a porta do frontend fica acessível de fora.
 | `LOGNIX_DB_POOL_SIZE` | não | 20 | conexões no pool do banco |
 | `LOGNIX_DB_MAX_OVERFLOW` | não | 10 | conexões extras sob pico |
 
-## Requisitos de máquina
-
-Medido em 2026-11-24 com 10 hosts e 100 containers monitorados: o backend usa cerca de 206 MB de
-memória e o banco cresce poucos megabytes por milhar de ciclos. Para esse porte, 2 vCPU e 4 GB
-bastam, mais o disco da retenção de logs no Loki. O consumo de disco depende do volume de log dos
-containers, não do número deles.
+A chave do provider de IA **não** fica aqui: é cadastrada na interface e guardada criptografada no
+banco, para poder ser trocada sem reiniciar.
 
 ## Atualização
 
@@ -61,19 +65,19 @@ git pull
 docker compose up -d --build
 ```
 
-As migrações de banco rodam automaticamente quando o backend inicia.
+As migrações rodam quando o backend inicia. Se o build for interrompido no meio, pode sobrar um
+container com o nome tomado; nesse caso `docker rm -f lognix-backend-1` e suba de novo.
 
 ## Backup
 
-Salve três coisas: o banco, o volume `loki-data` e o arquivo `.env`, em especial a
-`LOGNIX_SECRET_KEY`. Procedimento completo, com restauração, em [Operação](Operação.md).
-
-## Cadastrar o primeiro host
-
-Veja [Operação](Operação.md) para preparar o host. Na interface: Hosts › Cadastrar host. A validação
-mostra seis etapas e, em cada falha, o que fazer.
+Salve o banco, o volume do Loki e o `.env`. O procedimento completo, com restauração testada, está
+em [Operação](Operação.md).
 
 ## Verificação
 
-`curl http://localhost:8080/api/v1/health` devolve a versão e o estado de Postgres, Loki e Alloy.
-Na 0.1.0, só o Postgres é obrigatório; Loki e Alloy aparecem como informativos.
+```bash
+curl http://localhost:8080/api/v1/health
+```
+
+Devolve a versão e o estado de Postgres, Loki e Alloy. A tela Configurações › Sistema mostra o
+mesmo com mais detalhe, incluindo os processos em execução por host.

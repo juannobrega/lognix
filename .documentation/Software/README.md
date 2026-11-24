@@ -1,11 +1,14 @@
 # Lognix — Documentação do Software
 
-Documentação do sistema **construído**. Cresce fase a fase. O planejamento vive em
-[../Planning/](../Planning/README.md).
+Documentação do sistema construído. O planejamento, com as decisões e o porquê de cada uma,
+vive em [../Planning/](../Planning/README.md).
 
-| Documento | Conteúdo | Desde |
+| Documento | Para quem | Conteúdo |
 |---|---|---|
-| [Instalação](Instalação.md) | Requisitos, primeiro uso, atualização, backup | 0.1.0 |
-| [Desenvolvimento](Desenvolvimento.md) | Como rodar e testar localmente, estrutura do repositório | 0.1.0 |
-| [Operação](Operação.md) | Preparar um host, somente leitura, validação, túnel, monitorar containers, ver logs | 0.2.0 |
-| Referência de API | Gerada em `/api/docs` na instalação | 0.1.0 |
+| [Instalação](Instalação.md) | quem vai rodar o Lognix | requisitos, primeiro uso, variáveis, atualização |
+| [Operação](Operação.md) | quem usa no dia a dia | preparar hosts, monitorar containers, ler logs, insights, IA, métricas, backup |
+| [Arquitetura](Arquitetura.md) | quem quer entender por dentro | o que cada peça faz e como os dados andam |
+| [Desenvolvimento](Desenvolvimento.md) | quem vai mexer no código | rodar local, testar, estrutura, convenções |
+| Referência de API | integradores | gerada pela própria instalação em `/api/docs` |
+
+**Versão documentada:** 0.9.0.

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from lognix.ai.routes import insights_router as ai_insights_router
+from lognix.ai.routes import settings_router as ai_settings_router
 from lognix.analysis.routes import executor_router
 from lognix.analysis.routes import insights_router as analysis_insights_router
 from lognix.analysis.routes import projects_router as analysis_projects_router
@@ -38,3 +40,5 @@ api_router.include_router(executor_router)
 api_router.include_router(system_router)
 api_router.include_router(summary_router)
 api_router.include_router(settings_router)
+api_router.include_router(ai_insights_router)
+api_router.include_router(ai_settings_router)

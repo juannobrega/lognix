@@ -15,7 +15,8 @@ import lognix.containers.models
 import lognix.events.models
 import lognix.notifications.models
 import lognix.analysis.models
-import lognix.settings.models  # noqa: F401
+import lognix.settings.models
+import lognix.ai.models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
