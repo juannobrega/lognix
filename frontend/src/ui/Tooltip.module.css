@@ -1,0 +1,25 @@
+.content {
+  background: var(--fg);
+  color: var(--canvas);
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  max-width: 280px;
+  z-index: 80;
+  box-shadow: var(--shadow-pop);
+  animation: fade 100ms ease-out;
+}
+.arrow {
+  fill: var(--fg);
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    animation: none;
+  }
+}

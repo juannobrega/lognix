@@ -42,18 +42,7 @@ export function InsightDetailPage() {
       <div className="page-header">
         <div>
           <div className="row" style={{ gap: 'var(--space-3)' }}>
-            <span
-              style={{
-                color: SEVERITY_COLOR[i.severity],
-                border: '1px solid currentColor',
-                borderRadius: 999,
-                padding: '2px 10px',
-                fontSize: 'var(--text-xs)',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
+            <span className="sev-pill" style={{ color: SEVERITY_COLOR[i.severity] }}>
               {SEVERITY_LABEL[i.severity]}
             </span>
             {i.container_name && (
@@ -96,19 +85,15 @@ export function InsightDetailPage() {
       )}
 
       <section className="card">
-        <div className="card-body stack" style={{ gap: 'var(--space-5)' }}>
-          <div>
-            <h2>O que aconteceu</h2>
-            <p style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>{i.summary}</p>
-          </div>
-          <div>
-            <h2>Causa provável</h2>
-            <p style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>{i.probable_cause}</p>
-          </div>
-          <div>
-            <h2>Ação sugerida</h2>
-            <p style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>{i.suggested_action}</p>
-          </div>
+        <div className="card-body prose">
+          <h2>O que aconteceu</h2>
+          <p style={{ whiteSpace: 'pre-wrap' }}>{i.summary}</p>
+          <div className="divider" />
+          <h2>Causa provável</h2>
+          <p style={{ whiteSpace: 'pre-wrap' }}>{i.probable_cause}</p>
+          <div className="divider" />
+          <h2>Ação sugerida</h2>
+          <p style={{ whiteSpace: 'pre-wrap' }}>{i.suggested_action}</p>
         </div>
       </section>
 
@@ -123,26 +108,14 @@ export function InsightDetailPage() {
           {i.evidence.map((e, n) => (
             <li key={`${e.kind}-${e.index}-${n}`}>
               <div className="row" style={{ gap: 'var(--space-2)', marginBottom: 4 }}>
-                <span className="muted" style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span className="muted" style={{ fontSize: 'var(--text-sm)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {KIND_LABEL[e.kind] ?? e.kind}
                 </span>
                 {e.at && <span className="muted mono">{e.at}</span>}
                 {e.count !== undefined && <span className="muted">{e.count} ocorrências</span>}
-                {e.new && <span style={{ color: 'var(--warn)', fontSize: 'var(--text-xs)', fontWeight: 600 }}>NOVO</span>}
+                {e.new && <span style={{ color: 'var(--warn)', fontSize: 'var(--text-sm)', fontWeight: 600 }}>NOVO</span>}
               </div>
-              <pre
-                style={{
-                  margin: 0,
-                  background: 'var(--log-bg)',
-                  color: e.kind === 'log_line' ? 'var(--log-error-fg)' : 'var(--log-fg)',
-                  padding: 'var(--space-3)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: 'var(--text-xs)',
-                  overflowX: 'auto',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                }}
-              >
+              <pre className="codeblock" style={{ color: e.kind === 'log_line' ? 'var(--log-error-fg)' : 'var(--log-fg)' }}>
                 {e.text}
               </pre>
             </li>
@@ -202,10 +175,10 @@ export function InsightDetailPage() {
               background: 'var(--log-bg)',
               color: 'var(--log-fg)',
               padding: 'var(--space-4)',
-              borderBottomLeftRadius: 'var(--radius-md)',
-              borderBottomRightRadius: 'var(--radius-md)',
+              borderBottomLeftRadius: 'var(--radius-well)',
+              borderBottomRightRadius: 'var(--radius-well)',
               overflowX: 'auto',
-              fontSize: 'var(--text-xs)',
+              fontSize: 'var(--text-sm)',
               lineHeight: 1.6,
               whiteSpace: 'pre-wrap',
             }}

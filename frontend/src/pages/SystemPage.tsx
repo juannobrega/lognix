@@ -75,7 +75,7 @@ export function SystemPage() {
         <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 'var(--space-4)' }}>
           {Object.entries(s.counts).map(([k, v]) => (
             <div key={k}>
-              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 700 }}>{v.toLocaleString('pt-BR')}</div>
+              <div style={{ fontSize: 'var(--text-lg)', fontWeight: 700 }}>{v.toLocaleString('pt-BR')}</div>
               <div className="muted" style={{ fontSize: 'var(--text-sm)' }}>{COUNT_LABELS[k] ?? k}</div>
             </div>
           ))}

@@ -42,27 +42,29 @@ export function SetupPage() {
   return (
     <div className={styles.wrap}>
       <form className={styles.card} onSubmit={onSubmit} aria-labelledby="setup-title">
-        <div className={styles.brand} id="setup-title">
-          <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
-          <span>Bem-vindo ao Lognix</span>
+        <div className={styles.well}>
+          <div className={styles.brand} id="setup-title">
+            <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
+            <span>Bem-vindo ao Lognix</span>
+          </div>
+          <p className={styles.sub}>Crie o primeiro usuário. Ele poderá cadastrar os demais.</p>
+          {error && <Alert kind="error" message={error.message} action={error.action} />}
+          <Field label="Nome" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
+          <Field label="E-mail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Field
+            label="Senha"
+            type="password"
+            autoComplete="new-password"
+            help="Mínimo de 10 caracteres."
+            minLength={10}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="primary" loading={busy}>
+            Criar usuário e entrar
+          </Button>
         </div>
-        <p className={styles.sub}>Crie o primeiro usuário. Ele poderá cadastrar os demais.</p>
-        {error && <Alert kind="error" message={error.message} action={error.action} />}
-        <Field label="Nome" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
-        <Field label="E-mail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <Field
-          label="Senha"
-          type="password"
-          autoComplete="new-password"
-          help="Mínimo de 10 caracteres."
-          minLength={10}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <Button type="submit" variant="primary" loading={busy}>
-          Criar usuário e entrar
-        </Button>
       </form>
     </div>
   )

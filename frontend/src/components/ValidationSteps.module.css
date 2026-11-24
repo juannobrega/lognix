@@ -14,7 +14,7 @@
   padding: var(--space-2) 0;
 }
 .step + .step {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--divider);
 }
 .icon {
   width: 24px;
@@ -24,7 +24,7 @@
   place-items: center;
   font-size: 12px;
   font-weight: 700;
-  background: var(--bg-subtle);
+  background: var(--control-bg);
 }
 .ok {
   color: var(--ok);
@@ -39,20 +39,20 @@
   background: var(--accent-soft);
 }
 .pending {
-  color: var(--fg-muted);
+  color: var(--fg-dim);
 }
 .message {
   color: var(--error);
   margin-top: var(--space-1);
 }
 .action {
-  color: var(--fg-muted);
+  color: var(--fg-dim);
   font-size: var(--text-sm);
   margin-top: var(--space-1);
   white-space: pre-wrap;
 }
 .detail {
-  color: var(--fg-muted);
-  font-size: var(--text-xs);
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
   font-family: var(--font-mono);
 }

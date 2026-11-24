@@ -32,6 +32,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div className={styles.wrap} role="status" aria-live="polite">
         {items.map((i) => (
           <div key={i.id} className={[styles.toast, styles[i.kind]].join(' ')}>
+            <span className={styles.dot} aria-hidden="true" />
             <span>{i.message}</span>
             <button className={styles.close} onClick={() => remove(i.id)} aria-label="Fechar aviso">
               ×

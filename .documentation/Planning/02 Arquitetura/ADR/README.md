@@ -29,9 +29,9 @@ Cada decisão não óbvia de arquitetura vira um arquivo `ADR NNN Título.md`.
 | 008 | [Autenticação com JWT e Múltiplos Usuários sem Papéis](ADR%20008%20Autenticação%20com%20JWT%20e%20Múltiplos%20Usuários%20sem%20Papéis.md) | Aceito |
 | 009 | [Sem Redis na Primeira Fase](ADR%20009%20Sem%20Redis%20na%20Primeira%20Fase.md) | Aceito. Medido em 2026-11-24: Redis não entra |
 | 010 | [Desempenho do Ciclo de Análise](ADR%20010%20Desempenho%20do%20Ciclo%20de%20An%C3%A1lise.md) | Aceito |
+| 011 | [Radix UI e a Linguagem Visual do Coolify](ADR%20011%20Radix%20UI%20e%20a%20Linguagem%20Visual%20do%20Coolify.md) | Aceito |
 
 ## Candidatos ainda não decididos
 
 - Framework do backend Python
-- TypeScript vs. JavaScript no frontend
 - `asyncssh` vs. binário `ssh` para os túneis

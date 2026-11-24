@@ -11,6 +11,7 @@ import { EventTimeline } from '../components/EventTimeline'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { useToast } from '../components/useToast'
+import { Select } from '../ui/Select'
 import { ContainerStateBadge, HostStatusBadge } from '../components/StatusBadge'
 import { LogViewer } from '../logs/LogViewer'
 import { useProjectLogs, type Period } from '../logs/useProjectLogs'
@@ -95,12 +96,18 @@ export function ProjectPage() {
           </p>
         </div>
         <div className="row" style={{ flexWrap: 'nowrap' }}>
-          <select value={minutes} onChange={(e) => setMinutes(Number(e.target.value))} aria-label="Janela da análise manual">
-            <option value={5}>últimos 5 min</option>
-            <option value={15}>últimos 15 min</option>
-            <option value={60}>última 1 h</option>
-            <option value={360}>últimas 6 h</option>
-          </select>
+          <Select
+            aria-label="Janela da análise manual"
+            value={String(minutes)}
+            onValueChange={(v) => setMinutes(Number(v))}
+            minWidth={150}
+            options={[
+              { value: '5', label: 'últimos 5 min' },
+              { value: '15', label: 'últimos 15 min' },
+              { value: '60', label: 'última 1 h' },
+              { value: '360', label: 'últimas 6 h' },
+            ]}
+          />
           <Button variant="primary" onClick={() => analyze.mutate()} loading={analyze.isPending}>
             Analisar agora
           </Button>
@@ -165,7 +172,7 @@ export function ProjectPage() {
                 {patterns.data.map((pt) => (
                   <tr key={pt.id} style={{ opacity: pt.ignored ? 0.5 : 1 }}>
                     <td>
-                      <span style={{ fontWeight: 700, fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: pt.level === 'error' ? 'var(--error)' : pt.level === 'warn' ? 'var(--warn)' : 'var(--fg-muted)' }}>
+                      <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)', textTransform: 'uppercase', color: pt.level === 'error' ? 'var(--error)' : pt.level === 'warn' ? 'var(--warn)' : 'var(--fg-dim)' }}>
                         {pt.level}
                       </span>
                     </td>
@@ -231,15 +238,15 @@ export function ProjectPage() {
       )}
       {tab === 'env' && (
         <div className="card card-body">
-          <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>
+          <p style={{ color: 'var(--fg-dim)', fontSize: 'var(--text-sm)' }}>
             Variáveis de ambiente do container, só por nome. Valores aparecem apenas para nomes seguros como APP_VERSION e NODE_ENV.
           </p>
-          {!(p.env?.names as string[] | undefined)?.length && <p style={{ color: 'var(--fg-muted)' }}>Ainda não inspecionado.</p>}
+          {!(p.env?.names as string[] | undefined)?.length && <p style={{ color: 'var(--fg-dim)' }}>Ainda não inspecionado.</p>}
           <ul style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>
             {((p.env?.names as string[] | undefined) ?? []).map((n) => (
               <li key={n}>
                 {n}
-                {(p.env?.safe as Record<string, string> | undefined)?.[n] !== undefined && <span style={{ color: 'var(--fg-muted)' }}> = {(p.env.safe as Record<string, string>)[n]}</span>}
+                {(p.env?.safe as Record<string, string> | undefined)?.[n] !== undefined && <span style={{ color: 'var(--fg-dim)' }}> = {(p.env.safe as Record<string, string>)[n]}</span>}
               </li>
             ))}
           </ul>
@@ -254,16 +261,19 @@ export function ProjectPage() {
             histórico
           </button>
         </div>
-        <label className="muted">
-          período{' '}
-          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
-            <option value="15m">últimos 15 min</option>
-            <option value="1h">última 1 h</option>
-            <option value="6h">últimas 6 h</option>
-            <option value="24h">últimas 24 h</option>
-            <option value="7d">últimos 7 dias</option>
-          </select>
-        </label>
+        <Select
+          aria-label="Período dos logs"
+          value={period}
+          onValueChange={(v) => setPeriod(v as Period)}
+          minWidth={150}
+          options={[
+            { value: '15m', label: 'últimos 15 min' },
+            { value: '1h', label: 'última 1 h' },
+            { value: '6h', label: 'últimas 6 h' },
+            { value: '24h', label: 'últimas 24 h' },
+            { value: '7d', label: 'últimos 7 dias' },
+          ]}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -279,7 +289,7 @@ export function ProjectPage() {
             {follow ? '⏸ pausar' : '▶ seguir'}
           </Button>
         )}
-        <span style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>{logs.lines.length} linhas</span>
+        <span style={{ color: 'var(--fg-dim)', fontSize: 'var(--text-sm)' }}>{logs.lines.length} linhas</span>
       </div>
 
       {logs.truncated && <Alert message="Linhas antigas removidas da tela para manter o desempenho. Use o histórico para vê-las." />}

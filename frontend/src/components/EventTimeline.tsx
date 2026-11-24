@@ -34,7 +34,7 @@ function describe(e: DockerEvent | HostEvent): string {
 }
 
 export function EventTimeline({ events }: { events: (DockerEvent | HostEvent)[] }) {
-  if (events.length === 0) return <p style={{ color: 'var(--fg-muted)' }}>Nenhum evento registrado.</p>
+  if (events.length === 0) return <p style={{ color: 'var(--fg-dim)' }}>Nenhum evento registrado.</p>
   return (
     <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
       {events.map((e) => (
@@ -45,15 +45,15 @@ export function EventTimeline({ events }: { events: (DockerEvent | HostEvent)[] 
             gridTemplateColumns: '170px 140px 1fr',
             gap: 'var(--space-3)',
             padding: 'var(--space-2) 0',
-            borderTop: '1px solid var(--border)',
+            borderTop: '1px solid var(--divider)',
             fontSize: 'var(--text-sm)',
           }}
         >
-          <span style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)' }}>
+          <span style={{ color: 'var(--fg-dim)', fontFamily: 'var(--font-mono)' }}>
             {new Date(e.occurred_at).toLocaleString('pt-BR')}
           </span>
           <span style={{ fontWeight: 600, color: critical.has(e.type) ? 'var(--error)' : 'inherit' }}>{labels[e.type] ?? e.type}</span>
-          <span style={{ color: 'var(--fg-muted)', wordBreak: 'break-all' }}>{describe(e)}</span>
+          <span style={{ color: 'var(--fg-dim)', wordBreak: 'break-all' }}>{describe(e)}</span>
         </li>
       ))}
     </ol>

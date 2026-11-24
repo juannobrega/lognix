@@ -31,7 +31,7 @@ export function NotificationItem({ n, onSeen }: { n: Notification; onSeen?: (id:
     <li style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', alignItems: 'center' }}>
       <div>
         <div style={{ fontWeight: 600 }}>{n.title}</div>
-        <div style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>
+        <div style={{ color: 'var(--fg-dim)', fontSize: 'var(--text-sm)' }}>
           {new Date(n.created_at).toLocaleString('pt-BR')}
           {payload.image && <> · {payload.image}</>}
           {payload.error && <> · {payload.error}</>}

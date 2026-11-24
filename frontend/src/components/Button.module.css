@@ -1,55 +1,89 @@
+/* Botão com aresta inferior de profundidade: levanta 1px no hover, afunda ao clicar.
+ * É a assinatura visual do Coolify e o que separa um controle "desenhado" de um <button> cru. */
 .button {
+  --depth-color: var(--depth);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: 34px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
-  cursor: pointer;
-  font-weight: 500;
-  font-size: var(--text-sm);
-  background: var(--bg-elevated);
+  height: var(--control-h);
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--control-border);
+  background: var(--panel);
   color: var(--fg);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-ui);
+  font-weight: 500;
   white-space: nowrap;
-  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  box-shadow: 0 2px 0 var(--depth-color);
+  transition: box-shadow 80ms, transform 80ms, background 80ms, border-color 80ms;
 }
 .button:hover:not(:disabled) {
-  background: var(--bg-subtle);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 var(--depth-color);
+}
+.button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
 }
 .button:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
+
+:global(:root[data-theme='dark']) .button:not(.primary),
+:global(:root:not([data-theme='light'])) .button:not(.primary) {
+  background: rgb(255 255 255 / 6%);
+  border-color: rgb(255 255 255 / 8%);
+}
+
 .primary {
-  background: var(--accent);
+  --depth-color: var(--accent-edge);
+  border-color: var(--accent-bottom);
+  background: linear-gradient(to bottom, var(--accent-top), var(--accent-bottom));
   color: var(--accent-fg);
-  border-color: var(--accent);
 }
 .primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: linear-gradient(to bottom, var(--accent-top), var(--accent-top));
 }
+
 .danger {
   color: var(--error);
-  border-color: var(--error);
+  border-color: color-mix(in srgb, var(--error) 35%, transparent);
   background: transparent;
 }
 .danger:hover:not(:disabled) {
   background: var(--error-soft);
 }
+
 .ghost {
   background: transparent;
   border-color: transparent;
-  color: var(--fg-muted);
+  box-shadow: none;
+  color: var(--fg-faint);
 }
 .ghost:hover:not(:disabled) {
-  background: var(--bg-subtle);
+  background: var(--hover);
   color: var(--fg);
+  transform: none;
+  box-shadow: none;
 }
+.ghost:active:not(:disabled) {
+  transform: none;
+}
+
 .sm {
-  height: 28px;
-  padding: 0 10px;
-  font-size: var(--text-xs);
+  height: var(--control-h-sm);
+  padding: 0 8px;
+  font-size: var(--text-sm);
+}
+.icon {
+  padding: 0;
+  width: var(--control-h);
+}
+.icon.sm {
+  width: var(--control-h-sm);
 }

@@ -9,6 +9,7 @@ import { Button } from '../components/Button'
 import { Field } from '../components/Field'
 import { SkeletonRows } from '../components/Skeleton'
 import { useToast } from '../components/useToast'
+import { Switch } from '../ui/Switch'
 
 export function AiSettingsPage() {
   const qc = useQueryClient()
@@ -100,7 +101,7 @@ export function AiSettingsPage() {
             style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 600,
-              color: s.active ? 'var(--ok)' : s.configured ? 'var(--warn)' : 'var(--fg-muted)',
+              color: s.active ? 'var(--ok)' : s.configured ? 'var(--warn)' : 'var(--fg-dim)',
             }}
           >
             {s.active ? 'IA ativa' : s.configured ? 'configurada, desligada' : 'não configurada'}
@@ -156,9 +157,9 @@ export function AiSettingsPage() {
                               >
                                 {m.id}
                               </button>
-                              <div className="muted" style={{ fontSize: 'var(--text-xs)' }}>{m.name}</div>
+                              <div className="muted" style={{ fontSize: 'var(--text-sm)' }}>{m.name}</div>
                             </td>
-                            <td className="right muted" style={{ fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }}>
+                            <td className="right muted" style={{ fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
                               {m.prompt_usd_per_mtok !== null && m.completion_usd_per_mtok !== null
                                 ? `$${m.prompt_usd_per_mtok.toFixed(2)} / $${m.completion_usd_per_mtok.toFixed(2)} por Mtok`
                                 : '—'}
@@ -189,15 +190,18 @@ export function AiSettingsPage() {
             >
               Testar
             </Button>
-            <Button
-              type="button"
-              variant={s.enabled ? 'danger' : 'secondary'}
-              disabled={!s.configured && !s.enabled}
-              loading={save.isPending}
-              onClick={() => save.mutate({ enabled: !s.enabled })}
-            >
-              {s.enabled ? 'Desativar IA' : 'Ativar IA'}
-            </Button>
+            <span className="row" style={{ gap: 'var(--space-3)', marginLeft: 'auto' }}>
+              <label htmlFor="ai-enabled" style={{ margin: 0 }}>
+                {s.enabled ? 'IA ligada' : 'IA desligada'}
+              </label>
+              <Switch
+                id="ai-enabled"
+                aria-label="Ativar a análise por IA"
+                checked={s.enabled}
+                disabled={!s.configured && !s.enabled}
+                onCheckedChange={(v) => save.mutate({ enabled: v })}
+              />
+            </span>
             {!s.configured && (
               <span className="muted" style={{ fontSize: 'var(--text-sm)' }}>
                 {s.enabled

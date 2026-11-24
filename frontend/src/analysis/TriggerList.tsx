@@ -14,7 +14,7 @@ export function TriggerList({ triggers, showProject = false }: { triggers: Trigg
           <li key={t.id}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <span className="row" style={{ gap: 10 }}>
-                <span style={{ fontWeight: 700, color: tone[t.type], fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span style={{ fontWeight: 700, color: tone[t.type], fontSize: 'var(--text-sm)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {label[t.type]}
                 </span>
                 {showProject && t.container_name && (
@@ -35,18 +35,7 @@ export function TriggerList({ triggers, showProject = false }: { triggers: Trigg
                 <summary className="muted" style={{ cursor: 'pointer', fontSize: 'var(--text-sm)' }}>
                   {t.sample_lines.length} linha(s) de erro
                 </summary>
-                <pre
-                  style={{
-                    margin: '6px 0 0',
-                    background: 'var(--log-bg)',
-                    color: 'var(--log-error-fg)',
-                    padding: 'var(--space-3)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: 'var(--text-xs)',
-                    overflowX: 'auto',
-                    maxHeight: 240,
-                  }}
-                >
+                <pre className="codeblock" style={{ marginTop: 6, color: 'var(--log-error-fg)', maxHeight: 240 }}>
                   {t.sample_lines.map((l) => l.line).join('\n')}
                 </pre>
               </details>

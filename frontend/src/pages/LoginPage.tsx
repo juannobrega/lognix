@@ -43,24 +43,25 @@ export function LoginPage() {
   return (
     <div className={styles.wrap}>
       <form className={styles.card} onSubmit={onSubmit} aria-labelledby="login-title">
-        <div className={styles.brand} id="login-title">
-          <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
-          
+        <div className={styles.well}>
+          <div className={styles.brand} id="login-title">
+            <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
+          </div>
+          <p className={styles.sub}>Entre para continuar.</p>
+          {error && <Alert kind="error" message={error.message} action={error.action} />}
+          <Field label="E-mail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Field
+            label="Senha"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="primary" loading={busy}>
+            Entrar
+          </Button>
         </div>
-        <p className={styles.sub}>Entre para continuar.</p>
-        {error && <Alert kind="error" message={error.message} action={error.action} />}
-        <Field label="E-mail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <Field
-          label="Senha"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <Button type="submit" variant="primary" loading={busy}>
-          Entrar
-        </Button>
       </form>
     </div>
   )

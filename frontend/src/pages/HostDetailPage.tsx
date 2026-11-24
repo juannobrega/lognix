@@ -9,6 +9,7 @@ import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { HostStatusBadge } from '../components/StatusBadge'
 import { ValidationSteps } from '../components/ValidationSteps'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { useToast } from '../components/useToast'
 import { useValidation } from '../hosts/useValidation'
 
@@ -104,15 +105,21 @@ export function HostDetailPage() {
           <Button onClick={() => reconnect.mutate()} loading={reconnect.isPending}>
             Reconectar
           </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              if (window.confirm(`Remover o host ${h.name}? Os dados ficam no histórico; nada é apagado no host.`)) remove.mutate()
-            }}
+          <ConfirmDialog
+            trigger={<Button variant="danger">Remover</Button>}
+            title={`Remover o host ${h.name}?`}
+            description={
+              <>
+                O túnel é encerrado e o host sai da lista. Containers, logs, padrões e insights continuam no histórico, e nada é alterado na
+                máquina monitorada.
+              </>
+            }
+            confirmLabel="Remover host"
+            confirmText={h.name}
+            danger
             loading={remove.isPending}
-          >
-            Remover
-          </Button>
+            onConfirm={() => remove.mutate()}
+          />
         </div>
       </div>
 
@@ -148,7 +155,7 @@ export function HostDetailPage() {
       {tab === 'containers' && (
         <div className="card">
           {h.status !== 'connected' && (
-            <p className="muted" style={{ padding: 'var(--space-3) var(--space-5)', margin: 0, borderBottom: '1px solid var(--border)' }}>
+            <p className="muted" style={{ padding: 'var(--space-3) var(--space-5)', margin: 0, borderBottom: '1px solid var(--divider)' }}>
               Host desconectado. Mostrando o último inventário conhecido.
             </p>
           )}
@@ -247,10 +254,10 @@ export function HostDetailPage() {
               background: 'var(--log-bg)',
               color: 'var(--log-fg)',
               padding: 'var(--space-4)',
-              borderBottomLeftRadius: 'var(--radius-md)',
-              borderBottomRightRadius: 'var(--radius-md)',
+              borderBottomLeftRadius: 'var(--radius-well)',
+              borderBottomRightRadius: 'var(--radius-well)',
               overflowX: 'auto',
-              fontSize: 'var(--text-xs)',
+              fontSize: 'var(--text-sm)',
               lineHeight: 1.5,
             }}
           >

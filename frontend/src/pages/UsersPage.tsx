@@ -7,6 +7,7 @@ import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { Field } from '../components/Field'
 import { useToast } from '../components/useToast'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 export function UsersPage() {
   const qc = useQueryClient()
@@ -73,9 +74,19 @@ export function UsersPage() {
                 <td className="muted">{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
                 <td className="right">
                   {u.id !== me?.id && (
-                    <Button variant="danger" size="sm" onClick={() => remove.mutate(u.id)} loading={remove.isPending}>
-                      Remover
-                    </Button>
+                    <ConfirmDialog
+                      trigger={
+                        <Button variant="danger" size="sm">
+                          Remover
+                        </Button>
+                      }
+                      title={`Remover ${u.name}?`}
+                      description="A pessoa perde o acesso imediatamente. As ações que ela já registrou continuam no histórico."
+                      confirmLabel="Remover usuário"
+                      danger
+                      loading={remove.isPending}
+                      onConfirm={() => remove.mutate(u.id)}
+                    />
                   )}
                 </td>
               </tr>

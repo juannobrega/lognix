@@ -7,6 +7,7 @@ import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { Field } from '../components/Field'
 import { ValidationSteps } from '../components/ValidationSteps'
+import { Select } from '../ui/Select'
 import { ContainerStateBadge } from '../components/StatusBadge'
 import { useValidation } from '../hosts/useValidation'
 
@@ -132,29 +133,34 @@ export function NewHostPage() {
       {error && <Alert kind="error" message={error.message} action={error.action} />}
       <form onSubmit={onSubmit} className="card card-body" style={{ maxWidth: 600 }}>
         <Field label="Nome" help="Identifica o host no Lognix. Letras, números, - e _." value={name} onChange={(e) => setName(e.target.value)} required pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,62}" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 'var(--space-3)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 'var(--space-4)' }}>
           <Field label="Endereço" help="IP ou DNS" value={address} onChange={(e) => setAddress(e.target.value)} required />
           <Field label="Porta SSH" type="number" min={1} max={65535} value={port} onChange={(e) => setPort(e.target.value)} required />
         </div>
         <Field label="Usuário SSH" value={user} onChange={(e) => setUser(e.target.value)} required autoComplete="off" />
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 500, marginBottom: 4 }} htmlFor="method">
-            Autenticação
-          </label>
-          <select id="method" value={method} onChange={(e) => setMethod(e.target.value as SshAuthMethod)} style={{ width: '100%' }}>
-            <option value="key">Chave privada (recomendado)</option>
-            <option value="key_passphrase">Chave privada com passphrase</option>
-            <option value="password">Senha</option>
-          </select>
+        <div style={{ marginBottom: 'var(--space-5)' }}>
+          <label htmlFor="method">Autenticação</label>
+          <Select
+            id="method"
+            aria-label="Método de autenticação"
+            value={method}
+            onValueChange={(v) => setMethod(v as SshAuthMethod)}
+            minWidth={280}
+            options={[
+              { value: 'key', label: 'Chave privada (recomendado)' },
+              { value: 'key_passphrase', label: 'Chave privada com passphrase' },
+              { value: 'password', label: 'Senha' },
+            ]}
+          />
           {method === 'password' && (
-            <p style={{ color: 'var(--warn)', fontSize: 'var(--text-sm)' }}>Senha é a opção menos segura. Prefira chave quando possível.</p>
+            <p className="muted" style={{ color: 'var(--warn)', fontSize: 'var(--text-sm)', marginBottom: 0 }}>
+              Senha é a opção menos segura. Prefira chave quando possível.
+            </p>
           )}
         </div>
         {method !== 'password' && (
           <div style={{ marginBottom: 'var(--space-4)' }}>
-            <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 500, marginBottom: 4 }} htmlFor="pk">
-              Chave privada
-            </label>
+            <label htmlFor="pk">Chave privada</label>
             <textarea
               id="pk"
               value={privateKey}
@@ -163,7 +169,7 @@ export function NewHostPage() {
               required
               spellCheck={false}
               placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}
+              style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}
             />
           </div>
         )}

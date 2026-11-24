@@ -1,120 +1,184 @@
-/* Design System — tokens. Tema claro em :root, escuro via data-theme e prefers-color-scheme. */
+/* Design system do Lognix.
+ *
+ * Linguagem visual inspirada no Coolify: camadas em vez de caixas. A profundidade vem de
+ * alguns degraus de superfície (canvas → card → well → controle), bordas de 1px e uma aresta
+ * inferior nos controles. Nunca bordas grossas nem sombras flutuantes pesadas.
+ *
+ * Valores de referência: github.com/coollabsio/coolify/blob/main/DESIGN.md
+ */
+
 :root {
-  --bg: #f4f6f8;
-  --bg-elevated: #ffffff;
-  --bg-subtle: #eef1f5;
-  --border: #e1e6ec;
-  --border-strong: #c9d1da;
-  --fg: #16202a;
-  --fg-muted: #5f6b78;
-  --fg-faint: #8b96a3;
-  --accent: #2f6fed;
-  --accent-hover: #255cc9;
-  --accent-soft: #e8f0fe;
+  /* superfícies, do fundo para a frente */
+  --canvas: oklch(98.5% 0 0);
+  --panel: #ffffff;
+  --sidebar: #ffffff;
+  --card-bg: rgb(0 0 0 / 0.75%);
+  --card-border: rgb(0 0 0 / 9%);
+  --well-bg: #ffffff;
+  --well-border: rgb(0 0 0 / 8%);
+  --control-bg: oklch(96% 0 0);
+  --control-border: oklch(14.5% 0 0 / 0.12);
+  --divider: rgb(0 0 0 / 7%);
+  --hover: rgb(0 0 0 / 3%);
+
+  /* texto, três níveis */
+  --fg: oklch(14.5% 0 0);
+  --fg-dim: oklch(40% 0 0);
+  --fg-faint: oklch(50% 0 0);
+
+  /* acento: o roxo do Coolify, com as paradas do gradiente e a aresta */
+  --accent: oklch(49.65% 0.2709 289.33);
+  --accent-top: oklch(52.34% 0.287 289.16);
+  --accent-bottom: oklch(43.76% 0.2369 289.82);
+  --accent-edge: oklch(38.04% 0.2031 290.47);
   --accent-fg: #ffffff;
-  --sev-critical: #b42318;
-  --sev-high: #c4320a;
-  --sev-medium: #b54708;
-  --sev-low: #0e7490;
-  --sev-info: #475467;
-  --ok: #067647;
-  --ok-soft: #e6f4ea;
-  --warn: #b54708;
-  --warn-soft: #fff4e5;
-  --error: #b42318;
-  --error-soft: #fdecea;
-  --neutral: #667085;
-  --neutral-soft: #f2f4f7;
-  --log-bg: #0b1016;
-  --log-fg: #d5dde7;
-  --log-muted: #6b7a8c;
-  --log-error-bg: rgba(248, 113, 113, 0.14);
-  --log-error-fg: #fda4a4;
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
-  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --accent-soft: oklch(49.65% 0.2709 289.33 / 10%);
+
+  /* aresta de profundidade dos controles */
+  --depth: rgb(0 0 0 / 8%);
+
+  /* semântica: amarelo é só para aviso de verdade */
+  --ok: oklch(55% 0.15 149);
+  --warn: oklch(66% 0.15 70);
+  --error: oklch(55% 0.21 25);
+  --info: oklch(55% 0.19 258);
+  --ok-soft: oklch(55% 0.15 149 / 12%);
+  --warn-soft: oklch(66% 0.15 70 / 14%);
+  --error-soft: oklch(55% 0.21 25 / 12%);
+
+  /* severidade dos insights */
+  --sev-critical: oklch(52% 0.22 22);
+  --sev-high: oklch(60% 0.19 44);
+  --sev-medium: oklch(66% 0.15 70);
+  --sev-low: oklch(60% 0.12 220);
+  --sev-info: var(--fg-faint);
+
+  /* terminal de logs: escuro nos dois temas, por legibilidade */
+  --log-bg: #0a0a0a;
+  --log-fg: #d4d4d4;
+  --log-muted: #6b6b6b;
+  --log-error-bg: oklch(55% 0.21 25 / 14%);
+  --log-error-fg: oklch(72% 0.17 25);
+
+  /* medidas: controles de 32px, raios pequenos, texto denso */
+  --control-h: 32px;
+  --control-h-sm: 26px;
+  --radius-control: 8px;
+  --radius-well: 8px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
+
   --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --font-ui: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --text-xs: 12px;
-  --text-sm: 13px;
-  --text-md: 14px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  --font-ui: 'Geist Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-meta: 11px;
+  --text-sm: 12px;
+  --text-ui: 13px;
+  --text-input: 14px;
   --text-lg: 16px;
-  --text-xl: 22px;
-  --text-2xl: 28px;
-  --sidebar-width: 236px;
+  --text-title: 24px;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 4%);
+  --shadow-well: 0 1px 1px rgb(0 0 0 / 3%);
+  --shadow-pop: 0 10px 30px rgb(0 0 0 / 12%), 0 2px 8px rgb(0 0 0 / 6%);
+
+  --sidebar-w: 232px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0e1319;
-    --bg-elevated: #151c24;
-    --bg-subtle: #1b232d;
-    --border: #243040;
-    --border-strong: #31404f;
-    --fg: #e7edf3;
-    --fg-muted: #9aa8b7;
-    --fg-faint: #6e7d8d;
-    --accent: #5b94ff;
-    --accent-hover: #7aa8ff;
-    --accent-soft: #15284a;
-    --accent-fg: #0b1220;
-    --sev-critical: #f97066;
-    --sev-high: #fd853a;
-    --sev-medium: #fdb022;
-    --sev-low: #36bffa;
-    --sev-info: #98a2b3;
-    --ok: #47cd89;
-    --ok-soft: #0f2a1d;
-    --warn: #fdb022;
-    --warn-soft: #2b2110;
-    --error: #f97066;
-    --error-soft: #2d1614;
-    --neutral: #98a2b3;
-    --neutral-soft: #1f2937;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --canvas: #0a0a0a;
+    --panel: #121212;
+    --sidebar: #120e1a;
+    --card-bg: color-mix(in srgb, #121212 66%, black);
+    --card-border: rgb(255 255 255 / 8%);
+    --well-bg: #121212;
+    --well-border: rgb(255 255 255 / 7%);
+    --control-bg: rgb(255 255 255 / 6%);
+    --control-border: rgb(255 255 255 / 10%);
+    --divider: rgb(255 255 255 / 7%);
+    --hover: rgb(255 255 255 / 4%);
+
+    --fg: oklch(97% 0 0);
+    --fg-dim: oklch(72% 0 0);
+    --fg-faint: oklch(56% 0 0);
+
+    --accent: #6b16ed;
+    --accent-top: #7317ff;
+    --accent-bottom: #5a12c7;
+    --accent-edge: #4a0fa3;
+    --accent-soft: rgb(107 22 237 / 18%);
+    --depth: rgb(0 0 0 / 35%);
+
+    --ok: oklch(72% 0.17 149);
+    --warn: oklch(80% 0.15 80);
+    --error: oklch(68% 0.19 25);
+    --info: oklch(70% 0.15 250);
+    --ok-soft: oklch(72% 0.17 149 / 14%);
+    --warn-soft: oklch(80% 0.15 80 / 14%);
+    --error-soft: oklch(68% 0.19 25 / 14%);
+
+    --sev-critical: oklch(70% 0.19 22);
+    --sev-high: oklch(75% 0.16 50);
+    --sev-medium: oklch(82% 0.14 80);
+    --sev-low: oklch(75% 0.12 220);
+
+    --shadow-card: none;
+    --shadow-well: none;
+    --shadow-pop: 0 16px 40px rgb(0 0 0 / 55%);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #0e1319;
-  --bg-elevated: #151c24;
-  --bg-subtle: #1b232d;
-  --border: #243040;
-  --border-strong: #31404f;
-  --fg: #e7edf3;
-  --fg-muted: #9aa8b7;
-  --fg-faint: #6e7d8d;
-  --accent: #5b94ff;
-  --accent-hover: #7aa8ff;
-  --accent-soft: #15284a;
-  --accent-fg: #0b1220;
-  --sev-critical: #f97066;
-  --sev-high: #fd853a;
-  --sev-medium: #fdb022;
-  --sev-low: #36bffa;
-  --sev-info: #98a2b3;
-  --ok: #47cd89;
-  --ok-soft: #0f2a1d;
-  --warn: #fdb022;
-  --warn-soft: #2b2110;
-  --error: #f97066;
-  --error-soft: #2d1614;
-  --neutral: #98a2b3;
-  --neutral-soft: #1f2937;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --canvas: #0a0a0a;
+  --panel: #121212;
+  --sidebar: #120e1a;
+  --card-bg: color-mix(in srgb, #121212 66%, black);
+  --card-border: rgb(255 255 255 / 8%);
+  --well-bg: #121212;
+  --well-border: rgb(255 255 255 / 7%);
+  --control-bg: rgb(255 255 255 / 6%);
+  --control-border: rgb(255 255 255 / 10%);
+  --divider: rgb(255 255 255 / 7%);
+  --hover: rgb(255 255 255 / 4%);
+
+  --fg: oklch(97% 0 0);
+  --fg-dim: oklch(72% 0 0);
+  --fg-faint: oklch(56% 0 0);
+
+  --accent: #6b16ed;
+  --accent-top: #7317ff;
+  --accent-bottom: #5a12c7;
+  --accent-edge: #4a0fa3;
+  --accent-soft: rgb(107 22 237 / 18%);
+  --depth: rgb(0 0 0 / 35%);
+
+  --ok: oklch(72% 0.17 149);
+  --warn: oklch(80% 0.15 80);
+  --error: oklch(68% 0.19 25);
+  --info: oklch(70% 0.15 250);
+  --ok-soft: oklch(72% 0.17 149 / 14%);
+  --warn-soft: oklch(80% 0.15 80 / 14%);
+  --error-soft: oklch(68% 0.19 25 / 14%);
+
+  --sev-critical: oklch(70% 0.19 22);
+  --sev-high: oklch(75% 0.16 50);
+  --sev-medium: oklch(82% 0.14 80);
+  --sev-low: oklch(75% 0.12 220);
+
+  --shadow-card: none;
+  --shadow-well: none;
+  --shadow-pop: 0 16px 40px rgb(0 0 0 / 55%);
   color-scheme: dark;
 }

@@ -1,32 +1,44 @@
 .viewer {
   background: var(--log-bg);
   color: var(--log-fg);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-well);
+  border: 1px solid var(--well-border);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
-  line-height: 1.5;
+  line-height: 1.55;
   height: 62vh;
   overflow: auto;
   position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+.viewer::-webkit-scrollbar {
+  width: 10px;
+}
+.viewer::-webkit-scrollbar-thumb {
+  background: #2e2e2e;
+  border-radius: 999px;
+  border: 3px solid var(--log-bg);
 }
 .row {
   display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: var(--space-3);
-  padding: 0 var(--space-3);
+  grid-template-columns: 96px 1fr;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
   white-space: pre-wrap;
-  word-break: break-all;
+  word-break: break-word;
 }
 .row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgb(255 255 255 / 4%);
 }
 .ts {
   color: var(--log-muted);
   user-select: none;
+  font-variant-numeric: tabular-nums;
 }
 .error {
   background: var(--log-error-bg);
+  box-shadow: inset 2px 0 0 var(--log-error-fg);
 }
 .error .text {
   color: var(--log-error-fg);
@@ -38,36 +50,25 @@
   place-items: center;
   color: var(--log-muted);
   text-align: center;
-  padding: var(--space-6);
-}
-.pulse {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-right: 8px;
-  animation: pulse 1.2s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
+  padding: var(--space-7);
+  font-family: var(--font-ui);
+  font-size: var(--text-ui);
+  line-height: 1.6;
 }
 .toFoot {
   position: sticky;
-  bottom: var(--space-3);
+  bottom: var(--space-4);
   float: right;
-  margin-right: var(--space-3);
-  background: var(--accent);
-  color: var(--accent-fg);
-  border: 0;
+  margin-right: var(--space-4);
+  background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
+  color: #fff;
+  border: 1px solid var(--accent-bottom);
+  box-shadow: 0 2px 0 var(--accent-edge);
   border-radius: 999px;
   padding: 4px 12px;
   cursor: pointer;
   font: inherit;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
 }

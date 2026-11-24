@@ -58,6 +58,15 @@ em `localStorage`. Logs em fundo escuro por padrão nos dois temas, por legibili
 - Ações que mudam estado dão retorno por toast, não só por texto na tela.
 - `prefers-reduced-motion` desliga as animações de esqueleto e de toast.
 
+## 4.3 Redesenho de 2026-11-24
+
+A linguagem visual passou a ser a do Coolify, e os componentes difíceis passaram a vir do Radix.
+Decisão e valores em [ADR 011](../02%20Arquitetura/ADR/ADR%20011%20Radix%20UI%20e%20a%20Linguagem%20Visual%20do%20Coolify.md).
+Os tokens desta página valem para o esqueleto; os valores em vigor estão em `src/styles/tokens.css`.
+
+Componentes do Radix em uso, em `src/ui/`: `Select`, `ConfirmDialog`, `Tooltip`, `Switch`. Saíram da
+base o `<select>` nativo e o `window.confirm`.
+
 ## 5. Identidade
 
 Nome Lognix, sem logotipo elaborado na v1: marca em texto. Cor de destaque única. Decisão de cor e

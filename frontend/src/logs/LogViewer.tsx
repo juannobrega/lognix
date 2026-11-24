@@ -7,7 +7,7 @@ import styles from './LogViewer.module.css'
 function fmt(tsNs: string): string {
   const ms = Number(BigInt(tsNs) / 1_000_000n)
   const d = new Date(ms)
-  return d.toLocaleTimeString('pt-BR', { hour12: false }) + '.' + String(ms % 1000).padStart(3, '0')
+  return `${d.toLocaleTimeString('pt-BR', { hour12: false })}.${String(ms % 1000).padStart(3, '0')}`
 }
 
 interface Props {

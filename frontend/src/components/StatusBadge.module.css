@@ -1,34 +1,50 @@
+/* Selo cru: ponto colorido de 6px e texto. Sem borda, sem fundo, sem padding.
+ * O Coolify faz assim e fica muito mais limpo em tabelas densas. */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 2px 8px 2px 6px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  letter-spacing: 0.01em;
+  height: 24px;
+  font-size: var(--text-ui);
   white-space: nowrap;
+  color: var(--fg-dim);
 }
 .dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
   background: currentColor;
+  flex-shrink: 0;
 }
 .ok {
   color: var(--ok);
-  background: var(--ok-soft);
 }
 .warn {
   color: var(--warn);
-  background: var(--warn-soft);
 }
 .error {
   color: var(--error);
-  background: var(--error-soft);
 }
 .neutral {
-  color: var(--neutral);
-  background: var(--neutral-soft);
+  color: var(--fg-faint);
+}
+.label {
+  color: var(--fg-dim);
+}
+.pulsing .dot {
+  animation: blink 1.6s ease-in-out infinite;
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulsing .dot {
+    animation: none;
+  }
 }

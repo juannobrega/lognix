@@ -1,12 +1,13 @@
 import type { SVGProps } from 'react'
 
+/** Ícones de contorno, traço 1.5px, 16px. Mesma família para tudo. */
 const base: SVGProps<SVGSVGElement> = {
-  width: 18,
-  height: 18,
+  width: 16,
+  height: 16,
   viewBox: '0 0 24 24',
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 1.8,
+  strokeWidth: 1.5,
   strokeLinecap: 'round',
   strokeLinejoin: 'round',
   'aria-hidden': true,
@@ -15,18 +16,17 @@ const base: SVGProps<SVGSVGElement> = {
 export const Icons = {
   dashboard: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
-      <rect x="3" y="3" width="8" height="8" rx="1.5" />
-      <rect x="13" y="3" width="8" height="5" rx="1.5" />
-      <rect x="13" y="10" width="8" height="11" rx="1.5" />
-      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="3" y="3" width="7.5" height="7.5" rx="2" />
+      <rect x="13.5" y="3" width="7.5" height="4.5" rx="2" />
+      <rect x="13.5" y="10.5" width="7.5" height="10.5" rx="2" />
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" />
     </svg>
   ),
   server: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
-      <rect x="3" y="4" width="18" height="7" rx="1.5" />
-      <rect x="3" y="13" width="18" height="7" rx="1.5" />
-      <circle cx="7" cy="7.5" r="0.8" fill="currentColor" />
-      <circle cx="7" cy="16.5" r="0.8" fill="currentColor" />
+      <rect x="3" y="4" width="18" height="7" rx="2" />
+      <rect x="3" y="13" width="18" height="7" rx="2" />
+      <path d="M7 7.5h.01M7 16.5h.01" />
     </svg>
   ),
   box: (p: SVGProps<SVGSVGElement>) => (
@@ -37,20 +37,20 @@ export const Icons = {
   ),
   spark: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
-      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+      <path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M5.8 18.2l1.8-1.8M16.4 7.6l1.8-1.8" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   ),
   bell: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
-      <path d="M6 9a6 6 0 0 1 12 0v4l2 3H4l2-3z" />
-      <path d="M10 19a2 2 0 0 0 4 0" />
+      <path d="M6 9.5a6 6 0 0 1 12 0V13l1.6 2.5H4.4L6 13z" />
+      <path d="M10 18.5a2 2 0 0 0 4 0" />
     </svg>
   ),
   settings: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+      <path d="M19.1 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-2.9-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.1-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.9-1.2V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 2.9 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.6 1z" />
     </svg>
   ),
   sun: (p: SVGProps<SVGSVGElement>) => (
@@ -67,6 +67,17 @@ export const Icons = {
   logout: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+    </svg>
+  ),
+  plus: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  ),
+  search: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
     </svg>
   ),
 }

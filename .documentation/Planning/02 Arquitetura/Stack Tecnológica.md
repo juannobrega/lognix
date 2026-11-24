@@ -32,6 +32,8 @@ documentação do software, não aqui.
 | Build | Vite | Decisão de produto |
 | Linguagem | TypeScript | Contratos tipados com a API, menos erro em telas de dados densos |
 | Estilo | CSS Modules | Continua CSS puro, escopo por componente, sem framework de utilitários |
+| Componentes acessíveis | Radix UI primitives | Diálogo, select, tooltip, abas, switch: comportamento e acessibilidade prontos, estilo nosso. Ver ADR 011 |
+| Fonte | Geist Sans e Mono via `@fontsource-variable` | Servida pelo próprio pacote: a CSP do nginx bloqueia CDNs |
 | Roteamento | React Router | Padrão |
 | Dados remotos | TanStack Query | Cache, revalidação e estado de carregamento para dados que mudam a cada ciclo |
 | Tempo real | WebSocket ou SSE do backend para eventos; tail do Loki para logs ao vivo | Detalhar em 06 Frontend |
