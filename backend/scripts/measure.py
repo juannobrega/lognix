@@ -60,10 +60,10 @@ from tests.fake_ssh import FakeSshBackend
 
 # Linhas representativas: JSON estruturado, acesso nginx, stack trace, texto livre.
 SAMPLE_LINES = [
-    '{"level":"info","ts":"2026-11-24T10:00:00Z","msg":"request served","path":"/api/v1/health","ms":12}',
-    '172.19.0.1 - - [24/Nov/2026:10:00:00 +0000] "GET /api/v1/projects HTTP/1.1" 200 1843 "-" "Mozilla/5.0"',
+    '{"level":"info","ts":"2026-11-24T10:00:00Z","msg":"served","path":"/api/v1/health","ms":12}',
+    '172.19.0.1 - - [24/Nov/2026:10:00:00 +0000] "GET /api/v1/projects HTTP/1.1" 200 1843 "-"',
     "2026-11-24 10:00:00,123 INFO  [worker-3] processed batch id=8821 items=250",
-    '{"level":"warn","ts":"2026-11-24T10:00:01Z","msg":"slow query","ms":812,"sql":"select * from x"}',
+    '{"level":"warn","ts":"2026-11-24T10:00:01Z","msg":"slow query","ms":812,"sql":"select x"}',
     "2026-11-24 10:00:02,900 ERROR [api] Connection refused: db:5432",
     "Traceback (most recent call last):",
     '  File "/app/svc/db.py", line 42, in connect',
@@ -106,6 +106,7 @@ class BenchLoki(LokiClient):
 
 def rss_mb() -> float:
     usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # macOS devolve bytes; Linux devolve kilobytes.
     return usage / (1024 * 1024) if sys.platform == "darwin" else usage / 1024
 
 
@@ -113,7 +114,7 @@ def pct(values: list[float], p: float) -> float:
     if not values:
         return 0.0
     ordered = sorted(values)
-    k = min(int(round(p / 100 * (len(ordered) - 1))), len(ordered) - 1)
+    k = min(round(p / 100 * (len(ordered) - 1)), len(ordered) - 1)
     return ordered[k]
 
 
@@ -153,7 +154,7 @@ async def seed(hosts: int, containers: int, tmp: str) -> tuple[list[FakeDocker],
             )
             creds_mod.apply(
                 host,
-                HostCredentialsIn(ssh_auth_method=SshAuthMethod.password, password="deploy123"),
+                HostCredentialsIn(ssh_auth_method=SshAuthMethod.password, password="deploy123"),  # noqa: S106
             )
             db.add(host)
             await db.flush()
@@ -191,13 +192,15 @@ async def measure_cycles(container_ids: list[uuid.UUID], rounds: int) -> dict[st
         end = datetime.now(UTC)
         start = end - timedelta(seconds=30)
 
-        async def one(cid: uuid.UUID) -> float:
-            async with get_sessionmaker()() as db:
+        async def one(cid: uuid.UUID, w_start: datetime = start, w_end: datetime = end) -> float:
+            # start/end vêm por padrão de argumento: a closure não deve capturar a variável do laço.
+            async with manager_module.get_analysis_manager().semaphore, get_sessionmaker()() as db:
                 container = await db.get(Container, cid)
                 assert container is not None
-                client = BenchLoki()
                 t0 = time.perf_counter()
-                result = await run_cycle(db, client, container, window_start=start, window_end=end)
+                result = await run_cycle(
+                    db, BenchLoki(), container, window_start=w_start, window_end=w_end
+                )
                 elapsed = time.perf_counter() - t0
                 return elapsed if result.run.status.value != "failed" else -1.0
 
@@ -209,7 +212,8 @@ async def measure_cycles(container_ids: list[uuid.UUID], rounds: int) -> dict[st
         lines_total += len(ok) * BenchLoki.lines_per_window
         print(
             f"  rodada: {len(ok)} ciclos em {wall:.1f}s "
-            f"(p50 {pct(ok, 50) * 1000:.0f} ms, p95 {pct(ok, 95) * 1000:.0f} ms, máx {max(ok) * 1000:.0f} ms)"
+            f"(p50 {pct(ok, 50) * 1000:.0f} ms, p95 {pct(ok, 95) * 1000:.0f} ms, "
+            f"máx {max(ok) * 1000:.0f} ms)"
         )
     return {
         "cycles": len(durations),
