@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 import uuid
@@ -27,12 +28,16 @@ from lognix.analysis.patterns import miner_for
 from lognix.containers.models import Container
 from lognix.events.models import DockerEvent
 from lognix.loki.client import LogLine, LokiClient, LokiError, selector
+from lognix.metrics import cycle_duration, cycle_lines, cycles_total, triggers_total
 
 log = logging.getLogger(__name__)
 
 PAGE = 5000
 MAX_LINES_PER_CYCLE = 50_000
 BASELINE_RUNS = 30
+# Drain e regex são trabalho de CPU em Python puro: sem ceder o loop, um ciclo longo
+# segura a API inteira. Medido na 0.7.0. Ceder a cada bloco mantém a API responsiva.
+YIELD_EVERY = 250
 
 
 @dataclass
@@ -87,7 +92,11 @@ async def run_cycle(
         if on_phase is not None:
             on_phase(name, **detail)
 
+    def observe_phase(name: str, started: float) -> None:
+        cycle_duration.labels(name).observe(time.monotonic() - started)
+
     phase("consultando")
+    t_query = time.monotonic()
     try:
         lines, truncated = await fetch_window(client, container.id, window_start, window_end)
     except LokiError as exc:
@@ -102,9 +111,13 @@ async def run_cycle(
         )
         db.add(run)
         await db.commit()
+        cycles_total.labels("failed").inc()
         return CycleResult(run, [])
 
+    observe_phase("loki", t_query)
+    cycle_lines.observe(len(lines))
     phase("agrupando", lines=len(lines))
+    t_drain = time.monotonic()
     miner = miner_for(container.id)
     existing = await _patterns_by_template(db, container.id)
     if not existing and miner.cluster_count == 0:
@@ -120,7 +133,9 @@ async def run_cycle(
     created_clusters: set[int] = set()
     errors = warns = 0
     error_samples: list[dict[str, object]] = []
-    for ln in lines:
+    for index, ln in enumerate(lines):
+        if index and index % YIELD_EVERY == 0:
+            await asyncio.sleep(0)
         level = classify(ln.line)
         if level == LogLevel.error:
             errors += 1
@@ -151,7 +166,9 @@ async def run_cycle(
         if cid in created_clusters and template not in existing:
             new_templates.append(template)
 
+    observe_phase("drain", t_drain)
     phase("classificando", errors=errors)
+    t_persist = time.monotonic()
     new_patterns = 0
     for template, count in counts.items():
         pattern = existing.get(template)
@@ -198,7 +215,9 @@ async def run_cycle(
     db.add(run)
     await db.flush()
 
+    observe_phase("persist", t_persist)
     phase("avaliando triggers")
+    t_trig = time.monotonic()
     events = list(
         (
             await db.execute(
@@ -255,8 +274,12 @@ async def run_cycle(
         db.add(tf)
         fired.append(tf)
 
+    observe_phase("triggers", t_trig)
     run.duration_ms = int((time.monotonic() - t0) * 1000)
     await db.commit()
+    cycles_total.labels("truncated" if truncated else "ok").inc()
+    for tf in fired:
+        triggers_total.labels(tf.type.value).inc()
     for tf in fired:
         await db.refresh(tf)
     await db.refresh(run)

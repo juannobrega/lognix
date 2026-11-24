@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import logging
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
@@ -14,10 +15,12 @@ from lognix.analysis.cycle import run_cycle
 from lognix.analysis.executor import get_executor
 from lognix.analysis.models import AnalysisRun
 from lognix.analysis.patterns import drop_miner
+from lognix.config import get_settings
 from lognix.containers.models import Container, ContainerState
 from lognix.db import get_sessionmaker
 from lognix.hosts.models import HostStatus
 from lognix.loki.client import LokiClient
+from lognix.metrics import analysis_loops
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +85,7 @@ class ContainerLoop:
             self.last_window_end = last
 
     async def cycle_once(self) -> None:
-        async with self._lock:
+        async with self._lock, self.manager.semaphore:
             async with get_sessionmaker()() as db:
                 container = await db.get(Container, self.container_id)
                 if (
@@ -122,9 +125,17 @@ class ContainerLoop:
 
 
 class AnalysisManager:
-    def __init__(self, client_factory=None, pause_seconds: int = CYCLE_PAUSE) -> None:  # type: ignore[no-untyped-def]
+    def __init__(
+        self,
+        client_factory: Callable[[], LokiClient] | None = None,
+        pause_seconds: int = CYCLE_PAUSE,
+        concurrency: int | None = None,
+    ) -> None:
         self.client_factory = client_factory or LokiClient
         self.pause_seconds = pause_seconds
+        # Sem limite, 100 containers rodariam 100 ciclos ao mesmo tempo, consumiriam o pool
+        # do banco e a API ficaria na fila. Medido na 0.7.0: p95 da API saltou para 1,7 s.
+        self.semaphore = asyncio.Semaphore(concurrency or get_settings().analysis_concurrency)
         self._loops: dict[uuid.UUID, ContainerLoop] = {}
         self._reconciler: asyncio.Task[None] | None = None
 
@@ -165,6 +176,7 @@ class AnalysisManager:
         for cid in list(self._loops.keys() - ids):
             await self._loops.pop(cid).stop()
             drop_miner(cid)
+        analysis_loops.set(len(self._loops))
 
     def get(self, container_id: uuid.UUID) -> ContainerLoop | None:
         return self._loops.get(container_id)

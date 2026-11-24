@@ -13,6 +13,7 @@ import { LoginPage } from './pages/LoginPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SetupPage } from './pages/SetupPage'
+import { SystemPage } from './pages/SystemPage'
 import { UsersPage } from './pages/UsersPage'
 
 export function App() {
@@ -35,7 +36,7 @@ export function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="ai" element={<PlaceholderPage title="IA" phase="0.9.0" />} />
             <Route path="usage" element={<PlaceholderPage title="Consumo de IA" phase="0.9.0" />} />
-            <Route path="system" element={<PlaceholderPage title="Sistema" phase="0.7.0" />} />
+            <Route path="system" element={<SystemPage />} />
           </Route>
         </Route>
       </Route>

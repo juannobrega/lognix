@@ -24,6 +24,7 @@ from lognix.hosts.ssh import (
     SshTarget,
 )
 from lognix.hosts.tunnel import Tunnel
+from lognix.metrics import tunnel_reconnects_total, tunnels
 
 log = logging.getLogger(__name__)
 
@@ -117,6 +118,8 @@ class TunnelRunner:
 
     async def _connect_once(self) -> None:
         self.attempts += 1
+        if self.attempts > 1 or self.status != HostStatus.pending:
+            tunnel_reconnects_total.inc()
         await self.tunnel.open()
         self.attempts = 0
         self.last_error = None
@@ -182,6 +185,16 @@ class TunnelRunner:
             await db.commit()
 
 
+def _refresh_tunnel_gauge(runners: dict[uuid.UUID, TunnelRunner]) -> None:
+    counts = {"connected": 0, "disconnected": 0, "error": 0, "pending": 0}
+    for runner in runners.values():
+        key = runner.status.value
+        if key in counts:
+            counts[key] += 1
+    for state, value in counts.items():
+        tunnels.labels(state).set(value)
+
+
 class TunnelSupervisor:
     def __init__(
         self,
@@ -212,7 +225,11 @@ class TunnelSupervisor:
             runner = TunnelRunner(host, self.backend, self.tunnels_dir, self.on_status)
             self._runners[host.id] = runner
             runner.start()
+        _refresh_tunnel_gauge(self._runners)
         return runner
+
+    def refresh_gauges(self) -> None:
+        _refresh_tunnel_gauge(self._runners)
 
     async def restart(self, host: Host) -> TunnelRunner:
         await self.remove(host.id)
@@ -220,6 +237,7 @@ class TunnelSupervisor:
 
     async def remove(self, host_id: uuid.UUID, *, removed: bool = False) -> None:
         runner = self._runners.pop(host_id, None)
+        _refresh_tunnel_gauge(self._runners)
         if runner is not None:
             await runner.stop()
             if removed and self.on_status is not None:

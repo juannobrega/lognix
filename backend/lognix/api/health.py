@@ -29,7 +29,7 @@ class Health(BaseModel):
     components: dict[str, ComponentStatus]
 
 
-async def _check_postgres() -> ComponentStatus:
+async def check_postgres() -> ComponentStatus:
     try:
         async with get_engine().connect() as conn:
             await conn.execute(text("select 1"))
@@ -38,7 +38,7 @@ async def _check_postgres() -> ComponentStatus:
         return ComponentStatus(ok=False, detail=type(exc).__name__)
 
 
-async def _check_http(url: str) -> ComponentStatus:
+async def check_http(url: str) -> ComponentStatus:
     try:
         async with httpx.AsyncClient(timeout=2.0) as client:
             resp = await client.get(url)
@@ -51,9 +51,9 @@ async def _check_http(url: str) -> ComponentStatus:
 async def health() -> Health:
     settings = get_settings()
     postgres, loki, alloy = await asyncio.gather(
-        _check_postgres(),
-        _check_http(f"{settings.loki_url}/ready"),
-        _check_http(f"{settings.alloy_url}/-/ready"),
+        check_postgres(),
+        check_http(f"{settings.loki_url}/ready"),
+        check_http(f"{settings.alloy_url}/-/ready"),
     )
     components = {"postgres": postgres, "loki": loki, "alloy": alloy}
     # Postgres é obrigatório. Loki e Alloy só entram em uso na fase 0.3.0; até lá

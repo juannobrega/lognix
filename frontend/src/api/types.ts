@@ -243,3 +243,34 @@ export interface ExecutorRunning {
   elapsed_ms: number
   detail: Record<string, unknown>
 }
+
+export interface SystemComponent {
+  ok: boolean
+  detail: string | null
+}
+
+export interface SystemLoop {
+  kind: 'tunnels' | 'analysis' | 'log_tails'
+  count: number
+  detail: Record<string, unknown>[]
+}
+
+export interface SystemVolume {
+  path: string
+  total_bytes: number | null
+  used_bytes: number | null
+  free_bytes: number | null
+}
+
+export interface SystemInfo {
+  version: string
+  started_at: string
+  uptime_seconds: number
+  retention_days: number
+  analysis_interval_seconds: number
+  components: Record<string, SystemComponent>
+  counts: Record<string, number>
+  loops: SystemLoop[]
+  volumes: SystemVolume[]
+  proxy_rejected_total: number
+}

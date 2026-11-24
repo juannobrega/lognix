@@ -18,6 +18,7 @@ from lognix.errors import install_error_handlers
 from lognix.events.workers import get_host_workers
 from lognix.hosts.supervisor import get_supervisor
 from lognix.logging_setup import setup_logging
+from lognix.metrics import metrics_middleware
 from lognix.realtime.hub import get_tail_hub
 from lognix.realtime.ws import router as ws_router
 
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
         redoc_url=None,
         lifespan=lifespan,
     )
+    app.middleware("http")(metrics_middleware)
     install_error_handlers(app)
     app.include_router(api_router)
     app.include_router(ws_router)

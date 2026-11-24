@@ -24,6 +24,7 @@ dependencies = [
   "asyncssh>=2.14",
   "websockets>=12",
   "drain3>=0.9",
+  "prometheus-client>=0.20",
 ]
 
 [project.optional-dependencies]
@@ -49,6 +50,7 @@ ignore = ["S101", "RUF012", "ASYNC109", "ASYNC240"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S105", "S106", "E501", "S108", "ASYNC230"]
 "alembic/*" = ["I", "E501"]
+"scripts/*" = ["E402", "S101", "S311"]
 
 [tool.mypy]
 python_version = "3.12"

@@ -10,6 +10,7 @@ import uuid
 from collections.abc import Awaitable, Callable
 
 from lognix.loki.client import LogLine, LokiClient, LokiError, selector
+from lognix.metrics import loki_tails
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class _Tail:
 
     def start(self) -> None:
         self.task = asyncio.create_task(self._run(), name=f"tail:{self.project_id}")
+        loki_tails.inc()
 
     async def _run(self) -> None:
         backoff = 1.0
@@ -65,6 +67,7 @@ class _Tail:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await self.task
             self.task = None
+            loki_tails.dec()
 
 
 class TailHub:

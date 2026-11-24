@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     alloy_config_path: str = Field(default="/alloy-config/config.alloy", alias="ALLOY_CONFIG_PATH")
     tunnels_dir: str = Field(default="/tunnels", alias="TUNNELS_DIR")
 
+    # Pool do banco. O padrão do SQLAlchemy (5+10) é pequeno para muitos ciclos simultâneos:
+    # os ciclos consomem o pool e a API fica na fila. Medido na fase 0.7.0.
+    db_pool_size: int = Field(default=20, alias="LOGNIX_DB_POOL_SIZE")
+    db_max_overflow: int = Field(default=10, alias="LOGNIX_DB_MAX_OVERFLOW")
+    # Ciclos de análise simultâneos. Acima disso não há ganho: o trabalho é CPU e banco,
+    # e a concorrência irrestrita só aumenta a latência da API.
+    analysis_concurrency: int = Field(default=8, alias="LOGNIX_ANALYSIS_CONCURRENCY")
+
     access_token_ttl_seconds: int = Field(default=15 * 60, alias="LOGNIX_ACCESS_TTL")
     refresh_token_ttl_seconds: int = Field(default=7 * 24 * 3600, alias="LOGNIX_REFRESH_TTL")
     login_rate_limit_per_minute: int = Field(default=10, alias="LOGNIX_LOGIN_RATE_LIMIT")

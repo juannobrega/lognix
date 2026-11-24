@@ -8,6 +8,7 @@ from lognix.analysis.routes import executor_router
 from lognix.analysis.routes import insights_router as analysis_insights_router
 from lognix.analysis.routes import projects_router as analysis_projects_router
 from lognix.api.health import router as health_router
+from lognix.api.system import router as system_router
 from lognix.auth.routes import auth_router, setup_router, users_router
 from lognix.containers.logs_routes import router as logs_router
 from lognix.containers.routes import hosts_router as containers_hosts_router
@@ -32,3 +33,4 @@ api_router.include_router(notifications_router)
 api_router.include_router(analysis_projects_router)
 api_router.include_router(analysis_insights_router)
 api_router.include_router(executor_router)
+api_router.include_router(system_router)

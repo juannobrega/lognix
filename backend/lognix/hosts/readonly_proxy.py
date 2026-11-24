@@ -15,6 +15,8 @@ import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
+from lognix.metrics import docker_proxy_requests_total
+
 log = logging.getLogger(__name__)
 audit = logging.getLogger("lognix.audit.docker_proxy")
 
@@ -165,6 +167,7 @@ class ReadOnlyProxy:
                     return
                 if not is_allowed(req.method, req.target):
                     self.rejected_count += 1
+                    docker_proxy_requests_total.labels("rejected").inc()
                     audit.warning(
                         "docker api request rejected",
                         extra={"host": self.label, "method": req.method, "target": req.target},
@@ -182,6 +185,7 @@ class ReadOnlyProxy:
                     client_w.write(_response(411, "Length Required", "{}"))
                     return
 
+                docker_proxy_requests_total.labels("allowed").inc()
                 if upstream is None:
                     upstream = await self._open_upstream()
                     pump = asyncio.create_task(_pump(upstream[0], client_w))

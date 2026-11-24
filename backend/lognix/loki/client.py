@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -14,6 +15,7 @@ import httpx
 import websockets
 
 from lognix.config import get_settings
+from lognix.metrics import loki_queries_total, loki_query_duration
 
 log = logging.getLogger(__name__)
 
@@ -98,17 +100,24 @@ class LokiClient:
             "limit": str(limit),
             "direction": direction,
         }
+        started = time.perf_counter()
         try:
             resp = await self._client.get("/loki/api/v1/query_range", params=params)
         except httpx.HTTPError as exc:
+            loki_queries_total.labels("error").inc()
             raise LokiError(f"Loki não respondeu: {exc}") from exc
+        finally:
+            loki_query_duration.observe(time.perf_counter() - started)
         if resp.status_code >= 400:
+            loki_queries_total.labels("error").inc()
             raise LokiError(
                 f"Loki respondeu HTTP {resp.status_code}: {resp.text[:300]}", resp.status_code
             )
         data = resp.json()
         if data.get("status") != "success":
+            loki_queries_total.labels("error").inc()
             raise LokiError(f"Loki: {data}")
+        loki_queries_total.labels("ok").inc()
         return _flatten(data["data"].get("result") or [])
 
     async def tail(

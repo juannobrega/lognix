@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-11-24T18:37:15.587297+00:00",
+  "setup": {
+    "hosts": 10,
+    "containers": 100,
+    "lines_per_window": 200,
+    "rounds": 3
+  },
+  "cycles": {
+    "cycles": 300,
+    "lines_processed": 60000,
+    "p50_ms": 388.4,
+    "p95_ms": 948.5,
+    "max_ms": 972.2,
+    "mean_ms": 436.9
+  },
+  "api_saturation": {
+    "mode": "saturação",
+    "pause_between_cycles_s": 0,
+    "duration_s": 30,
+    "cycles_run": 1600,
+    "api_requests": 197,
+    "api_p50_ms": 68.2,
+    "api_p95_ms": 117.5,
+    "api_p99_ms": 166.1,
+    "api_max_ms": 174.2
+  },
+  "api_realistic": {
+    "mode": "regime real",
+    "pause_between_cycles_s": 30.0,
+    "duration_s": 30,
+    "cycles_run": 100,
+    "api_requests": 413,
+    "api_p50_ms": 15.8,
+    "api_p95_ms": 41.7,
+    "api_p99_ms": 52.4,
+    "api_max_ms": 135.2
+  },
+  "memory": {
+    "after_seed_mb": 113,
+    "after_test_mb": 206
+  },
+  "database": {
+    "analysis_runs": 2000,
+    "patterns": 1000,
+    "size": "12 MB"
+  },
+  "criteria": {
+    "ciclo determinístico < 5 s por container (p95)": true,
+    "API p95 < 300 ms no regime real": true,
+    "nenhum ciclo falhou": true
+  }
+}

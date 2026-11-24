@@ -22,6 +22,11 @@ from lognix.docker.client import DockerApiError, DockerClient, summarize_env
 from lognix.events import service
 from lognix.events.models import HostEventType
 from lognix.hosts.models import Host, HostStatus
+from lognix.metrics import (
+    docker_events_total,
+    events_stream_restarts_total,
+    inventory_sync_duration,
+)
 from lognix.notifications.models import Notification, NotificationStatus, NotificationType
 from lognix.notifications.service import notify
 
@@ -100,6 +105,7 @@ class HostWorker:
         socket_path = self._socket_for(self.host_id)
         if socket_path is None:
             return None
+        started = time.monotonic()
         client = DockerClient(socket_path)
         try:
             raw = await client.containers(all=True)
@@ -123,6 +129,7 @@ class HostWorker:
             self.last_error = str(exc)
             return None
         finally:
+            inventory_sync_duration.observe(time.monotonic() - started)
             await client.aclose()
 
     async def _inspect(self, client: DockerClient, db, c: Container) -> None:  # type: ignore[no-untyped-def]
@@ -153,11 +160,13 @@ class HostWorker:
                     backoff = 1.0
                 # Stream terminou sem erro: reabre a partir do último evento.
                 self.stream_restarts += 1
+                events_stream_restarts_total.inc()
             except asyncio.CancelledError:
                 raise
             except DockerApiError as exc:
                 self.last_error = str(exc)
                 self.stream_restarts += 1
+                events_stream_restarts_total.inc()
                 log.warning(
                     "events stream error", extra={"host_id": str(self.host_id), "error": str(exc)}
                 )
@@ -174,6 +183,9 @@ class HostWorker:
 
     async def _handle(self, event: dict) -> None:  # type: ignore[type-arg]
         self.events_seen += 1
+        docker_events_total.labels(
+            str(event.get("Action") or event.get("status") or "unknown").split(":", 1)[0]
+        ).inc()
         if event.get("time"):
             self.last_event_time = int(event["time"])
         action = str(event.get("Action") or event.get("status") or "").split(":", 1)[0]
