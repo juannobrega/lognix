@@ -1,6 +1,6 @@
 # Custos e Limites
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-24 · **Atualizado:** 2026-11-21
 
 Base: ADR 006. Toda chamada é contabilizada e visível.
 

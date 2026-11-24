@@ -25,7 +25,7 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 | 0.6.0 | **Ciclo determinístico** | Loop por container, janela variável, Drain e `Pattern`, classificador nível e regex, `AnalysisRun`, os quatro triggers gravando `TriggerFired` **sem IA**, tela de ocorrências sem análise, executor. **Construída em 2026-11-22 na branch `dev`** | 0.4.0, 0.5.0 | Desempenho do ciclo. Critérios do ADR 009 |
 | 0.7.0 | **Medição e endurecimento** | Medição formal do ADR 009 e decisão sobre Redis; auditoria do proxy; testes com 10 hosts e 100 containers; backup documentado. **Construída em 2026-11-24.** Medição aprovou os três critérios; Redis fica fora. Ver ADR 009 e ADR 010 | 0.6.0 | Escala da instância única |
 | 0.8.0 | **Interface completa** | Painel inicial, notificações com visto e limpar todos, histórico, tela de hosts, configurações, consumo preparado. **Construída em 2026-11-24** | 0.6.0 | Usabilidade |
-| 0.9.0 | **IA** | `AIProvider`, OpenRouter, tela de configuração com teste, pipeline de contexto e redução, esquema fechado com retry, `Insight`, `AICall`, tela de consumo, aviso de dados sensíveis | 0.8.0 | Qualidade do JSON estruturado, custo |
+| 0.9.0 | **IA** | `AIProvider`, OpenRouter, tela de configuração com teste, pipeline de contexto e redução, esquema fechado com retry, `Insight`, `AICall`, tela de consumo, aviso de dados sensíveis. **Em construção desde 2026-11-24** | 0.8.0 | Qualidade do JSON estruturado, custo |
 | 1.0.0 | **Release público** | README do projeto, documentação de instalação em `Software/`, licença, tag e release no GitHub. **Só código.** Sem imagens publicadas | 0.9.0 | Primeira impressão de quem avalia |
 
 ## 3. Depois do 1.0.0

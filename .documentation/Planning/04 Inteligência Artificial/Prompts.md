@@ -1,6 +1,6 @@
 # Prompts
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-24 · **Atualizado:** 2026-11-21
 
 Catálogo dos prompts da v1. Os textos finais são escritos e iterados na construção, com teste contra
 logs reais. Aqui ficam estrutura, regras e versionamento.

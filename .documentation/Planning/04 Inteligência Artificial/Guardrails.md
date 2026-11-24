@@ -1,6 +1,6 @@
 # Guardrails
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-24 · **Atualizado:** 2026-11-21
 
 Limites do que a IA pode fazer e o que o Lognix faz para conter erros dela.
 
