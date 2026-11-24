@@ -11,7 +11,7 @@ from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from lognix.analysis.cycle import run_cycle
+from lognix.analysis.cycle import cycle_lock, run_cycle
 from lognix.analysis.executor import get_executor
 from lognix.analysis.manager import get_analysis_manager
 from lognix.analysis.models import (
@@ -196,16 +196,18 @@ async def analyze_now(
     key = get_executor().start(container.id, container.name, container.host.name, "manual")
     client = LokiClient()
     try:
-        result = await run_cycle(
-            db,
-            client,
-            container,
-            window_start=start,
-            window_end=end,
-            manual=True,
-            fired_by=user.id,
-            on_phase=lambda p, **d: get_executor().phase(key, p, **d),
-        )
+        # Espera o ciclo automático terminar, se estiver no meio de um.
+        async with cycle_lock(container.id):
+            result = await run_cycle(
+                db,
+                client,
+                container,
+                window_start=start,
+                window_end=end,
+                manual=True,
+                fired_by=user.id,
+                on_phase=lambda p, **d: get_executor().phase(key, p, **d),
+            )
     finally:
         await client.aclose()
         get_executor().finish(key)

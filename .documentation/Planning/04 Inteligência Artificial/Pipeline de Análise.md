@@ -163,6 +163,12 @@ o limite de 1 por projeto por minuto e a concorrência global.
 - Teto de 50 000 linhas por ciclo, com marca `truncated`.
 - Anomalia exige 10 ciclos de base; critérios em `triggers.py`.
 - Trigger manual limitado a 1 por minuto por projeto.
+- **Um ciclo por container de cada vez.** Análise manual e ciclo automático compartilham uma trava
+  por container. Sem ela processavam janelas sobrepostas e disputavam a criação dos mesmos padrões,
+  estourando a unicidade `(container_id, template)`. Descoberto pelo CI na 0.8.0.
+- A gravação de padrões usa upsert como rede de segurança: se duas transações criarem o mesmo
+  template, as contagens somam em vez de falhar.
+- Marcar um container dispara um ciclo imediato, antes da primeira pausa.
 
 ## 9. Indicador de execução
 

@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 
-from lognix.analysis.cycle import run_cycle
+from lognix.analysis.cycle import cycle_lock, drop_cycle_lock, run_cycle
 from lognix.analysis.executor import get_executor
 from lognix.analysis.models import AnalysisRun
 from lognix.analysis.patterns import drop_miner
@@ -37,7 +37,6 @@ class ContainerLoop:
         self.last_window_end: datetime | None = None
         self.cycles = 0
         self.last_error: str | None = None
-        self._lock = asyncio.Lock()
         self._inflight: asyncio.Future[None] | None = None
 
     def start(self) -> None:
@@ -85,7 +84,7 @@ class ContainerLoop:
             self.last_window_end = last
 
     async def cycle_once(self) -> None:
-        async with self._lock, self.manager.semaphore:
+        async with cycle_lock(self.container_id), self.manager.semaphore:
             async with get_sessionmaker()() as db:
                 container = await db.get(Container, self.container_id)
                 if (
@@ -176,6 +175,7 @@ class AnalysisManager:
         for cid in list(self._loops.keys() - ids):
             await self._loops.pop(cid).stop()
             drop_miner(cid)
+            drop_cycle_lock(cid)
         analysis_loops.set(len(self._loops))
 
     def get(self, container_id: uuid.UUID) -> ContainerLoop | None:

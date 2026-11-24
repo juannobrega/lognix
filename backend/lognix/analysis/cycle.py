@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lognix.analysis import triggers as trig
@@ -38,6 +39,21 @@ BASELINE_RUNS = 30
 # Drain e regex são trabalho de CPU em Python puro: sem ceder o loop, um ciclo longo
 # segura a API inteira. Medido na 0.7.0. Ceder a cada bloco mantém a API responsiva.
 YIELD_EVERY = 250
+
+# Um ciclo por container de cada vez. A análise manual e o ciclo automático podem coincidir;
+# sem isso processam janelas sobrepostas e disputam a criação dos mesmos padrões.
+_cycle_locks: dict[uuid.UUID, asyncio.Lock] = {}
+
+
+def cycle_lock(container_id: uuid.UUID) -> asyncio.Lock:
+    lock = _cycle_locks.get(container_id)
+    if lock is None:
+        lock = _cycle_locks[container_id] = asyncio.Lock()
+    return lock
+
+
+def drop_cycle_lock(container_id: uuid.UUID) -> None:
+    _cycle_locks.pop(container_id, None)
 
 
 @dataclass
@@ -170,25 +186,41 @@ async def run_cycle(
     phase("classificando", errors=errors)
     t_persist = time.monotonic()
     new_patterns = 0
+    to_insert: list[dict[str, Any]] = []
     for template, count in counts.items():
         pattern = existing.get(template)
         if pattern is None:
-            pattern = Pattern(
-                container_id=container.id,
-                template=template,
-                level=levels.get(template, LogLevel.unknown),
-                count_total=0,
-                sample=samples.get(template, ""),
-                first_seen_at=now,
-                last_seen_at=now,
+            to_insert.append(
+                {
+                    "id": uuid.uuid4(),
+                    "container_id": container.id,
+                    "template": template,
+                    "level": levels.get(template, LogLevel.unknown),
+                    "count_total": count,
+                    "sample": samples.get(template, ""),
+                    "first_seen_at": now,
+                    "last_seen_at": now,
+                }
             )
-            db.add(pattern)
-            existing[template] = pattern
             new_patterns += 1
+            continue
         pattern.count_total += count
         pattern.last_seen_at = now
         if levels.get(template) == LogLevel.error and pattern.level != LogLevel.error:
             pattern.level = LogLevel.error
+    if to_insert:
+        # Upsert: se outra transação criou o mesmo padrão entre a leitura e a escrita, soma
+        # a contagem em vez de estourar a unicidade (container_id, template).
+        stmt = pg_insert(Pattern).values(to_insert)
+        await db.execute(
+            stmt.on_conflict_do_update(
+                constraint="uq_patterns_container_template",
+                set_={
+                    "count_total": Pattern.count_total + stmt.excluded.count_total,
+                    "last_seen_at": stmt.excluded.last_seen_at,
+                },
+            )
+        )
 
     seconds = max((window_end - window_start).total_seconds(), 1.0)
     stats = trig.WindowStats(
