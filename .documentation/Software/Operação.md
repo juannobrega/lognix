@@ -223,6 +223,10 @@ docker run --rm -v lognix_loki-data:/data -v "$PWD":/in alpine \
 docker compose up -d
 ```
 
+Procedimento verificado em 2026-11-24 numa instalação com 4 hosts e 20 containers: o dump
+restaurou hosts, containers, padrões, ciclos e usuários, e as credenciais criptografadas
+continuaram legíveis com a mesma chave.
+
 Depois de restaurar, confira em Sistema que os três componentes estão ok e que os hosts
 reconectaram. Se a chave do backup for diferente da que está no `.env`, os hosts falham na etapa de
 autenticação e as credenciais precisam ser recadastradas.

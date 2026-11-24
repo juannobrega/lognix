@@ -22,3 +22,6 @@ def setup_logging(level: str) -> None:
     root.addHandler(handler)
     root.setLevel(level.upper())
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    # O asyncssh registra em INFO cada canal aberto e fechado. Com um túnel por host e uma
+    # conexão por requisição à Docker API, isso domina o log e esconde o que importa.
+    logging.getLogger("asyncssh").setLevel(logging.WARNING)
