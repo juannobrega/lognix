@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import type { AnalysisRun, DockerEvent, Pattern, Project, TriggerFired } from '../api/types'
+import type { AnalysisRun, DockerEvent, Insight, Pattern, Project, TriggerFired } from '../api/types'
+import { InsightCard } from '../insights/InsightCard'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { TriggerList } from '../analysis/TriggerList'
 import { ApiError } from '../api/client'
@@ -18,7 +19,8 @@ export function ProjectPage() {
   const { id = '' } = useParams()
   const project = useQuery({ queryKey: ['project', id], queryFn: () => api<Project>(`/projects/${id}`), refetchInterval: 30_000 })
   const events = useQuery({ queryKey: ['project', id, 'events'], queryFn: () => api<DockerEvent[]>(`/projects/${id}/events`), refetchInterval: 30_000 })
-  const [tab, setTab] = useState<'logs' | 'patterns' | 'triggers' | 'runs' | 'events' | 'env'>('logs')
+  const [tab, setTab] = useState<'logs' | 'insights' | 'patterns' | 'triggers' | 'runs' | 'events' | 'env'>('logs')
+  const insights = useQuery({ queryKey: ['project', id, 'insights'], queryFn: () => api<Insight[]>('/insights?limit=200'), refetchInterval: 30_000 })
   const qc = useQueryClient()
   const toast = useToast()
   const patterns = useQuery({ queryKey: ['project', id, 'patterns'], queryFn: () => api<Pattern[]>(`/projects/${id}/patterns`), enabled: tab === 'patterns', refetchInterval: 30_000 })
@@ -55,6 +57,7 @@ export function ProjectPage() {
   const [text, setText] = useState('')
   const [draft, setDraft] = useState('')
   const logs = useProjectLogs(id, { live, period, text })
+  const mine = (insights.data ?? []).filter((i) => i.container_id === id)
   const p = project.data
   if (!p) return <p>Carregando…</p>
 
@@ -107,12 +110,36 @@ export function ProjectPage() {
 
       {p.state === 'removed' && <Alert kind="error" message="Este container desapareceu do host. Está em Containers excluídos; logs e eventos continuam acessíveis." />}
       <div role="tablist" className="tabs">
-        {(['logs', 'triggers', 'patterns', 'runs', 'events', 'env'] as const).map((t) => (
+        {(['logs', 'insights', 'triggers', 'patterns', 'runs', 'events', 'env'] as const).map((t) => (
           <button key={t} role="tab" className="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-            {{ logs: 'Logs', triggers: `Ocorrências (${triggers.data?.length ?? 0})`, patterns: 'Padrões', runs: 'Ciclos', events: `Eventos (${events.data?.length ?? 0})`, env: 'Ambiente' }[t]}
+            {
+              {
+                logs: 'Logs',
+                insights: `Insights (${mine.length})`,
+                triggers: `Ocorrências (${triggers.data?.length ?? 0})`,
+                patterns: 'Padrões',
+                runs: 'Ciclos',
+                events: `Eventos (${events.data?.length ?? 0})`,
+                env: 'Ambiente',
+              }[t]
+            }
           </button>
         ))}
       </div>
+      {tab === 'insights' &&
+        (mine.length > 0 ? (
+          <div className="card">
+            {mine.map((i) => (
+              <InsightCard key={i.id} insight={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="card card-body">
+            <p className="muted" style={{ margin: 0 }}>
+              Nenhum insight para este projeto. Eles aparecem quando um trigger dispara com a IA ativa.
+            </p>
+          </div>
+        ))}
       {tab === 'triggers' && <TriggerList triggers={triggers.data ?? []} />}
       {tab === 'patterns' && (
         <div className="card">

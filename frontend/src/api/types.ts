@@ -325,3 +325,104 @@ export interface AiSettings {
   language: string
   provider: string
 }
+
+export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info'
+
+export interface InsightEvidence {
+  kind: 'log_line' | 'docker_event' | 'pattern'
+  index: number
+  text: string
+  at?: string
+  ts_ns?: string
+  count?: number
+  level?: string
+  new?: boolean
+  type?: string
+}
+
+export interface Insight {
+  id: string
+  container_id: string
+  container_name: string | null
+  host_name: string | null
+  trigger_id: string
+  trigger_type: TriggerFired['type'] | null
+  trigger_note: string | null
+  severity: Severity
+  title: string
+  summary: string
+  probable_cause: string
+  suggested_action: string
+  confidence: number
+  needs_code: boolean
+  evidence: InsightEvidence[]
+  code_diagnosis: Record<string, unknown> | null
+  context_truncated: boolean
+  status: 'new' | 'seen'
+  seen_at: string | null
+  created_at: string
+}
+
+export interface AiCall {
+  id: string
+  model: string
+  purpose: 'analyze' | 'code_diagnosis' | 'issue_text' | 'test'
+  prompt_version: string
+  input_tokens: number
+  output_tokens: number
+  cost_usd: string
+  cost_source: 'provider' | 'estimated' | 'unknown'
+  latency_ms: number
+  schema_retry: boolean
+  status: 'ok' | 'error'
+  error: string | null
+  created_at: string
+  container_name?: string | null
+}
+
+export interface InsightDetail extends Insight {
+  sent_context: string
+  window_start: string | null
+  window_end: string | null
+  calls: AiCall[]
+}
+
+export interface UsageBucket {
+  key: string
+  calls: number
+  input_tokens: number
+  output_tokens: number
+  cost_usd: string
+}
+
+export interface Usage {
+  today: UsageBucket
+  last_7d: UsageBucket
+  last_30d: UsageBucket
+  total: UsageBucket
+  by_day: UsageBucket[]
+  by_project: UsageBucket[]
+  by_trigger: UsageBucket[]
+  by_purpose: UsageBucket[]
+  failures: number
+  schema_retries: number
+  paused_until: string | null
+}
+
+export interface TestKeyResult {
+  ok: boolean
+  model: string | null
+  latency_ms: number | null
+  cost_usd: string | null
+  input_tokens: number | null
+  output_tokens: number | null
+  error: string | null
+}
+
+export interface AiModel {
+  id: string
+  name: string
+  context_length: number | null
+  prompt_usd_per_mtok: number | null
+  completion_usd_per_mtok: number | null
+}

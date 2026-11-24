@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
-import type { AiSettings } from '../api/types'
+import type { AiModel, AiSettings, TestKeyResult } from '../api/types'
+import { usd } from '../components/format'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { Field } from '../components/Field'
@@ -17,6 +19,8 @@ export function AiSettingsPage() {
   const [maxIn, setMaxIn] = useState(12000)
   const [maxOut, setMaxOut] = useState(1500)
   const [concurrency, setConcurrency] = useState(3)
+  const [modelQuery, setModelQuery] = useState('')
+  const [showModels, setShowModels] = useState(false)
 
   useEffect(() => {
     if (!settings.data) return
@@ -25,6 +29,29 @@ export function AiSettingsPage() {
     setMaxOut(settings.data.max_output_tokens)
     setConcurrency(settings.data.concurrency)
   }, [settings.data])
+
+  const models = useQuery({
+    queryKey: ['settings', 'ai', 'models', modelQuery],
+    queryFn: () => api<AiModel[]>(`/settings/ai/models?q=${encodeURIComponent(modelQuery)}`),
+    enabled: showModels && !!settings.data?.has_api_key,
+    retry: false,
+  })
+
+  const test = useMutation({
+    mutationFn: () =>
+      api<TestKeyResult>('/settings/ai/test', {
+        method: 'POST',
+        json: { api_key: apiKey || undefined, model: model || undefined },
+      }),
+    onSuccess: (r) =>
+      r.ok
+        ? toast.show(
+            `Funcionou: ${r.model} respondeu em ${((r.latency_ms ?? 0) / 1000).toFixed(1)}s, custo ${usd(r.cost_usd ?? 0)}.`,
+            'success',
+          )
+        : toast.show(r.error ?? 'O provider recusou.', 'error'),
+    onError: (e) => toast.show(e instanceof ApiError ? e.message : 'Falha ao testar.', 'error'),
+  })
 
   const save = useMutation({
     mutationFn: (body: Record<string, unknown>) => api<AiSettings>('/settings/ai', { method: 'PUT', json: body }),
@@ -92,10 +119,59 @@ export function AiSettingsPage() {
           <Field
             label="Modelo"
             placeholder="anthropic/claude-sonnet-4.5"
-            help="Identificador do modelo no OpenRouter. A lista com preços chega na fase 0.9.0."
+            help="Identificador do modelo no OpenRouter."
             value={model}
             onChange={(e) => setModel(e.target.value)}
           />
+          {s.has_api_key && (
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setShowModels((v) => !v)}>
+                {showModels ? 'Esconder catálogo' : 'Escolher da lista do OpenRouter'}
+              </Button>
+              {showModels && (
+                <div className="card" style={{ marginTop: 'var(--space-2)' }}>
+                  <div style={{ padding: 'var(--space-3)' }}>
+                    <input
+                      aria-label="Buscar modelo"
+                      placeholder="buscar modelo"
+                      value={modelQuery}
+                      onChange={(e) => setModelQuery(e.target.value)}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  {models.isError && <p className="muted" style={{ padding: '0 var(--space-3) var(--space-3)' }}>Não foi possível listar os modelos.</p>}
+                  <div style={{ maxHeight: 280, overflow: 'auto' }}>
+                    <table className="table">
+                      <tbody>
+                        {models.data?.slice(0, 60).map((m) => (
+                          <tr key={m.id}>
+                            <td>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setModel(m.id)
+                                  setShowModels(false)
+                                }}
+                                style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--accent)', textAlign: 'left' }}
+                              >
+                                {m.id}
+                              </button>
+                              <div className="muted" style={{ fontSize: 'var(--text-xs)' }}>{m.name}</div>
+                            </td>
+                            <td className="right muted" style={{ fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }}>
+                              {m.prompt_usd_per_mtok !== null && m.completion_usd_per_mtok !== null
+                                ? `$${m.prompt_usd_per_mtok.toFixed(2)} / $${m.completion_usd_per_mtok.toFixed(2)} por Mtok`
+                                : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
             <Field label="Tokens de entrada" type="number" min={1000} max={200000} value={maxIn} onChange={(e) => setMaxIn(Number(e.target.value))} />
             <Field label="Tokens de saída" type="number" min={200} max={32000} value={maxOut} onChange={(e) => setMaxOut(Number(e.target.value))} />
@@ -104,6 +180,14 @@ export function AiSettingsPage() {
           <div className="row">
             <Button type="submit" variant="primary" loading={save.isPending}>
               Salvar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => test.mutate()}
+              loading={test.isPending}
+              disabled={!model || (!apiKey && !s.has_api_key)}
+            >
+              Testar
             </Button>
             <Button
               type="button"
@@ -131,11 +215,12 @@ export function AiSettingsPage() {
         </div>
         <div className="card-body">
           <p className="muted" style={{ marginTop: 0 }}>
-            A análise por IA entra na fase 0.9.0. Quando chegar, cada ocorrência detectada pelo ciclo vira um insight com resumo, causa
-            provável, ação sugerida e as linhas que embasaram a conclusão. A IA nunca roda sozinha: só quando um trigger dispara.
+            Cada ocorrência detectada pelo ciclo vira um insight com resumo, causa provável, ação sugerida e as linhas que embasaram a
+            conclusão. A IA nunca roda sozinha: só quando um trigger dispara, e no máximo uma vez por ciclo por projeto.
           </p>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Toda chamada será registrada com modelo, tokens e custo, visíveis em Consumo.
+            Resposta fora do formato esperado tem um retry; o segundo erro vira notificação e a ocorrência fica como "sem análise". Toda
+            chamada é registrada com modelo, tokens e custo em <Link to="/settings/usage">Consumo</Link>.
           </p>
         </div>
       </section>

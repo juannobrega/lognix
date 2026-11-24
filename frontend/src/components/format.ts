@@ -35,3 +35,17 @@ export function dateTime(iso: string): string {
 export function timeOnly(iso: string): string {
   return new Date(iso).toLocaleTimeString('pt-BR')
 }
+
+/** Custo em dólares. Mostra centavos de milésimo quando o valor é pequeno. */
+export function usd(value: string | number): string {
+  const n = typeof value === 'string' ? Number(value) : value
+  if (!Number.isFinite(n)) return '—'
+  if (n === 0) return '$0,00'
+  if (n < 0.01) return `$${n.toFixed(4).replace('.', ',')}`
+  return `$${n.toFixed(2).replace('.', ',')}`
+}
+
+export function tokens(n: number): string {
+  if (n < 1000) return String(n)
+  return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0)}k`
+}

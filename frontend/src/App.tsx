@@ -5,6 +5,7 @@ import { AiSettingsPage } from './pages/AiSettingsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HostDetailPage } from './pages/HostDetailPage'
 import { HostsPage } from './pages/HostsPage'
+import { InsightDetailPage } from './pages/InsightDetailPage'
 import { InsightsPage } from './pages/InsightsPage'
 import { NewHostPage } from './pages/NewHostPage'
 import { NotificationsPage } from './pages/NotificationsPage'
@@ -31,6 +32,7 @@ export function App() {
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectPage />} />
           <Route path="insights" element={<InsightsPage />} />
+          <Route path="insights/:id" element={<InsightDetailPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<SettingsPage />}>
             <Route index element={<Navigate to="users" replace />} />

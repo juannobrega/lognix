@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { TriggerList } from '../analysis/TriggerList'
 import { api } from '../api/client'
-import type { Summary, TriggerFired } from '../api/types'
+import type { Insight, Summary, TriggerFired } from '../api/types'
+import { InsightCard } from '../insights/InsightCard'
 import { Alert } from '../components/Alert'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
@@ -15,9 +16,14 @@ import { NotificationItem } from './NotificationsPage'
 
 export function DashboardPage() {
   const summary = useQuery({ queryKey: ['summary'], queryFn: () => api<Summary>('/summary'), refetchInterval: 20_000 })
+  const insights = useQuery({
+    queryKey: ['insights', 'new', 'recent'],
+    queryFn: () => api<Insight[]>('/insights?limit=5'),
+    refetchInterval: 30_000,
+  })
   const triggers = useQuery({
     queryKey: ['insights', 'unanalyzed', 'recent'],
-    queryFn: () => api<TriggerFired[]>('/insights/unanalyzed?limit=6'),
+    queryFn: () => api<TriggerFired[]>('/insights/unanalyzed?limit=5'),
     refetchInterval: 30_000,
   })
   const { list, seen } = useNotifications(false)
@@ -191,8 +197,8 @@ export function DashboardPage() {
 
         <section>
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
-            <h2>Ocorrências recentes</h2>
-            <Link to="/insights">ver todas</Link>
+            <h2>Insights recentes</h2>
+            <Link to="/insights">ver todos</Link>
           </div>
           {s && !s.ai_enabled && (
             <Alert
@@ -200,7 +206,24 @@ export function DashboardPage() {
               action="Configure um provider em Configurações › IA para gerar insights."
             />
           )}
-          {triggers.isPending ? <SkeletonRows rows={3} /> : <TriggerList triggers={triggers.data ?? []} showProject />}
+          {insights.isPending ? (
+            <SkeletonRows rows={3} />
+          ) : (insights.data?.length ?? 0) > 0 ? (
+            <div className="card">
+              {insights.data?.map((i) => (
+                <InsightCard key={i.id} insight={i} />
+              ))}
+            </div>
+          ) : (triggers.data?.length ?? 0) > 0 ? (
+            <>
+              <p className="muted" style={{ marginTop: 0 }}>
+                Nenhum insight novo. Estas ocorrências foram detectadas mas não analisadas:
+              </p>
+              <TriggerList triggers={triggers.data ?? []} showProject />
+            </>
+          ) : (
+            <TriggerList triggers={[]} />
+          )}
         </section>
       </div>
     </>
