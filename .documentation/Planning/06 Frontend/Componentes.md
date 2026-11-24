@@ -1,6 +1,6 @@
 # Componentes
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-24 · **Atualizado:** 2026-11-21
 
 Biblioteca própria, sem framework de UI. CSS Modules. Cada componente: pasta com `.tsx`, `.module.css`,
 teste e história curta em Markdown.

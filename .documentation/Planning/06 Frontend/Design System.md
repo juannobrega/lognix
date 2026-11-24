@@ -1,6 +1,6 @@
 # Design System
 
-**Status:** Em revisão. Primeiro passe aplicado em 2026-11-22 · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-24. Primeiro passe aplicado em 2026-11-22 · **Atualizado:** 2026-11-21
 
 Mínimo necessário para a interface ser consistente. Sem biblioteca externa.
 
@@ -46,6 +46,17 @@ em `localStorage`. Logs em fundo escuro por padrão nos dois temas, por legibili
 - Barra lateral com ícones SVG inline, avatar com iniciais, contador de notificações.
 - Selos de estado com fundo suave e ponto colorido. Botões com tamanhos `md` e `sm`.
 - Páginas de host e projeto reorganizadas em abas.
+
+## 4.2 Aplicado na 0.8.0
+
+- Componentes novos: `Skeleton` e `SkeletonRows` para carregamento, `Stat` e `StatGrid` para números,
+  `Toast` com provider e `useToast`, `ErrorState` com ação de nova tentativa.
+- Formatações compartilhadas em `components/format.ts`, fora dos módulos de componente por causa do
+  Fast Refresh: `compact`, `bytes`, `duration`.
+- Toda lista tem três estados tratados: carregando com esqueleto, vazio com explicação e ação, erro
+  com mensagem e botão.
+- Ações que mudam estado dão retorno por toast, não só por texto na tela.
+- `prefers-reduced-motion` desliga as animações de esqueleto e de toast.
 
 ## 5. Identidade
 

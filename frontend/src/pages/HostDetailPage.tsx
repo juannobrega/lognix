@@ -9,12 +9,14 @@ import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { HostStatusBadge } from '../components/StatusBadge'
 import { ValidationSteps } from '../components/ValidationSteps'
+import { useToast } from '../components/useToast'
 import { useValidation } from '../hosts/useValidation'
 
 export function HostDetailPage() {
   const { id = '' } = useParams()
   const qc = useQueryClient()
   const navigate = useNavigate()
+  const toast = useToast()
   const [validationId, setValidationId] = useState<string | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
   const [tab, setTab] = useState<'containers' | 'excluded' | 'events' | 'connection' | 'alloy'>('containers')
@@ -30,7 +32,11 @@ export function HostDetailPage() {
   const events = useQuery({ queryKey: ['host', id, 'events'], queryFn: () => api<HostEvent[]>(`/hosts/${id}/events`), refetchInterval: 30_000 })
   const validation = useValidation(validationId)
 
-  const onErr = (err: unknown) => setError(err instanceof ApiError ? err : new ApiError(0, 'network', 'Falha de rede.'))
+  const onErr = (err: unknown) => {
+    const e = err instanceof ApiError ? err : new ApiError(0, 'network', 'Falha de rede.')
+    setError(e)
+    toast.show(e.message, 'error')
+  }
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ['host', id] })
     void qc.invalidateQueries({ queryKey: ['hosts'] })
@@ -39,14 +45,15 @@ export function HostDetailPage() {
   const saveMonitored = useMutation({
     mutationFn: (ids: string[]) => api<MonitoredResult>(`/hosts/${id}/containers/monitored`, { method: 'PUT', json: { container_ids: ids } }),
     onSuccess: (r) => {
-      setAlloyMsg(
-        r.alloy.reload_ok
-          ? `Config do Alloy aplicada: ${r.alloy.containers_in_config} containers em ${r.alloy.hosts_in_config} hosts.`
-          : `Falha ao recarregar o Alloy, config anterior restaurada: ${r.alloy.error ?? ''}`,
-      )
+      const msg = r.alloy.reload_ok
+        ? `Config do Alloy aplicada: ${r.alloy.containers_in_config} containers em ${r.alloy.hosts_in_config} hosts.`
+        : `Falha ao recarregar o Alloy, config anterior restaurada: ${r.alloy.error ?? ''}`
+      setAlloyMsg(msg)
+      toast.show(msg, r.alloy.reload_ok ? 'success' : 'error')
       void qc.invalidateQueries({ queryKey: ['host', id, 'containers'] })
       void qc.invalidateQueries({ queryKey: ['host', id, 'alloy'] })
       void qc.invalidateQueries({ queryKey: ['projects'] })
+      void qc.invalidateQueries({ queryKey: ['summary'] })
     },
     onError: onErr,
   })

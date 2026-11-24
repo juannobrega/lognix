@@ -9,6 +9,7 @@ import { ApiError } from '../api/client'
 import { EventTimeline } from '../components/EventTimeline'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
+import { useToast } from '../components/useToast'
 import { ContainerStateBadge, HostStatusBadge } from '../components/StatusBadge'
 import { LogViewer } from '../logs/LogViewer'
 import { useProjectLogs, type Period } from '../logs/useProjectLogs'
@@ -19,6 +20,7 @@ export function ProjectPage() {
   const events = useQuery({ queryKey: ['project', id, 'events'], queryFn: () => api<DockerEvent[]>(`/projects/${id}/events`), refetchInterval: 30_000 })
   const [tab, setTab] = useState<'logs' | 'patterns' | 'triggers' | 'runs' | 'events' | 'env'>('logs')
   const qc = useQueryClient()
+  const toast = useToast()
   const patterns = useQuery({ queryKey: ['project', id, 'patterns'], queryFn: () => api<Pattern[]>(`/projects/${id}/patterns`), enabled: tab === 'patterns', refetchInterval: 30_000 })
   const triggers = useQuery({ queryKey: ['project', id, 'triggers'], queryFn: () => api<TriggerFired[]>(`/projects/${id}/triggers`), refetchInterval: 30_000 })
   const runs = useQuery({ queryKey: ['project', id, 'runs'], queryFn: () => api<AnalysisRun[]>(`/projects/${id}/analysis-runs`), enabled: tab === 'runs', refetchInterval: 30_000 })
@@ -27,16 +29,25 @@ export function ProjectPage() {
   const analyze = useMutation({
     mutationFn: () => api<{ triggers: TriggerFired[]; run: AnalysisRun }>(`/projects/${id}/analyze`, { method: 'POST', json: { minutes } }),
     onSuccess: (r) => {
-      setAnalyzeMsg(`Analisadas ${r.run.lines_count} linhas, ${r.run.error_lines_count} de erro, ${r.run.new_patterns_count} padrões novos.`)
+      const msg = `Analisadas ${r.run.lines_count} linhas, ${r.run.error_lines_count} de erro, ${r.run.new_patterns_count} padrões novos.`
+      setAnalyzeMsg(msg)
+      toast.show(msg, 'success')
       void qc.invalidateQueries({ queryKey: ['project', id] })
       void qc.invalidateQueries({ queryKey: ['insights'] })
       setTab('triggers')
     },
-    onError: (e) => setAnalyzeMsg(e instanceof ApiError ? `${e.message} ${e.action ?? ''}` : 'Falha na análise.'),
+    onError: (e) => {
+      const msg = e instanceof ApiError ? `${e.message} ${e.action ?? ''}`.trim() : 'Falha na análise.'
+      setAnalyzeMsg(msg)
+      toast.show(msg, 'error')
+    },
   })
   const togglePattern = useMutation({
     mutationFn: (p: Pattern) => api(`/projects/${id}/patterns/${p.id}/ignore`, { method: 'PUT', json: { ignored: !p.ignored } }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['project', id, 'patterns'] }),
+    onSuccess: (_d, p) => {
+      toast.show(p.ignored ? 'Padrão reativado.' : 'Padrão ignorado: não abrirá issues.', 'success')
+      void qc.invalidateQueries({ queryKey: ['project', id, 'patterns'] })
+    },
   })
   const [live, setLive] = useState(true)
   const [follow, setFollow] = useState(true)

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layout/AppLayout'
+import { AiSettingsPage } from './pages/AiSettingsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HostDetailPage } from './pages/HostDetailPage'
 import { HostsPage } from './pages/HostsPage'
@@ -10,10 +11,10 @@ import { NotificationsPage } from './pages/NotificationsPage'
 import { ProjectPage } from './pages/ProjectPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { LoginPage } from './pages/LoginPage'
-import { PlaceholderPage } from './pages/PlaceholderPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SetupPage } from './pages/SetupPage'
 import { SystemPage } from './pages/SystemPage'
+import { UsagePage } from './pages/UsagePage'
 import { UsersPage } from './pages/UsersPage'
 
 export function App() {
@@ -34,8 +35,8 @@ export function App() {
           <Route path="settings" element={<SettingsPage />}>
             <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<UsersPage />} />
-            <Route path="ai" element={<PlaceholderPage title="IA" phase="0.9.0" />} />
-            <Route path="usage" element={<PlaceholderPage title="Consumo de IA" phase="0.9.0" />} />
+            <Route path="ai" element={<AiSettingsPage />} />
+            <Route path="usage" element={<UsagePage />} />
             <Route path="system" element={<SystemPage />} />
           </Route>
         </Route>

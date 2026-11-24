@@ -39,7 +39,7 @@ barra: versão, estado da IA, usuário logado.
 |---|---|---|---|
 | **Login** | `/login` | usuário e senha, devolve JWT | 0.1.0 |
 | **Criar primeiro usuário** | `/setup` | só aparece com banco sem usuários | 0.1.0 |
-| **Painel** | `/` | tela inicial. Insights novos, notificações novas, estado dos hosts, executor, resumo do dia | 0.8.0, versão mínima em 0.1.0 |
+| **Painel** | `/` | tela inicial. Resumo de 24 h, hosts, notificações, projetos mais ativos, ocorrências recentes, executor. **Implementado na 0.8.0** | 0.8.0 |
 | **Hosts** | `/hosts` | lista com estado da conexão, containers monitorados, último erro | 0.2.0 |
 | **Cadastrar host** | `/hosts/new` | formulário, método de autenticação, validação em etapas com progresso visível, seleção inicial de containers | 0.2.0, seleção em 0.3.0 |
 | **Host** | `/hosts/:id` | abas: Containers, Excluídos, Eventos, Config do Alloy, Conexão | 0.3.0, excluídos em 0.5.0 |
@@ -52,8 +52,8 @@ barra: versão, estado da IA, usuário logado.
 | **Ocorrências sem análise** | `/insights/unanalyzed` | triggers disparados sem IA | 0.6.0 |
 | **Notificações** | `/notifications` | lista, visto, limpar todos, ações diretas: monitorar container novo, reconectar host, aceitar fingerprint | 0.5.0 |
 | **Executor** | painel lateral, qualquer rota | análises em andamento | 0.6.0 |
-| **Configurações › IA** | `/settings/ai` | chave OpenRouter, teste, modelo, limites, aviso de dados sensíveis, ativar e desativar | 0.9.0 |
-| **Configurações › Consumo** | `/settings/usage` | tela de consumo da área 04 | 0.9.0 |
+| **Configurações › IA** | `/settings/ai` | chave OpenRouter, modelo, limites, aviso de dados sensíveis, ativar e desativar. Estrutura na 0.8.0; teste de chave e lista de modelos na 0.9.0 | 0.8.0 |
+| **Configurações › Consumo** | `/settings/usage` | tela de consumo da área 04. Estrutura na 0.8.0; números reais na 0.9.0 | 0.8.0 |
 | **Configurações › Usuários** | `/settings/users` | cadastro e remoção de usuários, troca de senha | 0.1.0 |
 | **Configurações › Sistema** | `/settings/system` | versão, retenção, estado dos loops, estado do Alloy e do Loki | 0.7.0 |
 | **Configurações › GitHub** | `/settings/github` | App ID, chave, instalação | 1.1.0 |

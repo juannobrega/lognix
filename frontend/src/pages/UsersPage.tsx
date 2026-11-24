@@ -6,10 +6,12 @@ import { useAuth } from '../auth/useAuth'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { Field } from '../components/Field'
+import { useToast } from '../components/useToast'
 
 export function UsersPage() {
   const qc = useQueryClient()
   const { user: me } = useAuth()
+  const toast = useToast()
   const users = useQuery({ queryKey: ['users'], queryFn: () => api<User[]>('/users') })
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -23,6 +25,7 @@ export function UsersPage() {
       setEmail('')
       setPassword('')
       setError(null)
+      toast.show('Usuário criado.', 'success')
       void qc.invalidateQueries({ queryKey: ['users'] })
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : 'Falha ao criar usuário.'),
@@ -30,7 +33,10 @@ export function UsersPage() {
 
   const remove = useMutation({
     mutationFn: (id: string) => api(`/users/${id}`, { method: 'DELETE' }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      toast.show('Usuário removido.', 'success')
+      void qc.invalidateQueries({ queryKey: ['users'] })
+    },
     onError: (err) => setError(err instanceof ApiError ? err.message : 'Falha ao remover usuário.'),
   })
 

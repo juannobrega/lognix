@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.7.0
+**Versão:** 0.8.0
 
 ## Preparar um host para o Lognix
 
@@ -252,3 +252,33 @@ Botões de ajuste no `.env`, raramente necessários:
 | `LOGNIX_DB_MAX_OVERFLOW` | 10 | conexões extras sob pico |
 
 Aumentar a concorrência acima do número de núcleos não acelera: o trabalho é CPU e banco.
+
+## Painel
+
+A tela inicial resume as últimas 24 horas: linhas analisadas, linhas de erro, ocorrências, projetos
+com erro na última hora e ciclos com falha. Abaixo, o estado de cada host, as notificações novas,
+os projetos mais ativos e as ocorrências recentes. Tudo vem de uma chamada só, `GET /summary`, e se
+atualiza a cada 20 s.
+
+Com nenhum host cadastrado, a tela inteira vira o convite para cadastrar o primeiro.
+
+## Configurar a IA
+
+Em Configurações › IA. Três estados, e vale distinguir:
+
+| Estado | Significa |
+|---|---|
+| não configurada | falta a chave de API, o modelo, ou os dois |
+| configurada, desligada | dá para ligar, mas o interruptor está desligado |
+| IA ativa | chave, modelo e interruptor: a IA roda quando um trigger disparar |
+
+A chave do OpenRouter é guardada criptografada no banco e **nunca volta pela API**: a tela mostra
+apenas que existe uma chave salva. Deixar o campo em branco mantém a chave atual; enviar um campo
+vazio explicitamente a apaga. Tentar ligar a IA sem chave e modelo é recusado com uma mensagem
+dizendo o que falta.
+
+O aviso sobre dados sensíveis fica fixo no topo da tela: trechos de log saem para o OpenRouter e
+para o fabricante do modelo escolhido, sem redação automática nesta versão.
+
+A análise por IA em si entra na fase 0.9.0. Até lá, a tela guarda a configuração e Consumo mostra
+a estrutura do que será contado: chamadas, tokens e custo por período.

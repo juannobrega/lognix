@@ -4,11 +4,13 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Notification } from '../api/types'
 import { Button } from '../components/Button'
+import { useToast } from '../components/useToast'
 import { EmptyState } from '../components/EmptyState'
 import { useNotifications } from '../notifications/useNotifications'
 
 export function NotificationItem({ n, onSeen }: { n: Notification; onSeen?: (id: string) => void }) {
   const qc = useQueryClient()
+  const toast = useToast()
   const monitor = useMutation({
     mutationFn: async () => {
       const current = await api<{ id: string; monitored: boolean }[]>(`/hosts/${n.host_id}/containers`)
@@ -17,9 +19,12 @@ export function NotificationItem({ n, onSeen }: { n: Notification; onSeen?: (id:
       if (onSeen) onSeen(n.id)
     },
     onSuccess: () => {
+      toast.show(`Monitorando ${String((n.payload as Record<string, string>).name ?? 'container')}.`, 'success')
       void qc.invalidateQueries({ queryKey: ['projects'] })
       void qc.invalidateQueries({ queryKey: ['host', n.host_id] })
+      void qc.invalidateQueries({ queryKey: ['summary'] })
     },
+    onError: () => toast.show('Não foi possível monitorar esse container.', 'error'),
   })
   const payload = n.payload as Record<string, string | undefined>
   return (
@@ -46,7 +51,14 @@ export function NotificationItem({ n, onSeen }: { n: Notification; onSeen?: (id:
             </Button>
           )}
           {n.type === 'host_disconnected' && n.host_id && (
-            <Button size="sm" onClick={() => void api(`/hosts/${n.host_id}/reconnect`, { method: 'POST' })}>
+            <Button
+              size="sm"
+              onClick={() => {
+                void api(`/hosts/${n.host_id}/reconnect`, { method: 'POST' })
+                  .then(() => toast.show('Reconexão iniciada.', 'info'))
+                  .catch(() => toast.show('Falha ao pedir reconexão.', 'error'))
+              }}
+            >
               Reconectar
             </Button>
           )}

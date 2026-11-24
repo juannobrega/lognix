@@ -274,3 +274,54 @@ export interface SystemInfo {
   volumes: SystemVolume[]
   proxy_rejected_total: number
 }
+
+export interface HostSummary {
+  id: string
+  name: string
+  status: HostStatus
+  monitored: number
+  last_error: string | null
+}
+
+export interface ProjectActivity {
+  id: string
+  name: string
+  host_name: string
+  state: ContainerState
+  lines_24h: number
+  errors_24h: number
+  triggers_24h: number
+}
+
+export interface Summary {
+  hosts_total: number
+  hosts_connected: number
+  projects_total: number
+  projects_with_errors_1h: number
+  notifications_new: number
+  triggers_new_24h: number
+  triggers_unanalyzed: number
+  lines_24h: number
+  errors_24h: number
+  cycles_24h: number
+  cycles_failed_24h: number
+  ai_enabled: boolean
+  hosts: HostSummary[]
+  top_projects: ProjectActivity[]
+}
+
+export interface AiSettings {
+  /** interruptor ligado */
+  enabled: boolean
+  /** chave e modelo presentes: pode ser ligada */
+  configured: boolean
+  /** configured e enabled: a IA roda */
+  active: boolean
+  has_api_key: boolean
+  model: string | null
+  max_input_tokens: number
+  max_output_tokens: number
+  concurrency: number
+  language: string
+  provider: string
+}

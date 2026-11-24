@@ -6,9 +6,9 @@ Define a interface React + Vite + CSS.
 |-----------|----------|--------|
 | [Mapa de Telas](Mapa%20de%20Telas.md) | Navegação, todas as telas com rota e fase, estados obrigatórios, tempo real | Rascunho para revisão |
 | [Telas Detalhadas](Telas%20Detalhadas.md) | Wireframes textuais do Painel, Cadastro de host, Host, Projeto, Logs, Insight, Configurações › IA | Rascunho para revisão |
-| [Componentes](Componentes.md) | Base e domínio, regras | Rascunho para revisão |
-| [Estado e Dados](Estado%20e%20Dados.md) | Camadas, cliente gerado do OpenAPI, consultas, WebSocket, formulários | Rascunho para revisão |
-| [Design System](Design%20System.md) | Tokens, tema, layout, tipografia, identidade | Rascunho para revisão |
+| [Componentes](Componentes.md) | Base e domínio, regras | **Aprovado** |
+| [Estado e Dados](Estado%20e%20Dados.md) | Camadas, cliente gerado do OpenAPI, consultas, WebSocket, formulários | **Aprovado** |
+| [Design System](Design%20System.md) | Tokens, tema, layout, tipografia, identidade | **Aprovado** |
 
 ## Decisões já tomadas
 

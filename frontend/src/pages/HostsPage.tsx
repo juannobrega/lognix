@@ -4,10 +4,13 @@ import { api } from '../api/client'
 import type { Host } from '../api/types'
 import { Button } from '../components/Button'
 import { EmptyState } from '../components/EmptyState'
+import { ErrorState } from '../components/ErrorState'
+import { SkeletonRows } from '../components/Skeleton'
 import { HostStatusBadge } from '../components/StatusBadge'
 
 export function HostsPage() {
   const hosts = useQuery({ queryKey: ['hosts'], queryFn: () => api<Host[]>('/hosts'), refetchInterval: 15_000 })
+  if (hosts.isError) return <ErrorState error={hosts.error} onRetry={() => void hosts.refetch()} />
   return (
     <>
       <div className="page-header">
@@ -19,6 +22,11 @@ export function HostsPage() {
           <Button variant="primary">+ Cadastrar host</Button>
         </Link>
       </div>
+      {hosts.isPending && (
+        <div className="card">
+          <SkeletonRows rows={3} />
+        </div>
+      )}
       {hosts.data?.length === 0 && (
         <EmptyState title="Nenhum host cadastrado">
           <p>
