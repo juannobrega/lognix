@@ -11,4 +11,8 @@ vive em [../Planning/](../Planning/README.md).
 | [Desenvolvimento](Desenvolvimento.md) | quem vai mexer no código | rodar local, testar, estrutura, convenções |
 | Referência de API | integradores | gerada pela própria instalação em `/api/docs` |
 
-**Versão documentada:** 0.9.0.
+**Versão documentada:** 1.0.0.
+
+Na raiz do repositório há ainda [CONTRIBUTING.md](../../CONTRIBUTING.md), com as convenções de
+código e o fluxo de pull request, e [SECURITY.md](../../SECURITY.md), com o que o Lognix promete,
+o que não promete e como relatar uma vulnerabilidade.

@@ -1,24 +1,48 @@
-# Lognix
+<div align="center">
 
-Analisador de logs de containers Docker com IA, **sem instalar nada nos hosts monitorados**.
+<img src="frontend/public/logo.png" alt="Lognix" width="420">
 
-O Lognix se conecta por SSH às suas máquinas, lê os logs dos containers pela Docker API através de um
-túnel, coleta tudo com **Grafana Alloy** para o **Loki**, e usa um modelo de linguagem para explicar o
-que aconteceu, apontar a causa provável e, quando o projeto está ligado a um repositório GitHub,
-indicar o trecho de código suspeito e abrir uma issue.
+**Análise de logs de containers com IA, sem instalar nada nos seus servidores.**
 
-> **Estado:** em construção, versão 0.9.0. Coleta, análise e IA funcionando; a integração com o
-> GitHub é a próxima etapa. O roadmap está em [.documentation/Planning](.documentation/Planning/README.md).
+[![ci](https://github.com/juannobrega/lognix/actions/workflows/ci.yml/badge.svg)](https://github.com/juannobrega/lognix/actions/workflows/ci.yml)
+[![licença Apache 2.0](https://img.shields.io/badge/licen%C3%A7a-Apache%202.0-blue)](LICENSE)
+[![versão](https://img.shields.io/github/v/tag/juannobrega/lognix?label=vers%C3%A3o&sort=semver)](https://github.com/juannobrega/lognix/releases)
 
-## Princípios
+</div>
 
-- **Nada no host.** O único requisito é SSH com acesso ao socket do Docker.
-- **Somente leitura, garantido.** Um proxy dentro do Lognix só deixa passar requisições `GET` à Docker API. Nenhum comando de alteração chega ao host.
-- **Logs primeiro, IA depois.** A interface de logs funciona com a IA desligada.
-- **IA explicável e com custo visível.** Todo insight mostra as linhas que o embasaram e quanto custou.
-- **Sem telemetria.** Nenhum dado sai do seu ambiente além do que você envia ao provider de IA e ao GitHub, e isso é avisado na interface.
+---
 
-## Instalação
+O Lognix se conecta por SSH às suas máquinas, lê os logs dos containers pela Docker API, guarda
+tudo no Loki e analisa janelas curtas em ciclo contínuo. Quando algo quebra, ele explica o que
+aconteceu, cita as linhas que embasaram a conclusão e mostra quanto custou a análise.
+
+Nada é instalado no host monitorado. O único requisito é SSH com acesso ao socket do Docker.
+
+## Por que existe
+
+Ferramentas de observabilidade mostram os logs. Poucas os **explicam**. O custo de triagem de um
+incidente é dominado por leitura humana de texto repetitivo, às três da manhã, numa janela de
+terminal.
+
+O Lognix tenta resolver a parte chata: agrupa as linhas em padrões, detecta o que fugiu do normal
+e, quando acha que vale, pede a um modelo de linguagem para explicar em português o que está
+acontecendo, apontando as evidências.
+
+## Três decisões que definem o produto
+
+**Nada no host.** O Grafana Alloy, que coleta os logs, roda ao lado do Lognix e enxerga o Docker
+remoto através de um túnel SSH. A máquina monitorada não ganha agente, nem daemon, nem alteração
+de configuração.
+
+**Somente leitura, garantido por código.** Entre o túnel e quem consome existe um proxy que recusa
+qualquer requisição que não seja `GET` numa lista fechada de caminhos. Não é promessa: é teste
+automatizado no CI, e um contador de requisições bloqueadas visível na interface.
+
+**A IA não escreve evidências.** Ela cita índices do contexto, e o backend troca por linhas e
+eventos reais. Um índice inexistente é recusado pela validação. Isso fecha a porta para o pior modo
+de falha de um produto assim, que seria citar um log inventado.
+
+## Começando
 
 Requisitos: Docker e Docker Compose em qualquer máquina.
 
@@ -26,57 +50,84 @@ Requisitos: Docker e Docker Compose em qualquer máquina.
 git clone https://github.com/juannobrega/lognix.git
 cd lognix
 cp .env.example .env
-# gere a chave e cole em LOGNIX_SECRET_KEY no .env
-openssl rand -base64 48
+openssl rand -base64 48      # cole em LOGNIX_SECRET_KEY no .env
 docker compose up -d
 ```
 
-Abra `http://localhost:8080`, crie o primeiro usuário e cadastre o primeiro host.
+Abra `http://localhost:8080`, crie o primeiro usuário e cadastre um host. Preparar a máquina alvo
+leva dois comandos:
 
-Depois: crie o primeiro usuário e cadastre um host. O guia de
-[Operação](.documentation/Software/Operação.md) mostra como preparar a máquina alvo, o que leva
-dois comandos.
+```bash
+sudo useradd -m lognix && sudo usermod -aG docker lognix
+ssh-copy-id -i ~/.ssh/sua-chave.pub lognix@HOST
+```
 
-Guia completo em [.documentation/Software](.documentation/Software/README.md).
+O cadastro valida a conexão em seis etapas e, quando falha, diz exatamente o que falta.
 
-## O que ele faz hoje
+## O que já funciona
 
-- Cadastra hosts por SSH, com chave, chave com passphrase ou senha, e valida a conexão em seis
-  etapas dizendo exatamente o que falta quando falha.
-- Coleta os logs dos containers que você escolher, sem instalar nada no host.
-- Mostra os logs ao vivo e em histórico, com filtro.
-- Agrupa as linhas em padrões, classifica o nível e roda um ciclo de análise a cada 30 segundos.
-- Detecta erros, eventos Docker críticos e anomalias estatísticas.
-- Explica o que aconteceu com IA, citando as linhas que embasaram a conclusão, e registra o custo
-  de cada chamada.
-- Reconhece quando um container foi recriado por deploy e mantém o histórico do projeto.
+- Hosts por SSH, com chave, chave com passphrase ou senha, e reconexão automática.
+- Coleta dos containers que você escolher, a partir do momento da marcação.
+- Logs ao vivo e em histórico, com filtro de texto, nível e período.
+- Agrupamento em padrões, classificação de nível e um ciclo de análise a cada 30 segundos.
+- Detecção de erros, eventos Docker críticos e anomalias estatísticas.
+- Explicação por IA com evidências rastreáveis, custo por chamada e tela de consumo.
+- Reconhecimento de redeploy: recriar um container não apaga o histórico do projeto.
+- Métricas Prometheus e uma tela de Sistema que mostra o estado de cada processo.
+
+**Em construção:** a integração com o GitHub, que vai ligar o erro ao trecho de código que o
+causou e abrir a issue. O [roadmap](.documentation/Planning/08%20Gest%C3%A3o/Roadmap.md) tem o resto.
 
 ## Como funciona
 
 ```
-Host monitorado                    Máquina do Lognix (docker compose)
-/var/run/docker.sock ◄── SSH ──► backend ─► proxy somente leitura ─► Alloy ─► Loki
-                                     │                                        ▲
-                                     └── ciclo de análise ─► IA ─► insights ──┘
-                                                 frontend React
+Host monitorado                      Máquina do Lognix
+┌──────────────────┐   SSH    ┌────────────────────────────────────────────┐
+│ /var/run/        │◄────────►│ backend ──► proxy somente leitura          │
+│   docker.sock    │  túnel   │    │              ▲                        │
+│                  │          │    │           alloy ──► loki              │
+│ containers…      │          │    │                      ▲                │
+└──────────────────┘          │    └── ciclo de análise ───┘                │
+                              │           │                                 │
+                              │           └─► IA ─► insights ─► interface   │
+                              └────────────────────────────────────────────┘
 ```
 
-Detalhes em [.documentation/Software/Arquitetura.md](.documentation/Software/Arquitetura.md).
+Detalhes em [Arquitetura](.documentation/Software/Arquitetura.md).
 
-## Desenvolvimento
+## Privacidade
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
-# backend com hot reload em :8000, frontend: cd frontend && npm run dev
-```
+Trechos de log saem do seu ambiente **apenas** para o provider de IA que você configurar, e isso
+é avisado na tela. Não há redação automática de dados sensíveis nesta versão. Variáveis de
+ambiente nunca são enviadas por valor, só por nome.
 
-Testes: `cd backend && pytest` (precisa de um Postgres em `localhost:5432`) e
-`cd frontend && npm test`. Guia completo em
-[Desenvolvimento](.documentation/Software/Desenvolvimento.md).
+Fora isso, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a serviços do
+autor. A IA é opcional e o resto funciona com ela desligada.
 
-Trabalho acontece na branch `dev`. Pull requests para `main` levam uma label `release:patch`,
-`release:minor` ou `release:major` e geram tag e release automaticamente.
+## Documentação
+
+| | |
+|---|---|
+| [Instalação](.documentation/Software/Instalação.md) | requisitos, primeiro uso, variáveis, atualização |
+| [Operação](.documentation/Software/Operação.md) | preparar hosts, monitorar, ler logs, IA, métricas, backup |
+| [Arquitetura](.documentation/Software/Arquitetura.md) | as peças e o caminho dos dados |
+| [Desenvolvimento](.documentation/Software/Desenvolvimento.md) | rodar local, testar, convenções |
+| [Planejamento](.documentation/Planning/README.md) | as decisões e o porquê de cada uma |
+
+O planejamento completo está no repositório porque a regra do projeto é: **nada é construído antes
+de estar mapeado**. Toda decisão não óbvia virou um
+[ADR](.documentation/Planning/02%20Arquitetura/ADR/README.md), inclusive as que se mostraram
+erradas depois, como a aposta de que o sistema precisaria de uma fila externa.
+
+## Stack
+
+Python com FastAPI, PostgreSQL, Grafana Alloy e Loki no backend. React com Vite e TypeScript no
+frontend. Tudo em containers, um `docker compose up`.
+
+## Contribuindo
+
+[CONTRIBUTING.md](CONTRIBUTING.md). Vulnerabilidades: [SECURITY.md](SECURITY.md), em privado.
 
 ## Licença
 
-Ver [LICENSE](LICENSE).
+[Apache 2.0](LICENSE).

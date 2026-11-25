@@ -1,0 +1,48 @@
+name: Relatar um bug
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Para vulnerabilidades de segurança, **não use este formulário**. Siga o
+        [SECURITY.md](https://github.com/juannobrega/lognix/blob/main/SECURITY.md).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: O que aconteceu
+      description: O que você esperava e o que aconteceu de fato.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Cadastrei um host com…
+        2. Marquei o container…
+        3. A tela mostrou…
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão
+      description: Aparece em Configurações › Sistema, ou em `GET /api/v1/health`.
+      placeholder: "0.9.0"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log do backend
+      description: "`docker compose logs backend --tail 50`. Remova credenciais antes de colar."
+      render: text
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ambiente
+      placeholder: |
+        - Onde o Lognix roda (SO, versão do Docker):
+        - Host monitorado (SO, versão do Docker):
+        - Quantos hosts e containers monitorados:
