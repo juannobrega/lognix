@@ -41,6 +41,28 @@ Regras:
 - `restart: unless-stopped`.
 - **Config do Alloy fora de `/etc/alloy`.** A imagem oficial traz uma config padrão nesse caminho; um volume vazio montado ali herda esse arquivo e o Alloy passa a rodar a config da imagem em vez da nossa. Descoberto na 0.1.0. O volume fica em `/lognix/alloy`.
 
+
+### Cache dos estáticos, e por que o nginx não pode responder tudo
+
+O `index.html` tem nome fixo e conteúdo novo a cada deploy; os bundles têm hash no nome e conteúdo
+que nunca muda. Então são duas políticas opostas: `no-cache` no primeiro, `immutable` por um ano nos
+segundos.
+
+O que amarra as duas é o `=404` em `/assets/`. O fallback de SPA (`try_files ... /index.html`)
+responderia qualquer caminho desconhecido com o index e **status 200** — inclusive um bundle que
+saiu no deploy anterior. Um browser com o index antigo em cache pediria o JS antigo, receberia HTML
+com 200, o módulo não parsearia e a tela ficaria branca, sem erro de rede e sem log no servidor.
+Falha cara de diagnosticar, e a correção é uma linha.
+
+Cabeçalho de segurança no nginx se repete em cada `location` de propósito: um bloco que declara o
+próprio `add_header` não herda os do pai. Tirar a repetição apaga os cabeçalhos naquele caminho sem
+aviso nenhum.
+
+Os dois `.dockerignore` existem pela mesma razão: o build roda dentro da imagem, então
+`node_modules`, `dist` e `.venv` da máquina de quem builda não têm por que entrar no contexto — eram
+330 MB enviados ao daemon a cada build, e um `node_modules` de macOS dentro de uma imagem Alpine é
+um jeito silencioso de quebrar binário nativo.
+
 ## 3. `.env`
 
 Arquivo `.env.example` versionado com todos os valores e comentários. Obrigatórios sem padrão:
