@@ -1,6 +1,6 @@
 # Instalação
 
-**Versão:** 0.9.0
+**Versão:** 1.0.0
 
 ## Requisitos
 
@@ -28,6 +28,10 @@ aparece. Esse usuário pode cadastrar os demais em Configurações › Usuários
 
 Em seguida, cadastre o primeiro host. O guia de [Operação](Operação.md) mostra como preparar a
 máquina alvo, o que leva dois comandos.
+
+O primeiro uso foi medido em 2026-11-25 numa instalação limpa: **158 segundos** do `git clone` ao
+primeiro log na tela, dos quais 88 segundos são o build das imagens. Da marcação do container à
+primeira linha aparecer: 12 segundos.
 
 ## O que sobe
 

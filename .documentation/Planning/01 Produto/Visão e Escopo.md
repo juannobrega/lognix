@@ -64,7 +64,7 @@ Equipes que operam serviços em containers têm logs espalhados por vários host
 
 | ID | Objetivo | Como medir |
 |----|----------|-----------|
-| O1 | Cadastrar um host por SSH e ver seus containers e logs em menos de 5 minutos | Tempo de onboarding em máquina limpa |
+| O1 | Cadastrar um host por SSH e ver seus containers e logs em menos de 5 minutos | Tempo de onboarding em máquina limpa. **Medido em 2026-11-25: 158 s do clone ao primeiro log**, sendo 88 s de build das imagens e 12 s da marcação até a primeira linha |
 | O2 | Coleta contínua e sem perda de logs de todos os containers selecionados | Teste de 1 h com 50 containers, 0 linhas perdidas |
 | O3 | Rotina de análise completa em menos de 30 s para a janela de 30 s | p95 do tempo de execução da rotina |
 | O4 | Agrupamento de padrões reduz linhas exibidas em pelo menos 90% | Razão linhas brutas / padrões |
