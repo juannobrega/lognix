@@ -427,14 +427,6 @@ export interface TestKeyResult {
   error: string | null
 }
 
-export interface AiModel {
-  id: string
-  name: string
-  context_length: number | null
-  prompt_usd_per_mtok: number | null
-  completion_usd_per_mtok: number | null
-}
-
 export type ProviderKind = 'openrouter' | 'openai' | 'bedrock'
 
 export interface CredentialField {

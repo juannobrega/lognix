@@ -5,11 +5,10 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 
 from lognix.ai import registry
 from lognix.ai.models import AiModelConfig, AiProviderConfig, ProviderStatus
@@ -387,26 +386,3 @@ async def sync_catalog(provider_id: uuid.UUID, _: CurrentUser, db: DbSession) ->
         raise ApiError(502, "provider_error", exc.message) from exc
     await db.refresh(provider)
     return _out(provider)
-
-
-@router.get("/_models/all", response_model=list[dict[str, Any]])
-async def all_models(_: CurrentUser, db: DbSession) -> list[dict[str, Any]]:
-    """Todos os modelos cadastrados, de todos os providers. Usado em seletores."""
-    rows = (
-        await db.execute(
-            select(AiModelConfig, AiProviderConfig)
-            .join(AiProviderConfig, AiProviderConfig.id == AiModelConfig.provider_id)
-            .order_by(AiProviderConfig.priority, AiModelConfig.model_id)
-        )
-    ).all()
-    return [
-        {
-            "provider_id": str(p.id),
-            "provider_name": p.name,
-            "provider_kind": p.kind,
-            "model_id": m.model_id,
-            "label": m.label or m.model_id,
-            "enabled": m.enabled,
-        }
-        for m, p in rows
-    ]
