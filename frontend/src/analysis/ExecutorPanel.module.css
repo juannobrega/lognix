@@ -9,7 +9,7 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-pop);
-  z-index: 40;
+  z-index: var(--z-docked);
   font-size: var(--text-ui);
 }
 .head {

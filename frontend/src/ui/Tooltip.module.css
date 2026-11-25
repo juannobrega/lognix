@@ -6,7 +6,7 @@
   font-size: var(--text-sm);
   line-height: 1.4;
   max-width: 280px;
-  z-index: 80;
+  z-index: var(--z-tooltip);
   box-shadow: var(--shadow-pop);
   animation: fade 100ms ease-out;
 }

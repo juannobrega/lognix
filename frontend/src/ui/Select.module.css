@@ -35,7 +35,7 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-well);
   box-shadow: var(--shadow-pop);
-  z-index: 60;
+  z-index: var(--z-popup);
   max-height: var(--radix-select-content-available-height);
 }
 .viewport {

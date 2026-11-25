@@ -102,6 +102,25 @@ Corolários que valem repetir:
   continua sendo um dropdown, porque Anthropic, Azure e Ollama estão no roadmap e porque um
   formulário com três blocos grandes seguidos de campos pequenos fica desequilibrado.
 
+## Empilhamento
+
+Uma regra: **o que abre fica acima de quem abriu.** Daí a ordem `sticky < docked < modal < popup <
+tooltip < toast`, com o popup **acima** do modal — um seletor dentro de um diálogo precisa pintar
+sobre ele.
+
+Isso não é teoria: a tela de Provedores quebrou exatamente aqui. O seletor de tipo vive dentro do
+diálogo de cadastro e tinha `z-index: 60` contra os `71` do diálogo. Clicar abria a lista — o Radix
+reportava `state=open`, com as três opções no DOM e medindo 156×98 — e ela pintava atrás do modal
+opaco. Para quem usa, o efeito é indistinguível de um botão quebrado: a lista não expande.
+
+Duas consequências que viraram código:
+
+1. Nenhum componente escreve `z-index` com número. Todos usam `var(--z-*)`, porque valores soltos
+   espalhados por quinze arquivos não têm como ser comparados entre si.
+2. Um teste lê `tokens.css` e falha se a ordem inverter ou se alguém escrever um número à mão. Teste
+   de componente não pega isto: `jsdom` não tem layout, então o elemento invisível passa como
+   presente. O bug passou por 30 testes verdes.
+
 ## Marcas de terceiros
 
 Os provedores de IA aparecem na interface com **os desenhos oficiais de cada marca**, não com
