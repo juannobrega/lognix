@@ -75,6 +75,22 @@ selo chapado. Tudo isso é assinatura, e assinatura é do dono.
   para uma identidade de marca.
 - **Adotar a linguagem do Coolify.** Tentado e descartado: é a identidade de outro produto.
 
+## Marcas de terceiros
+
+Os provedores de IA aparecem na interface com **os desenhos oficiais de cada marca**, não com
+aproximações desenhadas por nós: o glifo da OpenRouter vem do material de marca deles, o símbolo da
+OpenAI é o símbolo da OpenAI, e o da Amazon Bedrock é o ícone de serviço do AWS Architecture Icons.
+Ficam inline como SVG, pela mesma razão que todo o resto: nada é buscado de CDN.
+
+Três regras para elas, que não valem para os nossos próprios desenhos:
+
+1. **Não se redesenha uma marca de terceiro.** Tamanho e cor mudam; a geometria, não.
+2. **A cor é a que a marca publica.** A OpenRouter tem variante clara (`#7624F4`) e escura
+   (`#C8FF00`) e nós honramos as duas via token; a OpenAI é monocromática por definição e segue o
+   texto; a Bedrock usa o verde-azulado do ícone de serviço da AWS, que serve nos dois temas.
+3. **Elas identificam, não endossam.** Aparecem só onde o usuário precisa saber com qual serviço
+   está falando. São marcas registradas de seus donos, e o Lognix não é afiliado a nenhum deles.
+
 ## Consequências
 
 - A decisão Q-005 continua valendo no essencial: **sem framework de utilitários CSS**. O que muda é
