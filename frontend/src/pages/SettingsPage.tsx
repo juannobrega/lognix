@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 const tabs = [
   { to: '/settings/users', label: 'Usuários' },
   { to: '/settings/ai', label: 'IA' },
+  { to: '/settings/providers', label: 'Provedores' },
   { to: '/settings/usage', label: 'Consumo' },
   { to: '/settings/system', label: 'Sistema' },
 ]

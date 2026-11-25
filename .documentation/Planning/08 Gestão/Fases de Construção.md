@@ -26,7 +26,7 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 | 0.7.0 | **Medição e endurecimento** | Medição formal do ADR 009 e decisão sobre Redis; auditoria do proxy; testes com 10 hosts e 100 containers; backup documentado. **Construída em 2026-11-24.** Medição aprovou os três critérios; Redis fica fora. Ver ADR 009 e ADR 010 | 0.6.0 | Escala da instância única |
 | 0.8.0 | **Interface completa** | Painel inicial, notificações com visto e limpar todos, histórico, tela de hosts, configurações, consumo preparado. **Construída em 2026-11-24** | 0.6.0 | Usabilidade |
 | 0.9.0 | **IA** | `AIProvider`, OpenRouter, tela de configuração com teste, pipeline de contexto e redução, esquema fechado com retry, `Insight`, `AICall`, tela de consumo, aviso de dados sensíveis. **Construída em 2026-11-24** | 0.8.0 | Qualidade do JSON estruturado, custo |
-| 1.0.0 | **Release público** | README do projeto, SECURITY, CONTRIBUTING, templates de issue e PR, documentação em `Software/`, licença Apache 2.0. **Só código.** Sem imagens publicadas. **Preparada em 2026-11-25**, validada com instalação limpa a partir do clone | 0.9.0 | Primeira impressão de quem avalia |
+| 1.0.0 | **Release público** | README do projeto, SECURITY, CONTRIBUTING, templates de issue e PR, documentação em `Software/`, licença Apache 2.0, identidade visual própria, **múltiplos provedores de IA com cadeia de fallback** (OpenRouter, OpenAI, Bedrock) e observabilidade por provedor. **Só código.** Sem imagens publicadas. **Preparada em 2026-11-25**, validada com instalação limpa a partir do clone | 0.9.0 | Primeira impressão de quem avalia |
 
 ## 3. Depois do 1.0.0
 
@@ -53,4 +53,4 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 | 0.7.0 | ADR 009, Infra/Observabilidade do Lognix, Segurança |
 | 0.8.0 | Frontend completo |
 | 0.9.0 | Área 04 inteira, ADR 006 |
-| 1.0.0 | Software/ completo |
+| 1.0.0 | Software/ completo, ADR 011, ADR 012 |

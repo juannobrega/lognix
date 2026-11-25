@@ -67,7 +67,7 @@ npm run lint && npm run typecheck && npm test -- --run && npm run build
 
 ## Como os testes evitam depender do mundo
 
-Nada nos testes fala com SSH, Docker, Loki ou OpenRouter de verdade. Em `backend/tests/`:
+Nada nos testes fala com SSH, Docker, Loki ou um provedor de IA de verdade. Em `backend/tests/`:
 
 | Falso | Substitui | Usado por |
 |---|---|---|
@@ -75,7 +75,8 @@ Nada nos testes fala com SSH, Docker, Loki ou OpenRouter de verdade. Em `backend
 | `fake_ssh.FakeSshBackend` | conexão SSH; o "socket remoto" é o FakeDocker | hosts, validação, fingerprint |
 | `conftest.ScriptedLoki` | Loki; devolve as linhas que o teste programar | ciclos de análise |
 | `conftest.FakeAlloy` | endpoint de reload do Alloy | geração de config |
-| `fake_ai.FakeAiProvider` | provider de IA; responde o que o teste mandar | insights, retry, custos |
+| `fake_ai.FakeAiProvider` | provedor de IA; responde o que o teste mandar | insights, retry, custos |
+| `fake_ai.FakeRuntime` | a cadeia de provedores; grava os provedores falsos no banco | fallback, pausa por limite |
 
 Isso deixa a suíte rápida e determinística. O que depende de verdade do mundo é verificado à mão
 contra a stack real, e o resultado fica registrado no documento da fase.

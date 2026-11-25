@@ -22,6 +22,7 @@ VALID_INSIGHT = {
 
 
 class FakeAiProvider:
+    kind = "openrouter"
     name = "fake"
 
     def __init__(self) -> None:
@@ -71,39 +72,73 @@ class FakeAiProvider:
 
 
 class FakeRuntime:
-    """Substitui o AiRuntime: devolve sempre o provider falso."""
+    """Substitui o AiRuntime: devolve uma cadeia de providers falsos, na ordem dada."""
 
-    def __init__(self, provider: FakeAiProvider, model: str = "fake/model") -> None:
-        self.provider = provider
+    def __init__(self, *providers: FakeAiProvider, model: str = "fake/model") -> None:
+        import asyncio
+        import uuid as _uuid
+
+        from lognix.ai.models import AiProviderConfig
+
+        self.providers = list(providers)
         self.model = model
         self.enabled = True
-        self._paused_until = None
-        import asyncio
-
+        self._paused: dict[Any, Any] = {}
         self._semaphore = asyncio.Semaphore(3)
+        self.configs = [
+            AiProviderConfig(
+                id=_uuid.uuid4(),
+                kind=p.kind,
+                name=f"fake-{i}",
+                enabled=True,
+                priority=i,
+                default_model=model,
+            )
+            for i, p in enumerate(self.providers)
+        ]
+        self._by_id = dict(zip([c.id for c in self.configs], self.providers, strict=True))
 
-    async def provider_for(self, db: Any) -> tuple[FakeAiProvider, str]:
-        from lognix.ai.service import AiDisabledError
+    async def chain(self, db: Any) -> list[Any]:
+        from lognix.ai.service import AiDisabledError, AiPausedError
 
-        if not self.enabled:
+        if not self.enabled or not self.configs:
             raise AiDisabledError
-        return self.provider, self.model
+        available = [c for c in self.configs if self.paused_until(c.id) is None]
+        if not available:
+            raise AiPausedError(min(self._paused.values()))
+        return available
+
+    def provider_for_config(self, config: Any) -> FakeAiProvider:
+        return self._by_id[config.id]
 
     @property
     def semaphore(self) -> Any:
         return self._semaphore
 
-    def pause(self, seconds: float | None = None) -> None:
+    def pause(self, provider_id: Any, seconds: float | None = None) -> None:
         from datetime import UTC, datetime, timedelta
 
-        self._paused_until = datetime.now(UTC) + timedelta(seconds=seconds or 300)
+        self._paused[provider_id] = datetime.now(UTC) + timedelta(seconds=seconds or 300)
 
-    @property
-    def paused_until(self) -> Any:
-        return self._paused_until
+    def paused_until(self, provider_id: Any) -> Any:
+        return self._paused.get(provider_id)
+
+    def paused_all(self) -> dict[str, Any]:
+        return {str(k): v for k, v in self._paused.items()}
 
     async def reset(self) -> None:
-        self._paused_until = None
+        self._paused.clear()
+
+    async def install(self) -> None:
+        """Grava os providers falsos no banco: AiCall tem chave estrangeira para eles."""
+        from lognix.db import get_sessionmaker
+
+        async with get_sessionmaker()() as db:
+            for config in self.configs:
+                db.add(config)
+            await db.commit()
+            for config in self.configs:
+                db.expunge(config)
 
 
 def error(message: str, **kw: Any) -> AiError:

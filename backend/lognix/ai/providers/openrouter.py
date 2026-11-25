@@ -23,17 +23,18 @@ NETWORK_RETRIES = 2
 
 
 class OpenRouterProvider:
-    name = "openrouter"
+    kind = "openrouter"
+    name = "OpenRouter"
 
     def __init__(
         self,
         api_key: str,
         *,
-        base_url: str = BASE_URL,
+        base_url: str | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._client = httpx.AsyncClient(
-            base_url=base_url,
+            base_url=(base_url or BASE_URL).rstrip("/"),
             transport=transport,
             timeout=TIMEOUT,
             headers={

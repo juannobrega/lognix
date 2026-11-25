@@ -7,6 +7,7 @@ from httpx import AsyncClient
 
 from lognix.ai import service as ai_service
 from lognix.ai.provider import AiError, RateLimitedError
+from lognix.analysis.manager import AnalysisManager
 from tests.conftest import FakeAlloy, ScriptedLoki
 from tests.fake_ai import VALID_INSIGHT, FakeAiProvider, FakeRuntime
 from tests.fake_docker import FakeDocker
@@ -19,6 +20,7 @@ from tests.test_events import _mark, _wait
 async def fake_ai() -> AsyncIterator[FakeAiProvider]:
     provider = FakeAiProvider()
     runtime = FakeRuntime(provider)
+    await runtime.install()
     ai_service.set_runtime(runtime)  # type: ignore[arg-type]
     try:
         yield provider
@@ -171,9 +173,9 @@ async def test_rate_limit_pauses_the_ai(
     await _project_with_error(authed, host_id)
 
     async def paused() -> bool:
-        return (await authed.get("/api/v1/settings/usage")).json()["paused_until"] is not None
+        return bool((await authed.get("/api/v1/settings/usage")).json()["paused_providers"])
 
-    await _wait(paused, timeout=10, msg="limite de uso não pausou a IA")
+    await _wait(paused, timeout=10, msg="limite de uso não pausou o provider")
     # Com a IA pausada, uma análise manual não chama o provider de novo.
     before = len(fake_ai.calls)
     inv = (await authed.get(f"/api/v1/hosts/{host_id}/containers")).json()
@@ -231,3 +233,80 @@ async def test_usage_aggregates(
     assert [b["key"] for b in usage["by_purpose"]] == ["analyze"]
     assert usage["failures"] == 0 and usage["schema_retries"] == 0
     assert len(usage["by_day"]) == 1
+
+
+async def test_fallback_to_second_provider(
+    authed: AsyncClient,
+    fake_env: tuple[FakeDocker, FakeSshBackend, str],
+    fake_alloy: FakeAlloy,
+    scripted_loki: AnalysisManager,
+) -> None:
+    """O primeiro provider falha, o segundo responde: o insight sai e a chamada fica marcada."""
+    primary, secondary = FakeAiProvider(), FakeAiProvider()
+    runtime = FakeRuntime(primary, secondary)
+    await runtime.install()
+    ai_service.set_runtime(runtime)  # type: ignore[arg-type]
+    try:
+        scripted_loki.pause_seconds = 3600
+        host_id = await _connected_host(authed)
+        primary.reply(AiError("OpenAI indisponível (HTTP 503).", retryable=True))
+        secondary.reply(VALID_INSIGHT)
+        await _project_with_error(authed, host_id)
+
+        async def has_insight() -> bool:
+            return len((await authed.get("/api/v1/insights")).json()) > 0
+
+        await _wait(has_insight, timeout=10, msg="o fallback não produziu insight")
+        assert len(primary.calls) == 1 and len(secondary.calls) == 1
+
+        calls = (await authed.get("/api/v1/settings/usage/calls")).json()
+        failed = next(c for c in calls if c["status"] == "error")
+        ok = next(c for c in calls if c["status"] == "ok")
+        assert failed["attempt"] == 0 and failed["fell_back"] is False
+        assert ok["attempt"] == 1 and ok["fell_back"] is True
+        assert ok["provider_name"] == "fake-1"
+
+        usage = (await authed.get("/api/v1/settings/usage")).json()
+        assert usage["fallbacks"] == 1
+        names = {p["name"]: p for p in usage["by_provider"]}
+        assert names["fake-0"]["errors"] == 1 and names["fake-0"]["success_rate"] == 0.0
+        assert names["fake-1"]["calls"] == 1 and names["fake-1"]["success_rate"] == 1.0
+    finally:
+        ai_service.set_runtime(None)
+
+
+async def test_chain_exhausted_notifies_once(
+    authed: AsyncClient,
+    fake_env: tuple[FakeDocker, FakeSshBackend, str],
+    fake_alloy: FakeAlloy,
+    scripted_loki: AnalysisManager,
+) -> None:
+    """Todos os providers falham: uma notificação, nenhum insight, trigger sem análise."""
+    first, second = FakeAiProvider(), FakeAiProvider()
+    runtime = FakeRuntime(first, second)
+    await runtime.install()
+    ai_service.set_runtime(runtime)  # type: ignore[arg-type]
+    try:
+        scripted_loki.pause_seconds = 3600
+        host_id = await _connected_host(authed)
+        first.reply(AiError("A OpenAI recusou a chave de API.", status=401))
+        second.reply(AiError("O Bedrock recusou as credenciais.", status=403))
+        await _project_with_error(authed, host_id)
+
+        async def notified() -> bool:
+            ns = (await authed.get("/api/v1/notifications")).json()
+            return any(n["type"] == "ai_error" for n in ns)
+
+        await _wait(notified, timeout=10, msg="cadeia esgotada não notificou")
+        assert (await authed.get("/api/v1/insights")).json() == []
+        assert len((await authed.get("/api/v1/insights/unanalyzed")).json()) == 1
+        calls = (await authed.get("/api/v1/settings/usage/calls")).json()
+        assert len(calls) == 2 and all(c["status"] == "error" for c in calls)
+        assert {c["attempt"] for c in calls} == {0, 1}
+        # Uma notificação só, no fim da cadeia, não uma por provider.
+        ns = [
+            n for n in (await authed.get("/api/v1/notifications")).json() if n["type"] == "ai_error"
+        ]
+        assert len(ns) == 1
+    finally:
+        ai_service.set_runtime(None)

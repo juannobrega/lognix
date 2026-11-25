@@ -30,6 +30,7 @@ Cada decisão não óbvia de arquitetura vira um arquivo `ADR NNN Título.md`.
 | 009 | [Sem Redis na Primeira Fase](ADR%20009%20Sem%20Redis%20na%20Primeira%20Fase.md) | Aceito. Medido em 2026-11-24: Redis não entra |
 | 010 | [Desempenho do Ciclo de Análise](ADR%20010%20Desempenho%20do%20Ciclo%20de%20An%C3%A1lise.md) | Aceito |
 | 011 | [Identidade Visual do Lognix](ADR%20011%20Identidade%20Visual%20do%20Lognix.md) | Aceito |
+| 012 | [Múltiplos Provedores de IA com Cadeia de Fallback](ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md) | Aceito. Amplia o 006 |
 
 ## Candidatos ainda não decididos
 

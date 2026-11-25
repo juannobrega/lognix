@@ -1,6 +1,8 @@
 # ADR 006 — Provider de IA via OpenRouter e Contabilização de Custos
 
-**Status:** Aceito, aprovado para construção em 2026-11-24 · **Data:** 2026-11-21
+**Status:** Aceito, aprovado para construção em 2026-11-24. Ampliado pelo
+[ADR 012](ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md) em 2026-11-25:
+o ponto 1 (um provedor só) caiu, os outros continuam valendo · **Data:** 2026-11-21
 
 ## Contexto
 

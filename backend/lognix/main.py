@@ -9,11 +9,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from lognix import __version__
+from lognix.ai.registry import import_legacy_openrouter
 from lognix.alloy.service import get_alloy_manager
 from lognix.analysis.manager import get_analysis_manager
 from lognix.api import api_router
 from lognix.config import get_settings
-from lognix.db import get_engine
+from lognix.db import get_engine, get_sessionmaker
 from lognix.errors import install_error_handlers
 from lognix.events.workers import get_host_workers
 from lognix.hosts.supervisor import get_supervisor
@@ -35,6 +36,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await supervisor.start()
     get_tail_hub().start()
     await get_analysis_manager().start()
+    async with get_sessionmaker()() as db:
+        try:
+            await import_legacy_openrouter(db)
+        except Exception:
+            log.exception("import da chave antiga do OpenRouter falhou")
     try:
         await get_alloy_manager().apply("inicialização do backend")
     except Exception:

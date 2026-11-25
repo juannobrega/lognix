@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import styles from './Button.module.css'
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -9,16 +9,14 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: ReactNode
 }
 
-export function Button({
-  variant = 'secondary',
-  size = 'md',
-  loading,
-  iconOnly,
-  children,
-  disabled,
-  className,
-  ...rest
-}: Props) {
+/**
+ * Encaminha a ref porque Radix monta gatilhos com `asChild`: Dialog e Tooltip precisam da
+ * referência ao botão real para devolver o foco e posicionar o conteúdo.
+ */
+export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
+  { variant = 'secondary', size = 'md', loading, iconOnly, children, disabled, className, ...rest },
+  ref,
+) {
   const cls = [
     styles.button,
     variant !== 'secondary' ? styles[variant] : '',
@@ -29,8 +27,8 @@ export function Button({
     .filter(Boolean)
     .join(' ')
   return (
-    <button className={cls} disabled={disabled || loading} aria-busy={loading || undefined} {...rest}>
+    <button ref={ref} className={cls} disabled={disabled || loading} aria-busy={loading || undefined} {...rest}>
       {loading ? 'Aguarde…' : children}
     </button>
   )
-}
+})

@@ -11,6 +11,7 @@ import { NewHostPage } from './pages/NewHostPage'
 import { NotificationsPage } from './pages/NotificationsPage'
 import { ProjectPage } from './pages/ProjectPage'
 import { ProjectsPage } from './pages/ProjectsPage'
+import { ProvidersPage } from './pages/ProvidersPage'
 import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SetupPage } from './pages/SetupPage'
@@ -38,6 +39,7 @@ export function App() {
             <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="ai" element={<AiSettingsPage />} />
+            <Route path="providers" element={<ProvidersPage />} />
             <Route path="usage" element={<UsagePage />} />
             <Route path="system" element={<SystemPage />} />
           </Route>

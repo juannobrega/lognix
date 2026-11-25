@@ -73,19 +73,25 @@ enquanto os ciclos rodam. Ver [ADR 010](../Planning/02%20Arquitetura/ADR/ADR%200
 ## A análise por IA
 
 A IA nunca roda sozinha: só quando um trigger dispara. O backend monta o contexto, chama o
-provider e exige a resposta num esquema fechado.
+provedor e exige a resposta num esquema fechado.
 
 ```
 trigger → monta contexto (linhas de erro, contexto anterior, eventos, padrões, redeploy, estado)
         → corta até caber no orçamento de tokens
-        → chama o provider pedindo JSON no esquema
-        → valida; fora do esquema, um retry com o erro anexado
-        → grava insight + registro de custo, ou grava o erro e notifica
+        → cadeia de provedores, por prioridade:
+            → chama o provedor pedindo JSON no esquema
+            → valida; fora do esquema, um retry no mesmo provedor com o erro anexado
+            → credencial, modelo, limite de uso ou indisponibilidade: desce para o próximo
+        → grava insight + registro de custo, ou grava o erro e notifica uma vez
 ```
 
 As evidências do insight são resolvidas pelo backend: a IA cita índices, o backend troca por linhas
-e eventos reais. Isso impede que a IA invente uma evidência. Toda chamada registra modelo, tokens,
-custo, latência e a versão do prompt.
+e eventos reais. Isso impede que a IA invente uma evidência. Cada tentativa registra provedor, modelo,
+tokens, custo, latência, a versão do prompt e se foi fallback.
+
+São três tipos de provedor — OpenRouter, OpenAI e Amazon Bedrock —, cadastráveis em qualquer número e
+ordenáveis pelo usuário. A ordem é a cadeia de fallback. Ver
+[ADR 012](../Planning/02%20Arquitetura/ADR/ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md).
 
 ## O que cada módulo do backend faz
 
@@ -99,7 +105,7 @@ lognix/
 ├── alloy/         gera e recarrega a config do Alloy
 ├── loki/          único módulo que fala com o Loki
 ├── analysis/      ciclo, padrões (Drain), classificação, triggers, executor
-├── ai/            provider, contexto, esquema, insights, custo
+├── ai/            provedores, cadeia de fallback, contexto, esquema, insights, custo
 ├── notifications/ avisos com ação
 ├── settings/      configurações no banco, segredos criptografados
 ├── realtime/      WebSocket: logs ao vivo, executor, barramento
@@ -107,8 +113,9 @@ lognix/
 ```
 
 Regra que o código segue: cada sistema externo tem **um** módulo que fala com ele. Nada fora de
-`docker/` abre o socket do Docker; nada fora de `loki/` consulta o Loki; nada fora de `ai/` chama o
-provider de IA.
+`docker/` abre o socket do Docker; nada fora de `loki/` consulta o Loki; nada fora de `ai/` chama um
+provedor de IA. Dentro de `ai/`, cada tipo de provedor é um arquivo em `ai/providers/`, e o resto do
+módulo só conhece o `Protocol` `AiProvider`.
 
 ## Onde mora o quê
 
@@ -119,7 +126,7 @@ provider de IA.
 | Ciclos de análise | Postgres | 7 dias |
 | Padrões | Postgres | enquanto o container existir |
 | Ocorrências, insights, chamadas de IA | Postgres | permanente |
-| Credenciais SSH, chave de IA | Postgres, criptografadas | permanente |
+| Credenciais SSH, credenciais dos provedores de IA | Postgres, criptografadas | permanente |
 
 A chave de criptografia é derivada de `LOGNIX_SECRET_KEY`. Perdê-la torna as credenciais
 irrecuperáveis.

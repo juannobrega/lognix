@@ -20,9 +20,17 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from lognix.ai import registry
 from lognix.ai.context import BuiltContext, build_context
-from lognix.ai.models import AiCall, AiCallStatus, AiPurpose, CostSource, Insight, Severity
-from lognix.ai.openrouter import OpenRouterProvider
+from lognix.ai.models import (
+    AiCall,
+    AiCallStatus,
+    AiProviderConfig,
+    AiPurpose,
+    CostSource,
+    Insight,
+    Severity,
+)
 from lognix.ai.prompts import ANALYZE_SYSTEM, ANALYZE_VERSION, retry_message
 from lognix.ai.provider import AiError, AiProvider, AiResult, RateLimitedError
 from lognix.ai.schemas import INSIGHT_SCHEMA, SchemaError, validate_insight
@@ -43,7 +51,15 @@ _JSON_BLOCK = re.compile(r"\{.*\}", re.S)
 
 
 class AiDisabledError(Exception):
-    """A IA não está ativa. Não é erro: o trigger fica registrado sem insight."""
+    """IA desligada ou sem provider pronto. Não é erro: o trigger fica registrado sem insight."""
+
+
+class AiPausedError(Exception):
+    """Todos os providers estão pausados por limite de uso."""
+
+    def __init__(self, until: datetime) -> None:
+        super().__init__(f"IA pausada por limite de uso até {until.isoformat()}")
+        self.until = until
 
 
 @dataclass
@@ -51,58 +67,56 @@ class AiOutcome:
     insight: Insight | None
     calls: list[AiCall]
     error: str | None = None
+    #: Se o próximo provider da cadeia deve ser tentado.
+    should_fallback: bool = False
 
 
 class AiRuntime:
-    """Guarda o provider montado e o limite de chamadas simultâneas."""
+    """Limita chamadas simultâneas e guarda a pausa por limite de uso, por provider."""
 
     def __init__(self) -> None:
-        self._provider: AiProvider | None = None
-        self._key_fingerprint: str | None = None
         self._semaphore = asyncio.Semaphore(3)
         self._concurrency = 3
-        self._paused_until: datetime | None = None
+        self._paused: dict[uuid.UUID, datetime] = {}
 
-    async def provider_for(self, db: AsyncSession) -> tuple[AiProvider, str]:
-        """Provider e modelo atuais. Recria se a chave mudou."""
-        if not await settings_service.ai_is_active(db):
+    async def chain(self, db: AsyncSession) -> list[AiProviderConfig]:
+        """Providers utilizáveis, na ordem de fallback, pulando os pausados."""
+        if not await settings_service.get_bool(db, settings_service.AI_ENABLED):
             raise AiDisabledError
-        api_key = await settings_service.get(db, settings_service.AI_API_KEY)
-        model = await settings_service.get(db, settings_service.AI_MODEL)
-        if not api_key or not model:
-            raise AiDisabledError
-        fingerprint = str(hash(api_key))
-        if self._provider is None or fingerprint != self._key_fingerprint:
-            if self._provider is not None:
-                await self._provider.aclose()
-            self._provider = OpenRouterProvider(api_key)
-            self._key_fingerprint = fingerprint
         concurrency = await settings_service.get_int(db, settings_service.AI_CONCURRENCY, 3)
         if concurrency != self._concurrency:
             self._semaphore = asyncio.Semaphore(concurrency)
             self._concurrency = concurrency
-        return self._provider, model
+        usable = await registry.usable_chain(db)
+        if not usable:
+            raise AiDisabledError
+        available = [p for p in usable if self.paused_until(p.id) is None]
+        if not available:
+            raise AiPausedError(min(self._paused[p.id] for p in usable if p.id in self._paused))
+        return available
 
     @property
     def semaphore(self) -> asyncio.Semaphore:
         return self._semaphore
 
-    def pause(self, seconds: float | None = None) -> None:
-        delta = timedelta(seconds=seconds) if seconds else RATE_LIMIT_PAUSE
-        self._paused_until = datetime.now(UTC) + delta
+    def pause(self, provider_id: uuid.UUID, seconds: float | None = None) -> None:
+        self._paused[provider_id] = datetime.now(UTC) + (
+            timedelta(seconds=seconds) if seconds else RATE_LIMIT_PAUSE
+        )
 
-    @property
-    def paused_until(self) -> datetime | None:
-        if self._paused_until and self._paused_until <= datetime.now(UTC):
-            self._paused_until = None
-        return self._paused_until
+    def paused_until(self, provider_id: uuid.UUID) -> datetime | None:
+        until = self._paused.get(provider_id)
+        if until is not None and until <= datetime.now(UTC):
+            del self._paused[provider_id]
+            return None
+        return until
+
+    def paused_all(self) -> dict[str, datetime]:
+        now = datetime.now(UTC)
+        return {str(k): v for k, v in self._paused.items() if v > now}
 
     async def reset(self) -> None:
-        if self._provider is not None:
-            await self._provider.aclose()
-        self._provider = None
-        self._key_fingerprint = None
-        self._paused_until = None
+        self._paused.clear()
 
 
 _runtime: AiRuntime | None = None
@@ -148,15 +162,14 @@ async def analyze_trigger(
     new_pattern_templates: list[str],
     state: dict[str, Any] | None = None,
 ) -> AiOutcome:
-    """Explica um trigger. Devolve o insight ou o motivo de não ter saído nenhum."""
+    """Explica um trigger. Percorre a cadeia de providers até um responder."""
     runtime = get_runtime()
-    paused = runtime.paused_until
-    if paused is not None:
-        return AiOutcome(None, [], f"IA pausada por limite de uso até {paused.isoformat()}")
     try:
-        provider, model = await runtime.provider_for(db)
+        chain = await runtime.chain(db)
     except AiDisabledError:
         return AiOutcome(None, [], None)
+    except AiPausedError as exc:
+        return AiOutcome(None, [], str(exc))
 
     events = list(
         (
@@ -190,43 +203,83 @@ async def analyze_trigger(
     )
 
     calls: list[AiCall] = []
+    last_error: str | None = None
     ai_semaphore_waiting.inc()
     try:
         async with runtime.semaphore:
             ai_semaphore_waiting.dec()
-            outcome = await _call_with_retry(
-                db,
-                provider=provider,
-                model=model,
-                container=container,
-                trigger=trigger,
-                context=context,
-                max_output=max_output,
-                calls=calls,
-            )
+            for attempt, provider_config in enumerate(chain):
+                try:
+                    client = _open(runtime, provider_config)
+                except AiError as exc:
+                    last_error = exc.message
+                    calls.append(
+                        _record_call(
+                            db,
+                            container,
+                            trigger,
+                            provider_config,
+                            provider_config.default_model or "",
+                            AiCallStatus.error,
+                            exc.message,
+                            attempt=attempt,
+                        )
+                    )
+                    continue
+                try:
+                    outcome = await _call_with_retry(
+                        db,
+                        provider=client,
+                        provider_config=provider_config,
+                        model=provider_config.default_model or "",
+                        container=container,
+                        trigger=trigger,
+                        context=context,
+                        max_output=max_output,
+                        calls=calls,
+                        attempt=attempt,
+                    )
+                finally:
+                    await client.aclose()
+                if outcome.insight is not None:
+                    if attempt > 0:
+                        log.info(
+                            "insight veio do fallback",
+                            extra={"provider": provider_config.name, "attempt": attempt},
+                        )
+                    return outcome
+                last_error = outcome.error
+                if not outcome.should_fallback:
+                    break
     except BaseException:
         ai_semaphore_waiting.dec()
         raise
-    return outcome
+
+    if last_error:
+        await _notify_error(db, container, last_error)
+    return AiOutcome(None, calls, last_error)
 
 
 async def _call_with_retry(
     db: AsyncSession,
     *,
     provider: AiProvider,
+    provider_config: AiProviderConfig,
     model: str,
     container: Container,
     trigger: TriggerFired,
     context: BuiltContext,
     max_output: int,
     calls: list[AiCall],
+    attempt: int,
 ) -> AiOutcome:
+    """Uma tentativa num provider, com um retry se a resposta vier fora do esquema."""
     user_text = context.user_text
     previous_text = ""
     last_error = ""
 
-    for attempt in range(2):  # uma tentativa e um retry de esquema
-        is_retry = attempt == 1
+    for round_index in range(2):
+        is_retry = round_index == 1
         prompt = (
             user_text
             if not is_retry
@@ -242,35 +295,43 @@ async def _call_with_retry(
                 max_output_tokens=max_output,
             )
         except RateLimitedError as exc:
-            get_runtime().pause(exc.retry_after)
-            call = _record_call(
-                db,
-                container,
-                trigger,
-                model,
-                AiCallStatus.error,
-                exc.message,
-                latency_ms=int((time.perf_counter() - started) * 1000),
-                schema_retry=is_retry,
+            get_runtime().pause(provider_config.id, exc.retry_after)
+            calls.append(
+                _record_call(
+                    db,
+                    container,
+                    trigger,
+                    provider_config,
+                    model,
+                    AiCallStatus.error,
+                    exc.message,
+                    latency_ms=int((time.perf_counter() - started) * 1000),
+                    schema_retry=is_retry,
+                    attempt=attempt,
+                )
             )
-            calls.append(call)
-            await _notify_error(db, container, exc.message)
-            return AiOutcome(None, calls, exc.message)
+            await db.commit()
+            # Limite de uso é do provider, não do pedido: vale tentar o próximo.
+            return AiOutcome(None, calls, exc.message, should_fallback=True)
         except AiError as exc:
-            call = _record_call(
-                db,
-                container,
-                trigger,
-                model,
-                AiCallStatus.error,
-                exc.message,
-                latency_ms=int((time.perf_counter() - started) * 1000),
-                schema_retry=is_retry,
+            calls.append(
+                _record_call(
+                    db,
+                    container,
+                    trigger,
+                    provider_config,
+                    model,
+                    AiCallStatus.error,
+                    exc.message,
+                    latency_ms=int((time.perf_counter() - started) * 1000),
+                    schema_retry=is_retry,
+                    attempt=attempt,
+                )
             )
-            calls.append(call)
-            await _notify_error(db, container, exc.message)
-            return AiOutcome(None, calls, exc.message)
+            await db.commit()
+            return AiOutcome(None, calls, exc.message, should_fallback=True)
 
+        result = await registry.apply_price(db, provider_config, model, result)
         try:
             data = validate_insight(parse_json_object(result.text), max_index=context.max_index())
         except SchemaError as exc:
@@ -280,17 +341,20 @@ async def _call_with_retry(
                     db,
                     container,
                     trigger,
+                    provider_config,
                     model,
                     AiCallStatus.error,
                     f"resposta fora do esquema: {exc}",
                     result=result,
                     schema_retry=is_retry,
+                    attempt=attempt,
                 )
             )
+            await db.commit()
             if is_retry:
                 message = f"A IA respondeu fora do formato duas vezes: {exc}"
-                await _notify_error(db, container, message)
-                return AiOutcome(None, calls, message)
+                # Outro modelo pode acertar o formato: vale a pena tentar o próximo.
+                return AiOutcome(None, calls, message, should_fallback=True)
             continue
 
         insight = Insight(
@@ -314,11 +378,13 @@ async def _call_with_retry(
             db,
             container,
             trigger,
+            provider_config,
             model,
             AiCallStatus.ok,
             None,
             result=result,
             schema_retry=is_retry,
+            attempt=attempt,
         )
         call.insight_id = insight.id
         calls.append(call)
@@ -328,21 +394,30 @@ async def _call_with_retry(
             "insight criado",
             extra={
                 "container": container.name,
+                "provider": provider_config.name,
                 "severity": insight.severity.value,
                 "confidence": float(insight.confidence),
-                "tokens_in": result.input_tokens,
                 "cost_usd": float(result.cost_usd),
             },
         )
         return AiOutcome(insight, calls)
 
-    return AiOutcome(None, calls, last_error or "falha desconhecida")
+    return AiOutcome(None, calls, last_error or "falha desconhecida", should_fallback=True)
+
+
+def _open(runtime: AiRuntime, provider_config: AiProviderConfig) -> AiProvider:
+    """Abre o cliente do provider. O runtime pode substituir isso nos testes."""
+    opener = getattr(runtime, "provider_for_config", None)
+    if opener is not None:
+        return opener(provider_config)  # type: ignore[no-any-return]
+    return registry.open_provider(provider_config)
 
 
 def _record_call(
     db: AsyncSession,
     container: Container,
     trigger: TriggerFired,
+    provider_config: AiProviderConfig,
     model: str,
     status: AiCallStatus,
     error: str | None,
@@ -350,11 +425,17 @@ def _record_call(
     result: AiResult | None = None,
     latency_ms: int = 0,
     schema_retry: bool = False,
+    attempt: int = 0,
 ) -> AiCall:
     call = AiCall(
         id=uuid.uuid4(),
         trigger_id=trigger.id,
         container_id=container.id,
+        provider_id=provider_config.id,
+        provider=provider_config.kind,
+        provider_name=provider_config.name,
+        attempt=attempt,
+        fell_back=attempt > 0,
         model=result.model if result else model,
         purpose=AiPurpose.analyze,
         prompt_version=ANALYZE_VERSION,
@@ -368,7 +449,7 @@ def _record_call(
         error=error[:2000] if error else None,
     )
     db.add(call)
-    ai_calls_total.labels(status.value, AiPurpose.analyze.value).inc()
+    ai_calls_total.labels(status.value, AiPurpose.analyze.value, provider_config.kind).inc()
     return call
 
 

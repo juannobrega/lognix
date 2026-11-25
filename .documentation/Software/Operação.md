@@ -264,26 +264,75 @@ Com nenhum host cadastrado, a tela inteira vira o convite para cadastrar o prime
 
 ## Configurar a IA
 
+São duas telas. **Configurações › Provedores** guarda quem atende as chamadas; **Configurações › IA**
+tem o interruptor geral e os limites por chamada.
+
+### Provedores
+
+Um provedor é uma conta num serviço de modelos. O Lognix suporta três tipos:
+
+| Tipo | Credenciais | Catálogo de modelos |
+|---|---|---|
+| OpenRouter | chave de API | sim, com preço |
+| OpenAI | chave de API, e opcionalmente URL base e organização | sim, sem preço |
+| Amazon Bedrock | região, access key, secret key, e session token se for credencial temporária | não |
+
+Dá para cadastrar mais de um do mesmo tipo — duas contas, dois orçamentos — e cada um recebe um nome
+seu. As credenciais são guardadas criptografadas no banco e **nunca voltam pela API**: a tela mostra
+apenas que existe um valor salvo. Deixar o campo em branco mantém o valor atual.
+
+Um provedor fica **pronto** quando tem credencial, modelo padrão e está ativado. Só os prontos entram
+na cadeia de fallback. O cartão de cada provedor diz em que estado ele está e, quando o último teste
+falhou, mostra o motivo.
+
+### A cadeia de fallback
+
+A ordem dos cartões é a ordem das tentativas. O primeiro pronto é o **principal**: é ele que recebe a
+chamada. Se recusar — chave inválida, modelo inexistente, limite de uso estourado, serviço fora —, a
+chamada desce para o próximo. As setas ao lado de cada cartão mudam a ordem.
+
+Com um provedor só, uma queda dele deixa as ocorrências sem análise. É por isso que a tela diz isso
+em voz alta quando há apenas um.
+
+Resposta fora do formato esperado **não** desce a cadeia: ela é retentada uma vez no mesmo provedor,
+porque trocar de provedor não corrige formato.
+
+### Modelos
+
+O botão **Modelos** de cada cartão abre três abas:
+
+- **Cadastrados** — os modelos que aquele provedor pode usar, com preço e janela de contexto. Aqui se
+  escolhe qual é o padrão, se desativa um modelo sem apagá-lo, e se atualizam os preços pelo catálogo.
+- **Catálogo** — a lista que o provedor publica, com busca. Cadastrar é ato explícito: o catálogo é só
+  para escolher.
+- **Adicionar à mão** — para o que catálogo nenhum lista: um modelo do Bedrock, um perfil de
+  inferência, um deployment. O preço digitado aqui é o que será usado para estimar o custo quando o
+  provedor não informar.
+
+O botão **Testar** faz uma chamada mínima e mostra latência e custo real. Use antes de ativar: é a
+forma mais rápida de saber se a credencial e o modelo estão certos.
+
+### O interruptor geral
+
 Em Configurações › IA. Três estados, e vale distinguir:
 
 | Estado | Significa |
 |---|---|
-| não configurada | falta a chave de API, o modelo, ou os dois |
-| configurada, desligada | dá para ligar, mas o interruptor está desligado |
-| IA ativa | chave, modelo e interruptor: a IA roda quando um trigger disparar |
+| nenhum provedor pronto | não há a quem chamar; ligar é recusado com uma mensagem dizendo o que falta |
+| desligada | há provedor pronto, mas o interruptor está desligado |
+| ligada | a IA roda quando um trigger disparar |
 
-A chave do OpenRouter é guardada criptografada no banco e **nunca volta pela API**: a tela mostra
-apenas que existe uma chave salva. Deixar o campo em branco mantém a chave atual; enviar um campo
-vazio explicitamente a apaga. Tentar ligar a IA sem chave e modelo é recusado com uma mensagem
-dizendo o que falta.
+Na mesma tela ficam os limites por chamada — tokens de entrada, tokens de saída e chamadas simultâneas
+—, que valem para todos os provedores.
 
-O aviso sobre dados sensíveis fica fixo no topo da tela: trechos de log saem para o OpenRouter e
-para o fabricante do modelo escolhido, sem redação automática nesta versão.
+O aviso sobre dados sensíveis fica fixo no topo da tela de Provedores: trechos de log saem para o
+provedor escolhido e para o fabricante do modelo, sem redação automática nesta versão.
 
-O botão **Testar** faz uma chamada mínima ao provider e mostra modelo, latência e custo real. Use
-antes de salvar: é a forma mais rápida de saber se a chave e o modelo estão certos. O botão
-**Escolher da lista** abre o catálogo do OpenRouter com preço por milhão de tokens, disponível
-assim que houver uma chave salva.
+### Subindo da 0.9.0
+
+Quem já tinha a chave do OpenRouter configurada não reconfigura nada. Na primeira subida, a chave vira
+um provedor OpenRouter habilitado, com o modelo que estava escolhido, e a configuração antiga é
+apagada.
 
 ## Insights
 
@@ -317,24 +366,29 @@ serem marcados como vistos, um a um ou com "limpar todos", e seguem acessíveis 
 
 ### Quando a IA falha
 
-Nada falha em silêncio. Se o provider recusar a chave, ficar indisponível, ou responder fora do
-formato duas vezes seguidas, o Lognix registra a chamada com o erro, gera uma notificação e deixa a
-ocorrência marcada como **sem análise**. Você vê o que não foi analisado e por quê.
+Nada falha em silêncio. Cada tentativa é registrada com o provedor que a atendeu e o erro que
+devolveu. Quando a cadeia inteira falha, o Lognix gera **uma** notificação — não uma por tentativa — e
+deixa a ocorrência marcada como **sem análise**. Você vê o que não foi analisado e por quê.
 
-Se o OpenRouter responder com limite de uso, a IA pausa por cinco minutos. A pausa aparece na tela
+Limite de uso pausa **aquele provedor** por cinco minutos, não a IA. A chamada segue para o próximo da
+cadeia. Só quando todos estão pausados é que a ocorrência fica sem análise. As pausas aparecem na tela
 de Consumo.
 
-Resposta fora do esquema tem **um** retry, com o erro anexado para o modelo se corrigir. O segundo
-erro encerra a tentativa.
+Resposta fora do esquema tem **um** retry no mesmo provedor, com o erro anexado para o modelo se
+corrigir. O segundo erro encerra a tentativa naquele provedor e a chamada desce a cadeia.
 
 ## Consumo
 
-Configurações › Consumo mostra chamadas, tokens e custo em hoje, 7 dias, 30 dias e total, mais o
-detalhamento por dia, projeto, tipo de trigger e propósito. Abaixo, as chamadas individuais, com
-filtro para ver só as que falharam.
+Configurações › Consumo mostra chamadas, tokens e custo em hoje, 7 dias, 30 dias e total, quantas
+caíram para o fallback e a latência média. Abaixo, uma tabela **por provedor** — chamadas, taxa de
+sucesso, fallbacks, latência média, p95 e custo — que é o que permite decidir qual provedor merece ser
+o principal. Depois o detalhamento por modelo, projeto, tipo de trigger e dia, e as chamadas
+individuais, com filtro para ver só as que falharam. Cada chamada mostra o provedor que a atendeu e um
+selo quando foi fallback.
 
-O custo vem da resposta do OpenRouter quando ele informa; caso contrário é estimado pela tabela de
-preços do modelo, e a origem fica registrada em cada chamada.
+O custo vem da resposta do provedor quando ele informa; caso contrário é estimado pelo preço
+cadastrado naquele modelo, e a origem fica registrada em cada chamada. Modelo sem preço cadastrado e
+provedor que não informa custo somam zero — o que aparece como consumo de graça, não como erro.
 
 Nesta versão **não há orçamento com bloqueio**: você vê o gasto, mas o Lognix não para de chamar
 sozinho. Para controlar o custo, os botões são a concorrência, os limites de tokens e, no limite,

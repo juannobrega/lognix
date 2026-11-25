@@ -20,14 +20,11 @@ from lognix.ai.models import (
     InsightStatus,
     Severity,
 )
-from lognix.ai.openrouter import OpenRouterProvider
-from lognix.ai.provider import AiError
 from lognix.ai.service import get_runtime
 from lognix.analysis.models import TriggerFired, TriggerType
 from lognix.auth.deps import CurrentUser, DbSession
 from lognix.containers.models import Container
 from lognix.errors import ApiError
-from lognix.settings import service as settings_service
 
 insights_router = APIRouter(prefix="/insights", tags=["insights"])
 settings_router = APIRouter(prefix="/settings", tags=["insights"])
@@ -67,6 +64,11 @@ class InsightDetailOut(InsightOut):
 
 class AiCallOut(BaseModel):
     id: uuid.UUID
+    provider_id: uuid.UUID | None = None
+    provider: str = ""
+    provider_name: str = ""
+    attempt: int = 0
+    fell_back: bool = False
     model: str
     purpose: AiPurpose
     prompt_version: str
@@ -96,6 +98,21 @@ class UsageBucket(BaseModel):
     cost_usd: Decimal
 
 
+class ProviderUsage(BaseModel):
+    provider_id: uuid.UUID | None
+    name: str
+    kind: str
+    calls: int
+    errors: int
+    fallbacks: int
+    input_tokens: int
+    output_tokens: int
+    cost_usd: Decimal
+    avg_latency_ms: int
+    p95_latency_ms: int
+    success_rate: float
+
+
 class UsageOut(BaseModel):
     today: UsageBucket
     last_7d: UsageBucket
@@ -105,32 +122,13 @@ class UsageOut(BaseModel):
     by_project: list[UsageBucket]
     by_trigger: list[UsageBucket]
     by_purpose: list[UsageBucket]
+    by_provider: list[ProviderUsage]
+    by_model: list[UsageBucket]
     failures: int
     schema_retries: int
-    paused_until: datetime | None
-
-
-class TestKeyIn(BaseModel):
-    api_key: str | None = None
-    model: str | None = None
-
-
-class TestKeyOut(BaseModel):
-    ok: bool
-    model: str | None = None
-    latency_ms: int | None = None
-    cost_usd: Decimal | None = None
-    input_tokens: int | None = None
-    output_tokens: int | None = None
-    error: str | None = None
-
-
-class ModelOut(BaseModel):
-    id: str
-    name: str
-    context_length: int | None
-    prompt_usd_per_mtok: float | None
-    completion_usd_per_mtok: float | None
+    fallbacks: int
+    avg_latency_ms: int
+    paused_providers: dict[str, datetime]
 
 
 def _with_names(insight: Insight, container: Container, trigger: TriggerFired | None) -> InsightOut:
@@ -287,6 +285,33 @@ async def usage(_: CurrentUser, db: DbSession) -> UsageOut:
     by_purpose_rows = (
         await db.execute(select(AiCall.purpose, *_AGG).group_by(AiCall.purpose))
     ).all()
+    by_model_rows = (
+        await db.execute(
+            select(AiCall.model, *_AGG)
+            .group_by(AiCall.model)
+            .order_by(func.coalesce(func.sum(AiCall.cost_usd), 0).desc())
+            .limit(20)
+        )
+    ).all()
+    provider_rows = (
+        await db.execute(
+            select(
+                AiCall.provider_id,
+                func.max(AiCall.provider_name),
+                func.max(AiCall.provider),
+                func.count(),
+                func.count().filter(AiCall.status == AiCallStatus.error),
+                func.count().filter(AiCall.fell_back.is_(True)),
+                func.coalesce(func.sum(AiCall.input_tokens), 0),
+                func.coalesce(func.sum(AiCall.output_tokens), 0),
+                func.coalesce(func.sum(AiCall.cost_usd), 0),
+                func.coalesce(func.avg(AiCall.latency_ms), 0),
+                func.coalesce(func.percentile_cont(0.95).within_group(AiCall.latency_ms.asc()), 0),
+            )
+            .group_by(AiCall.provider_id)
+            .order_by(func.count().desc())
+        )
+    ).all()
     failures = int(
         (
             await db.execute(
@@ -310,9 +335,37 @@ async def usage(_: CurrentUser, db: DbSession) -> UsageOut:
         by_project=[_bucket(str(r[0]), r[1:]) for r in by_project_rows],
         by_trigger=[_bucket(str(r[0].value), r[1:]) for r in by_trigger_rows],
         by_purpose=[_bucket(str(r[0].value), r[1:]) for r in by_purpose_rows],
+        by_model=[_bucket(str(r[0]), r[1:]) for r in by_model_rows],
+        by_provider=[
+            ProviderUsage(
+                provider_id=r[0],
+                name=str(r[1] or "removido"),
+                kind=str(r[2] or ""),
+                calls=int(r[3] or 0),
+                errors=int(r[4] or 0),
+                fallbacks=int(r[5] or 0),
+                input_tokens=int(r[6] or 0),
+                output_tokens=int(r[7] or 0),
+                cost_usd=Decimal(str(r[8] or 0)),
+                avg_latency_ms=int(r[9] or 0),
+                p95_latency_ms=int(r[10] or 0),
+                success_rate=round(1 - (int(r[4] or 0) / max(int(r[3] or 1), 1)), 4),
+            )
+            for r in provider_rows
+        ],
         failures=failures,
         schema_retries=retries,
-        paused_until=get_runtime().paused_until,
+        fallbacks=int(
+            (
+                await db.execute(
+                    select(func.count()).select_from(AiCall).where(AiCall.fell_back.is_(True))
+                )
+            ).scalar_one()
+        ),
+        avg_latency_ms=int(
+            (await db.execute(select(func.coalesce(func.avg(AiCall.latency_ms), 0)))).scalar_one()
+        ),
+        paused_providers=get_runtime().paused_all(),
     )
 
 
@@ -337,62 +390,3 @@ async def usage_calls(
         item.container_name = name
         out.append(item)
     return out
-
-
-# --- teste de chave e modelos -------------------------------------------------
-
-
-@settings_router.post("/ai/test", response_model=TestKeyOut)
-async def test_key(body: TestKeyIn, _: CurrentUser, db: DbSession) -> TestKeyOut:
-    """Chamada mínima ao provider para validar chave e modelo antes de salvar."""
-    api_key = body.api_key or await settings_service.get(db, settings_service.AI_API_KEY)
-    model = body.model or await settings_service.get(db, settings_service.AI_MODEL)
-    if not api_key:
-        raise ApiError(400, "missing_api_key", "Informe a chave de API para testar.")
-    if not model:
-        raise ApiError(400, "missing_model", "Informe o modelo para testar.")
-    provider = OpenRouterProvider(api_key)
-    try:
-        result = await provider.test(model)
-    except AiError as exc:
-        return TestKeyOut(ok=False, error=exc.message)
-    finally:
-        await provider.aclose()
-    return TestKeyOut(
-        ok=True,
-        model=result.model,
-        latency_ms=result.latency_ms,
-        cost_usd=result.cost_usd,
-        input_tokens=result.input_tokens,
-        output_tokens=result.output_tokens,
-    )
-
-
-@settings_router.get("/ai/models", response_model=list[ModelOut])
-async def list_models(
-    _: CurrentUser, db: DbSession, q: Annotated[str | None, Query(max_length=100)] = None
-) -> list[ModelOut]:
-    api_key = await settings_service.get(db, settings_service.AI_API_KEY)
-    if not api_key:
-        raise ApiError(
-            400, "missing_api_key", "Salve a chave de API para listar os modelos disponíveis."
-        )
-    provider = OpenRouterProvider(api_key)
-    try:
-        models = await provider.models()
-    except AiError as exc:
-        raise ApiError(502, "provider_error", exc.message) from exc
-    finally:
-        await provider.aclose()
-    needle = (q or "").lower()
-    return [
-        ModelOut(
-            id=m.id,
-            name=m.name,
-            context_length=m.context_length,
-            prompt_usd_per_mtok=m.prompt_usd_per_mtok,
-            completion_usd_per_mtok=m.completion_usd_per_mtok,
-        )
-        for m in models
-        if not needle or needle in m.id.lower() or needle in m.name.lower()
-    ][:200]

@@ -29,7 +29,18 @@ triggers_total = Counter("lognix_triggers_total", "Triggers disparados", ["type"
 analysis_loops = Gauge("lognix_analysis_loops", "Loops de análise ativos")
 
 # --- IA (fase 0.9.0, já declarado para a tela de consumo) --------------------
-ai_calls_total = Counter("lognix_ai_calls_total", "Chamadas de IA", ["status", "purpose"])
+ai_calls_total = Counter(
+    "lognix_ai_calls_total", "Chamadas de IA", ["status", "purpose", "provider"]
+)
+ai_fallbacks_total = Counter(
+    "lognix_ai_fallbacks_total", "Vezes que a cadeia caiu para o próximo provider", ["provider"]
+)
+ai_latency = Histogram(
+    "lognix_ai_latency_seconds",
+    "Latência de uma chamada de IA",
+    ["provider"],
+    buckets=(0.5, 1, 2, 5, 10, 20, 40, 60, 120),
+)
 ai_semaphore_waiting = Gauge("lognix_ai_semaphore_waiting", "Chamadas de IA aguardando vaga")
 
 # --- túneis e hosts ----------------------------------------------------------

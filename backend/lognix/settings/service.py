@@ -73,8 +73,11 @@ async def has_secret(db: AsyncSession, key: str) -> bool:
 
 
 async def ai_has_credentials(db: AsyncSession) -> bool:
-    """Chave e modelo presentes. Diz se a IA *pode* ser ligada, não se está."""
-    return await has_secret(db, AI_API_KEY) and bool(await get(db, AI_MODEL))
+    """Existe ao menos um provider com credencial e modelo. Diz se a IA *pode* ser ligada."""
+    # Import local: o registry depende deste módulo para ler as configurações de IA.
+    from lognix.ai.registry import usable_chain
+
+    return bool(await usable_chain(db))
 
 
 async def ai_is_active(db: AsyncSession) -> bool:

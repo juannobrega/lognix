@@ -205,20 +205,59 @@ Um por ciclo por container. Retenção curta, 7 dias, serve para medir a rotina 
 
 "Limpar todos" faz `UPDATE ... SET status = seen` em lote. Nada é apagado. Histórico em tela própria.
 
+### AiProviderConfig
+Um provedor de IA cadastrado. A ordem de `priority` é a cadeia de fallback. Ver
+[ADR 012](ADR/ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md).
+
+| Campo | Tipo | Nota |
+|---|---|---|
+| id | uuid | |
+| kind | enum: `openrouter`, `openai`, `bedrock` | define quais credenciais o provedor pede |
+| name | text | dado pelo usuário; dois provedores do mesmo tipo são permitidos |
+| enabled | bool | |
+| priority | int | menor primeiro. É a ordem de fallback |
+| credentials_enc | bytea, nulo | bloco JSON criptografado, AAD = `ai_provider:{id}` |
+| credential_keys | jsonb | nomes dos campos preenchidos. É o que a API devolve; valor nenhum sai |
+| default_model | text, nulo | modelo usado quando este provedor é chamado |
+| last_status | enum: `unknown`, `ok`, `error` | resultado do último teste |
+| last_error | text, nulo | |
+| last_checked_at | timestamptz, nulo | |
+
+Pronto para a cadeia = `enabled` **e** `credentials_enc` **e** `default_model`.
+
+### AiModelConfig
+| Campo | Tipo | Nota |
+|---|---|---|
+| id | uuid | |
+| provider_id | uuid → AiProviderConfig | apaga em cascata |
+| model_id | text | único por provedor |
+| label | text | |
+| enabled | bool | |
+| context_length | int, nulo | |
+| prompt_usd_per_mtok | numeric(12,4), nulo | usado para estimar custo quando o provedor não informa |
+| completion_usd_per_mtok | numeric(12,4), nulo | |
+
 ### AICall
+Uma linha por **tentativa**, não por ocorrência: uma cadeia de três provedores que falha inteira
+grava três linhas.
+
 | Campo | Tipo |
 |---|---|
 | id | uuid |
 | trigger_id | uuid → TriggerFired |
 | insight_id | uuid → Insight, nulo se falhou |
-| provider | enum: `openrouter` |
+| provider_id | uuid → AiProviderConfig, nulo se o provedor foi removido depois |
+| provider | enum: `openrouter`, `openai`, `bedrock` |
+| provider_name | text, o nome que o provedor tinha na hora da chamada |
+| attempt | int, posição na cadeia, começando em 0 |
+| fell_back | bool, true quando algum provedor anterior recusou |
 | model | text |
 | prompt_version | text |
 | schema_retry | bool, true se foi o retry de esquema |
 | purpose | enum: `analyze`, `code_diagnosis`, `issue_text` |
 | input_tokens, output_tokens | int |
 | cost_usd | numeric(12,6) |
-| cost_source | enum: `provider`, `estimated` |
+| cost_source | enum: `provider`, `estimated`, `unknown` |
 | latency_ms | int |
 | status | enum: `ok`, `error` |
 | error | text |
@@ -258,11 +297,14 @@ Configurações globais, chave/valor, valores sensíveis criptografados.
 
 | key | conteúdo |
 |---|---|
-| `ai.openrouter.api_key` | criptografado |
-| `ai.openrouter.model` | ex.: `anthropic/claude-...` escolhido pelo usuário |
+| `ai.enabled` | interruptor geral da IA. Credenciais e modelos ficam em `AiProviderConfig` |
+| `ai.max_input_tokens`, `ai.max_output_tokens`, `ai.concurrency` | limites por chamada, válidos para todos os provedores |
 | `github.app.id`, `github.app.private_key`, `github.app.installation_id` | criptografados |
 | `analysis.interval_seconds` | 30, fixo na v1, preparado para roadmap |
 | `loki.retention_days` | espelha o `.env`, só leitura na interface |
+
+As chaves `ai.openrouter.api_key` e `ai.openrouter.model` existiram até a 0.9.0. Na primeira subida da
+1.0.0 elas viram um `AiProviderConfig` e são esvaziadas.
 
 ### AlloyConfigVersion
 | Campo | Tipo |

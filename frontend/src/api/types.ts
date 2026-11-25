@@ -311,19 +311,18 @@ export interface Summary {
 }
 
 export interface AiSettings {
-  /** interruptor ligado */
+  /** interruptor geral ligado */
   enabled: boolean
-  /** chave e modelo presentes: pode ser ligada */
+  /** existe provedor pronto na cadeia: pode ser ligada */
   configured: boolean
   /** configured e enabled: a IA roda */
   active: boolean
-  has_api_key: boolean
-  model: string | null
+  providers: number
+  providers_ready: number
   max_input_tokens: number
   max_output_tokens: number
   concurrency: number
   language: string
-  provider: string
 }
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info'
@@ -365,6 +364,11 @@ export interface Insight {
 
 export interface AiCall {
   id: string
+  provider_id: string | null
+  provider: string
+  provider_name: string
+  attempt: number
+  fell_back: boolean
   model: string
   purpose: 'analyze' | 'code_diagnosis' | 'issue_text' | 'test'
   prompt_version: string
@@ -404,9 +408,13 @@ export interface Usage {
   by_project: UsageBucket[]
   by_trigger: UsageBucket[]
   by_purpose: UsageBucket[]
+  by_provider: ProviderUsage[]
+  by_model: UsageBucket[]
   failures: number
   schema_retries: number
-  paused_until: string | null
+  fallbacks: number
+  avg_latency_ms: number
+  paused_providers: Record<string, string>
 }
 
 export interface TestKeyResult {
@@ -425,4 +433,84 @@ export interface AiModel {
   context_length: number | null
   prompt_usd_per_mtok: number | null
   completion_usd_per_mtok: number | null
+}
+
+export type ProviderKind = 'openrouter' | 'openai' | 'bedrock'
+
+export interface CredentialField {
+  key: string
+  label: string
+  secret: boolean
+  required: boolean
+  placeholder: string
+  help: string
+}
+
+export interface ProviderKindInfo {
+  kind: ProviderKind
+  label: string
+  has_catalog: boolean
+  fields: CredentialField[]
+}
+
+export interface ProviderModel {
+  id: string
+  model_id: string
+  label: string
+  enabled: boolean
+  context_length: number | null
+  prompt_usd_per_mtok: string | null
+  completion_usd_per_mtok: string | null
+}
+
+export interface Provider {
+  id: string
+  kind: ProviderKind
+  label: string
+  name: string
+  enabled: boolean
+  priority: number
+  default_model: string | null
+  credential_keys: string[]
+  has_credentials: boolean
+  last_status: 'unknown' | 'ok' | 'error'
+  last_error: string | null
+  last_checked_at: string | null
+  paused_until: string | null
+  ready: boolean
+  models: ProviderModel[]
+}
+
+export interface CatalogModel {
+  id: string
+  name: string
+  context_length: number | null
+  prompt_usd_per_mtok: number | null
+  completion_usd_per_mtok: number | null
+  already_added: boolean
+}
+
+export interface ProviderTestResult {
+  ok: boolean
+  model: string | null
+  latency_ms: number | null
+  cost_usd: string | null
+  input_tokens: number | null
+  output_tokens: number | null
+  error: string | null
+}
+
+export interface ProviderUsage {
+  provider_id: string | null
+  name: string
+  kind: string
+  calls: number
+  errors: number
+  fallbacks: number
+  input_tokens: number
+  output_tokens: number
+  cost_usd: string
+  avg_latency_ms: number
+  p95_latency_ms: number
+  success_rate: number
 }

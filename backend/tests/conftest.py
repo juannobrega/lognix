@@ -42,6 +42,17 @@ from tests.fake_docker import FakeDocker
 from tests.fake_ssh import FakeSshBackend
 
 TABLES = [
+    "ai_calls",
+    "insights",
+    "ai_models",
+    "ai_providers",
+    "settings",
+    "triggers_fired",
+    "analysis_runs",
+    "patterns",
+    "notifications",
+    "docker_events",
+    "host_events",
     "alloy_config_versions",
     "containers",
     "tunnel_states",
