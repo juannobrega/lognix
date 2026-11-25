@@ -9,7 +9,7 @@ import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
 import { SkeletonRows } from '../components/Skeleton'
 import { useToast } from '../components/useToast'
-import { ProviderCard } from '../providers/ProviderCard'
+import { ProviderRow } from '../providers/ProviderRow'
 import { ProviderDialog } from '../providers/ProviderDialog'
 
 export function ProvidersPage() {
@@ -89,17 +89,30 @@ export function ProvidersPage() {
             </Button>
           </EmptyState>
         ) : (
-          list.map((p, i) => (
-            <ProviderCard
-              key={p.id}
-              provider={p}
-              index={ready.findIndex((r) => r.id === p.id)}
-              position={i}
-              total={list.length}
-              onEdit={() => setDialog({ open: true, provider: p })}
-              onMove={(d) => move(p.id, d)}
-            />
-          ))
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Ordem</th>
+                <th>Provedor</th>
+                <th>Modelo padrão</th>
+                <th>Último teste</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((p, i) => (
+                <ProviderRow
+                  key={p.id}
+                  provider={p}
+                  index={ready.findIndex((r) => r.id === p.id)}
+                  position={i}
+                  total={list.length}
+                  onEdit={() => setDialog({ open: true, provider: p })}
+                  onMove={(d: -1 | 1) => move(p.id, d)}
+                />
+              ))}
+            </tbody>
+          </table>
         )}
       </section>
 

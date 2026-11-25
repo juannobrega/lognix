@@ -282,14 +282,15 @@ seu. As credenciais são guardadas criptografadas no banco e **nunca voltam pela
 apenas que existe um valor salvo. Deixar o campo em branco mantém o valor atual.
 
 Um provedor fica **pronto** quando tem credencial, modelo padrão e está ativado. Só os prontos entram
-na cadeia de fallback. O cartão de cada provedor diz em que estado ele está e, quando o último teste
-falhou, mostra o motivo.
+na cadeia de fallback. A tabela diz em que estado cada um está e, quando o último teste falhou, mostra
+o motivo na própria linha.
 
 ### A cadeia de fallback
 
-A ordem dos cartões é a ordem das tentativas. O primeiro pronto é o **principal**: é ele que recebe a
-chamada. Se recusar — chave inválida, modelo inexistente, limite de uso estourado, serviço fora —, a
-chamada desce para o próximo. As setas ao lado de cada cartão mudam a ordem.
+A coluna **Ordem** é a ordem das tentativas, numerada. O 1º pronto recebe a chamada; se recusar —
+chave inválida, modelo inexistente, limite de uso estourado, serviço fora —, a chamada desce para o
+próximo. As setas da primeira coluna mudam a ordem, e um traço no lugar do número quer dizer que
+aquele provedor está fora da cadeia.
 
 Com um provedor só, uma queda dele deixa as ocorrências sem análise. É por isso que a tela diz isso
 em voz alta quando há apenas um.
@@ -299,18 +300,16 @@ porque trocar de provedor não corrige formato.
 
 ### Modelos
 
-O botão **Modelos** de cada cartão abre três abas:
+A seta no começo da linha abre os **modelos** daquele provedor, sem sair da tabela: os cadastrados,
+com preço e janela de contexto, e um campo de busca que lista o catálogo do provedor. Escolher um
+nome no catálogo cadastra o modelo — o catálogo é só para escolher, cadastrar é ato explícito.
 
-- **Cadastrados** — os modelos que aquele provedor pode usar, com preço e janela de contexto. Aqui se
-  escolhe qual é o padrão, se desativa um modelo sem apagá-lo, e se atualizam os preços pelo catálogo.
-- **Catálogo** — a lista que o provedor publica, com busca. Cadastrar é ato explícito: o catálogo é só
-  para escolher.
-- **Adicionar à mão** — para o que catálogo nenhum lista: um modelo do Bedrock, um perfil de
-  inferência, um deployment. O preço digitado aqui é o que será usado para estimar o custo quando o
-  provedor não informar.
+**À mão** cadastra o que catálogo nenhum lista: um modelo do Bedrock, um perfil de inferência, um
+deployment. O preço digitado ali é o que será usado para estimar o custo quando o provedor não
+informar. **Atualizar preços** relê o catálogo e corrige preço e contexto do que já está cadastrado.
 
-O botão **Testar** faz uma chamada mínima e mostra latência e custo real. Use antes de ativar: é a
-forma mais rápida de saber se a credencial e o modelo estão certos.
+No menu de cada linha, **Testar agora** faz uma chamada mínima e mostra latência e custo real. Use
+antes de ativar: é a forma mais rápida de saber se a credencial e o modelo estão certos.
 
 ### O interruptor geral
 

@@ -1,0 +1,101 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 10px 0 var(--space-4);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--control-bg);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: var(--text-input);
+  text-align: left;
+  cursor: pointer;
+}
+.trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--control-border));
+}
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--glow) var(--accent-ring);
+}
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.placeholder {
+  color: var(--fg-faint);
+}
+.chevron {
+  color: var(--fg-faint);
+  flex-shrink: 0;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  width: var(--radix-popover-trigger-width);
+  max-height: min(340px, var(--radix-popover-content-available-height));
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-well);
+  box-shadow: var(--shadow-pop);
+  z-index: 60;
+}
+.search {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--divider);
+}
+.search input {
+  width: 100%;
+  margin: 0;
+}
+.list {
+  overflow-y: auto;
+  padding: var(--space-1);
+  margin: 0;
+  list-style: none;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  font-size: var(--text-ui);
+  cursor: pointer;
+  user-select: none;
+}
+.option[aria-selected='true'] {
+  background: var(--hover);
+}
+.option[data-current='true'] {
+  color: var(--accent);
+  font-weight: 500;
+}
+.optionMain {
+  min-width: 0;
+  flex: 1;
+}
+.optionLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.optionHint {
+  flex-shrink: 0;
+  color: var(--fg-faint);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.empty {
+  padding: var(--space-4);
+  color: var(--fg-faint);
+  font-size: var(--text-sm);
+  text-align: center;
+}

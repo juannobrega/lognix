@@ -7,6 +7,7 @@ import { Button } from '../components/Button'
 import { Field } from '../components/Field'
 import { useToast } from '../components/useToast'
 import dialog from '../ui/Dialog.module.css'
+import { Select } from '../ui/Select'
 import { ProviderIcon } from './icons'
 import { PROVIDER_TINT } from './kinds'
 import styles from './ProviderDialog.module.css'
@@ -76,26 +77,44 @@ export function ProviderDialog({ provider, open, onOpenChange }: Props) {
         <Dialog.Content className={dialog.content} style={{ maxWidth: 560 }}>
           <Dialog.Title className={dialog.title}>{editing ? `Editar ${provider.name}` : 'Novo provedor'}</Dialog.Title>
           <form onSubmit={onSubmit}>
-            {!editing && (
-              <div className={styles.kinds} role="radiogroup" aria-label="Tipo de provedor">
-                {kinds.data?.map((k) => (
-                  <button
-                    type="button"
-                    key={k.kind}
-                    role="radio"
-                    aria-checked={kind === k.kind}
-                    className={styles.kind}
-                    style={{ ['--tint' as string]: PROVIDER_TINT[k.kind] }}
-                    onClick={() => {
-                      setKind(k.kind)
-                      setCreds({})
-                      if (!name.trim()) setName(k.label)
-                    }}
-                  >
-                    <ProviderIcon kind={k.kind} width={22} height={22} />
-                    <span>{k.label}</span>
-                  </button>
-                ))}
+            {!editing ? (
+              <div className={styles.field}>
+                <label htmlFor="provider-kind">Tipo</label>
+                <Select
+                  id="provider-kind"
+                  aria-label="Tipo de provedor"
+                  value={kind}
+                  options={(kinds.data ?? []).map((k) => ({
+                    value: k.kind,
+                    label: (
+                      <span className={styles.option}>
+                        <span className={styles.glyph} style={{ ['--tint' as string]: PROVIDER_TINT[k.kind] }}>
+                          <ProviderIcon kind={k.kind} width={16} height={16} />
+                        </span>
+                        {k.label}
+                      </span>
+                    ),
+                  }))}
+                  onValueChange={(v) => {
+                    const next = v as ProviderKind
+                    const previous = kinds.data?.find((k) => k.kind === kind)
+                    setKind(next)
+                    setCreds({})
+                    // Trocar de tipo renomeia só enquanto o nome ainda é o que nós sugerimos.
+                    if (!name.trim() || name === previous?.label) {
+                      setName(kinds.data?.find((k) => k.kind === next)?.label ?? '')
+                    }
+                  }}
+                />
+                <span className={styles.help}>Define quais credenciais o provedor pede.</span>
+              </div>
+            ) : (
+              <div className={styles.current}>
+                <span className={styles.glyph} style={{ ['--tint' as string]: PROVIDER_TINT[kind] }}>
+                  <ProviderIcon kind={kind} width={16} height={16} />
+                </span>
+                {provider.label}
+                <span className={styles.help}>o tipo não muda depois de cadastrado</span>
               </div>
             )}
 

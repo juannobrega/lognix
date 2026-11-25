@@ -62,25 +62,25 @@ describe('ProviderModels', () => {
 
   it('modelo sem preço cadastrado aparece como travessão, não como zero', () => {
     renderModels(provider)
-    // Duas colunas de preço do segundo modelo, mais a coluna de contexto vazia.
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(3)
   })
 
-  it('oferece tornar padrão só para quem ainda não é', () => {
+  it('não oferece tornar padrão para quem já é', async () => {
     renderModels(provider)
-    expect(screen.getAllByRole('button', { name: 'Tornar padrão' })).toHaveLength(1)
+    await userEvent.click(screen.getByRole('button', { name: 'Ações de anthropic.claude-sonnet-4-5-v1:0' }))
+    expect(screen.getByRole('menuitem', { name: 'Tornar padrão' })).toHaveAttribute('aria-disabled', 'true')
   })
 
-  it('cadastro à mão explica para que serve o preço', async () => {
+  it('o cadastro à mão explica para que serve o preço', async () => {
     renderModels(provider)
-    await userEvent.click(screen.getByRole('tab', { name: 'Adicionar à mão' }))
+    await userEvent.click(screen.getByRole('button', { name: 'À mão' }))
     expect(screen.getByLabelText('Identificador do modelo')).toBeInTheDocument()
     expect(screen.getByText(/estimar o custo quando o provedor não o informa/)).toBeInTheDocument()
   })
 
-  it('sem credencial, o catálogo pede as credenciais em vez de falhar', async () => {
+  it('sem credencial, o catálogo some e diz o motivo', () => {
     renderModels({ ...provider, has_credentials: false, credential_keys: [] })
-    await userEvent.click(screen.getByRole('tab', { name: 'Catálogo' }))
-    expect(screen.getByText('Salve as credenciais para ver o catálogo deste provedor.')).toBeInTheDocument()
+    expect(screen.getByText('Salve as credenciais para ver o catálogo.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /catálogo de/ })).not.toBeInTheDocument()
   })
 })

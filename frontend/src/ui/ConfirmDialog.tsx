@@ -4,7 +4,11 @@ import { Button } from '../components/Button'
 import styles from './Dialog.module.css'
 
 interface Props {
-  trigger: ReactNode
+  /** Modo não controlado: o próprio diálogo abre a partir deste elemento. */
+  trigger?: ReactNode
+  /** Modo controlado, para quando o gatilho não pode ser o do diálogo — dentro de um menu, por exemplo. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   title: string
   description: ReactNode
   confirmLabel?: string
@@ -18,6 +22,8 @@ interface Props {
 /** Confirmação de ação destrutiva. Com `confirmText`, exige digitar o nome do alvo. */
 export function ConfirmDialog({
   trigger,
+  open: openProp,
+  onOpenChange,
   title,
   description,
   confirmLabel = 'Confirmar',
@@ -26,19 +32,21 @@ export function ConfirmDialog({
   onConfirm,
   loading,
 }: Props) {
-  const [open, setOpen] = useState(false)
+  const [openState, setOpenState] = useState(false)
   const [typed, setTyped] = useState('')
   const blocked = confirmText !== undefined && typed !== confirmText
+  const controlled = openProp !== undefined
+  const open = controlled ? openProp : openState
+
+  function change(v: boolean) {
+    if (!controlled) setOpenState(v)
+    onOpenChange?.(v)
+    if (!v) setTyped('')
+  }
 
   return (
-    <Dialog.Root
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v)
-        if (!v) setTyped('')
-      }}
-    >
-      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={change}>
+      {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content className={styles.content}>
@@ -64,7 +72,7 @@ export function ConfirmDialog({
               loading={loading}
               onClick={() => {
                 onConfirm()
-                setOpen(false)
+                change(false)
               }}
             >
               {confirmLabel}

@@ -75,6 +75,33 @@ selo chapado. Tudo isso é assinatura, e assinatura é do dono.
   para uma identidade de marca.
 - **Adotar a linguagem do Coolify.** Tentado e descartado: é a identidade de outro produto.
 
+## Tabela, cartão e seletor: quando cada um
+
+Decidido em 2026-11-25, depois que a tela de Provedores nasceu em cartões e destoou do resto.
+
+| Padrão | Quando | Onde |
+|---|---|---|
+| **Tabela** | linhas comparáveis, com os mesmos campos, que o usuário lê para comparar ou para achar a que está errada | hosts, projetos, usuários, provedores, modelos, chamadas |
+| **Cartão** | conteúdo rico e de tamanho variável, que se lê um de cada vez | insights, notificações |
+| **Seletor com busca** | escolher um item de uma lista que não cabe na tela | modelos do catálogo de um provedor |
+| **Dropdown simples** | escolher entre poucas opções fixas dentro de um formulário | tipo de provedor, filtros |
+
+A regra por trás: **a pergunta decide o formato.** "Qual destes está falhando?" e "qual vem
+primeiro?" são perguntas comparativas, e comparação quer colunas alinhadas — um cartão obriga a
+reler o mesmo rótulo em cada bloco. "O que aconteceu neste container?" é uma pergunta de leitura, e
+aí o cartão ganha, porque o texto tem tamanho livre.
+
+Corolários que valem repetir:
+
+- **Uma tabela densa não comporta cinco botões por linha.** O que se consulta de relance vira coluna;
+  o que se faz depois de decidir vai para um menu de ações. O interruptor é a exceção: fica na linha
+  porque é o estado, não uma ação.
+- **Detalhe abre na própria tabela**, como linha extra, não numa tela nova: sair da lista para ver um
+  item custa o contexto dos vizinhos, que é justamente o que a lista dá.
+- **Lista de três itens ainda é lista.** O seletor de tipo de provedor tem três opções hoje e
+  continua sendo um dropdown, porque Anthropic, Azure e Ollama estão no roadmap e porque um
+  formulário com três blocos grandes seguidos de campos pequenos fica desequilibrado.
+
 ## Marcas de terceiros
 
 Os provedores de IA aparecem na interface com **os desenhos oficiais de cada marca**, não com

@@ -1,0 +1,124 @@
+.order {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+.position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--control-bg);
+  font-size: var(--text-meta);
+  font-weight: 600;
+}
+.primary {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.out {
+  color: var(--fg-faint);
+}
+.arrows {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+}
+.arrow {
+  width: 18px;
+  height: 13px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  color: var(--fg-faint);
+  cursor: pointer;
+}
+.arrow:first-child {
+  border-radius: 5px 5px 0 0;
+  border-bottom: 0;
+}
+.arrow:last-child {
+  border-radius: 0 0 5px 5px;
+}
+.arrow:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--hover);
+}
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  /* Puxa a seta para a borda da célula: solta no meio, ela parece pertencer à coluna Ordem. */
+  margin-left: -6px;
+}
+.name > .expand {
+  margin-right: -2px;
+}
+.tile {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  color: var(--tint, var(--fg-dim));
+}
+.title {
+  font-weight: 500;
+}
+.kind {
+  color: var(--fg-faint);
+  font-size: var(--text-sm);
+}
+.expand {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--fg-faint);
+  cursor: pointer;
+}
+.expand:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+.chevron {
+  transition: transform 120ms ease;
+}
+.chevronOpen {
+  transform: rotate(90deg);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
+.detail > td {
+  padding: 0 var(--space-5) var(--space-4);
+  background: var(--canvas);
+}
+.problem {
+  color: var(--error);
+  font-size: var(--text-sm);
+}
