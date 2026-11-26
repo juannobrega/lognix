@@ -58,12 +58,6 @@ services:
       retries: 20
     restart: unless-stopped
 
-  # Loki e Alloy entram em uso na fase 0.3.0. Já sobem aqui para que o compose
-  # final não mude de forma entre fases.
-
-
-  # Copia a config inicial (vazia) para o volume compartilhado uma única vez.
-
 volumes:
   postgres-data:
   loki-data:

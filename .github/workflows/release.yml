@@ -31,10 +31,14 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: "Size of the version bump"
-        required: true
+        description: "Size of the version bump. Ignored when `tag` is filled in."
+        required: false
         type: choice
         options: [patch, minor, major]
+      tag:
+        description: "Republish an existing tag, e.g. v0.0.1. Cuts no new version."
+        required: false
+        type: string
 
 # Two merges landing together must not race for the same version number.
 concurrency:
@@ -45,6 +49,9 @@ permissions:
   contents: write
   # Pushing the image to the GitHub Container Registry.
   packages: write
+  # Writing the buildx layer cache. Without it the build succeeds, pushes the image, and then
+  # fails on the cache export -- which cancels the run and leaves a tag with no release.
+  actions: write
 
 jobs:
   tag:
@@ -59,10 +66,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out main
+      - name: Check out
         uses: actions/checkout@v4
         with:
-          ref: main
+          # Republishing checks out the tag itself, so the image is built from exactly the code
+          # that tag names -- not from whatever main happens to be now.
+          ref: ${{ inputs.tag || 'main' }}
           # The whole history, or `git describe` cannot see existing tags.
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -74,6 +83,12 @@ jobs:
           INPUT: ${{ inputs.release }}
         run: |
           set -euo pipefail
+          # Republishing does not bump anything: the version already exists.
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "kind=none" >> "$GITHUB_OUTPUT"
+            echo "Republishing ${{ inputs.tag }}"
+            exit 0
+          fi
           # Manual run says it outright; a merge says it through the label, which is visible
           # while the change is still under review.
           if [ -n "${INPUT:-}" ]; then
@@ -102,8 +117,18 @@ jobs:
 
       - name: Work out the next version
         id: version
+        env:
+          REPUBLISH: ${{ inputs.tag }}
         run: |
           set -euo pipefail
+          # Republishing: the version is the tag, and nothing is computed or created.
+          if [ -n "$REPUBLISH" ]; then
+            echo "previous=none" >> "$GITHUB_OUTPUT"
+            echo "version=${REPUBLISH#v}" >> "$GITHUB_OUTPUT"
+            echo "tag=$REPUBLISH" >> "$GITHUB_OUTPUT"
+            echo "republishing $REPUBLISH"
+            exit 0
+          fi
           # No tags yet means this is the first release; 0.0.0 is the base
           # it counts up from, so a patch cuts v0.0.1.
           latest=$(git tag --list 'v*' --sort=-v:refname | head -n1)
@@ -129,6 +154,7 @@ jobs:
           echo "$latest -> v$next"
 
       - name: Set the version in pyproject.toml and frontend/package.json
+        if: ${{ !inputs.tag }}
         run: |
           set -euo pipefail
           # The files and the tag must agree. Writing them here keeps one
@@ -161,6 +187,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
 
       - name: Commit, tag and push
+        if: ${{ !inputs.tag }}
         env:
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
