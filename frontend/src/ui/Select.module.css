@@ -31,6 +31,9 @@
 }
 .content {
   overflow: hidden;
+  /* Acompanha o gatilho: uma lista mais estreita que o campo que a abriu corta nome de modelo e
+     parece outro controle. O `min-` deixa crescer quando a opção é mais larga que o campo. */
+  min-width: var(--radix-select-trigger-width);
   background: var(--panel);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-well);

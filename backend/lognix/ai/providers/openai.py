@@ -31,8 +31,15 @@ class OpenAiProvider:
         base_url: str | None = None,
         organization: str | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
+        kind: str = "openai",
+        name: str = "OpenAI",
     ) -> None:
-        headers = {"Authorization": f"Bearer {api_key}"}
+        # Groq, Mistral, DeepSeek e companhia usam esta mesma classe: o que muda é a URL e o nome
+        # que aparece nos erros. Dizer "a OpenAI recusou a chave" quando quem recusou foi a Groq
+        # manda o usuário conferir a credencial errada.
+        self.kind = kind
+        self.name = name
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         if organization:
             headers["OpenAI-Organization"] = organization
         self._client = httpx.AsyncClient(
@@ -114,27 +121,29 @@ class OpenAiProvider:
             try:
                 resp = await self._client.request(method, path, **kwargs)
             except httpx.HTTPError as exc:
-                last = AiError(f"Falha de rede ao falar com a OpenAI: {exc}", retryable=True)
+                last = AiError(f"Falha de rede ao falar com {self.name}: {exc}", retryable=True)
                 if attempt < NETWORK_RETRIES:
                     continue
                 raise last from exc
             if resp.status_code == 429:
                 retry_after = resp.headers.get("retry-after")
                 raise RateLimitedError(
-                    "A OpenAI recusou por limite de uso.",
+                    f"{self.name} recusou por limite de uso.",
                     float(retry_after) if retry_after and retry_after.isdigit() else None,
                 )
             if resp.status_code in (401, 403):
                 raise AiError(
-                    "A OpenAI recusou a chave de API. Verifique a chave e a organização.",
+                    f"{self.name} recusou a chave de API. Verifique a credencial.",
                     status=resp.status_code,
                 )
             if resp.status_code == 404:
                 raise AiError(
-                    "Modelo não encontrado na OpenAI. Confira o identificador.", status=404
+                    f"Modelo não encontrado em {self.name}. Confira o identificador.", status=404
                 )
             if resp.status_code >= 500:
-                last = AiError(f"OpenAI indisponível (HTTP {resp.status_code}).", retryable=True)
+                last = AiError(
+                    f"{self.name} indisponível (HTTP {resp.status_code}).", retryable=True
+                )
                 if attempt < NETWORK_RETRIES:
                     continue
                 raise last
@@ -145,11 +154,12 @@ class OpenAiProvider:
                 except ValueError:
                     detail = resp.text[:200]
                 raise AiError(
-                    f"OpenAI respondeu HTTP {resp.status_code}: {detail}", status=resp.status_code
+                    f"{self.name} respondeu HTTP {resp.status_code}: {detail}",
+                    status=resp.status_code,
                 )
             try:
                 data = resp.json()
             except ValueError as exc:
-                raise AiError("Resposta da OpenAI não é JSON.") from exc
+                raise AiError(f"Resposta de {self.name} não é JSON.") from exc
             return data if isinstance(data, dict) else {"data": data}
-        raise last or AiError("Falha desconhecida ao falar com a OpenAI.")
+        raise last or AiError(f"Falha desconhecida ao falar com {self.name}.")

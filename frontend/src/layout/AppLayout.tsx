@@ -1,3 +1,4 @@
+import type { SVGProps } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { ExecutorPanel } from '../analysis/ExecutorPanel'
 import { useAuth } from '../auth/useAuth'
@@ -5,10 +6,20 @@ import { Button } from '../components/Button'
 import { useNotificationCount } from '../notifications/useNotifications'
 import { Tooltip } from '../ui/Tooltip'
 import { Icons } from './icons'
+import { NavGroup, type NavChild } from './NavGroup'
 import { useTheme } from './useTheme'
 import styles from './AppLayout.module.css'
 
-const SECTIONS = [
+interface NavLinkItem {
+  to: string
+  label: string
+  icon: (p: SVGProps<SVGSVGElement>) => JSX.Element
+  end?: boolean
+  /** Quando presente, o item vira um grupo que abre e fecha. */
+  children?: NavChild[]
+}
+
+const SECTIONS: { label: string; links: NavLinkItem[] }[] = [
   {
     label: 'Monitoramento',
     links: [
@@ -26,7 +37,20 @@ const SECTIONS = [
   },
   {
     label: 'Sistema',
-    links: [{ to: '/settings', label: 'Configurações', icon: Icons.settings }],
+    links: [
+      {
+        to: '/settings',
+        label: 'Configurações',
+        icon: Icons.settings,
+        children: [
+          { to: '/settings/users', label: 'Usuários' },
+          { to: '/settings/ai', label: 'IA' },
+          { to: '/settings/providers', label: 'Provedores' },
+          { to: '/settings/usage', label: 'Consumo' },
+          { to: '/settings/system', label: 'Sistema' },
+        ],
+      },
+    ],
   },
 ]
 
@@ -52,24 +76,30 @@ export function AppLayout() {
           {SECTIONS.map((section) => (
             <div key={section.label} className={styles.section}>
               <span className={styles.sectionLabel}>{section.label}</span>
-              {section.links.map((l) => (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  end={l.end}
-                  className={({ isActive }) => [styles.link, isActive ? styles.active : ''].join(' ')}
-                >
-                  <span className={styles.tile}>
-                    <l.icon />
-                  </span>
-                  {l.label}
-                  {l.to === '/notifications' && (count.data?.new ?? 0) > 0 && (
-                    <span className={styles.count} aria-label={`${count.data?.new} novas`}>
-                      {count.data?.new}
+              {section.links.map((l) =>
+                'children' in l && l.children ? (
+                  <NavGroup key={l.to} to={l.to} label={l.label} icon={l.icon}>
+                    {l.children}
+                  </NavGroup>
+                ) : (
+                  <NavLink
+                    key={l.to}
+                    to={l.to}
+                    end={l.end}
+                    className={({ isActive }) => [styles.link, isActive ? styles.active : ''].join(' ')}
+                  >
+                    <span className={styles.tile}>
+                      <l.icon />
                     </span>
-                  )}
-                </NavLink>
-              ))}
+                    {l.label}
+                    {l.to === '/notifications' && (count.data?.new ?? 0) > 0 && (
+                      <span className={styles.count} aria-label={`${count.data?.new} novas`}>
+                        {count.data?.new}
+                      </span>
+                    )}
+                  </NavLink>
+                ),
+              )}
             </div>
           ))}
         </nav>

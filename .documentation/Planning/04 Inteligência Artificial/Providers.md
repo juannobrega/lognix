@@ -55,11 +55,36 @@ Anthropic direto, Azure, Ollama local. Cada um é uma implementação de `AiProv
 
 ### 5.1 Tipos
 
-| Tipo | Transporte | Credenciais | Catálogo |
-|---|---|---|---|
-| OpenRouter | API de chat compatível com OpenAI | `api_key` | sim, `/models` com preço |
-| OpenAI | a mesma API de chat, outra URL base | `api_key`, `base_url` opcional, `organization` opcional | sim, `/models` sem preço |
-| Amazon Bedrock | Converse API, `POST /model/{modelId}/converse` | `region`, `access_key_id`, `secret_access_key`, `session_token` opcional | não |
+A lista é **dado**, não código: `SPECS`, em `ai/providers/base.py`. A maioria dos serviços fala o
+dialeto de chat da OpenAI e se distingue só pela URL base, então acrescentar um desses é uma entrada
+na tabela. Só quem tem protocolo próprio ganha implementação.
+
+| Tipo | Transporte | Catálogo |
+|---|---|---|
+| OpenRouter | chat compatível com OpenAI | sim, **com preço** |
+| OpenAI | o mesmo, `api.openai.com/v1` | sim, sem preço |
+| Anthropic | **próprio**: `/v1/messages`, `x-api-key`, `anthropic-version` | sim |
+| Amazon Bedrock | **próprio**: Converse API com assinatura SigV4 | sim, pelo control plane |
+| Google Gemini | camada de compatibilidade, `/v1beta/openai` | **não** |
+| Groq, Mistral, DeepSeek, xAI | chat compatível | sim |
+| Together, Fireworks, Cerebras | chat compatível | sim |
+| Perplexity | chat compatível | **não** |
+| Ollama | chat compatível, na máquina do usuário | sim |
+| Compatível com OpenAI | qualquer URL que o usuário informar | se o serviço responder |
+
+Só o OpenRouter devolve o custo real na resposta. Todos os outros exigem preço cadastrado no modelo
+para que o gasto seja estimado.
+
+**As URLs foram conferidas uma a uma contra o serviço real**, em 2026-11-26: um `GET` sem credencial
+no caminho de catálogo tem que responder 401 ou 403, nunca 404. Foi assim que descobrimos que a
+camada de compatibilidade do Gemini atende `/chat/completions` mas devolve 404 em `/models`, e que a
+Perplexity não expõe catálogo — os dois ficaram marcados como "sem catálogo" em vez de prometerem
+uma lista que nunca viria.
+
+Três campos aparecem em quase todos: `api_key`, `base_url` (opcional, para apontar para um gateway)
+e, na OpenAI, `organization`. O Ollama inverte: a chave é opcional e o endereço é obrigatório,
+porque o padrão `localhost` apontaria para o contêiner do Lognix e não para a máquina de quem
+instalou.
 
 OpenRouter e OpenAI compartilham a implementação do corpo da requisição. O Bedrock não: o formato da
 Converse API é outro (`messages[].content[].text`, `system[]`, `inferenceConfig`), não existe

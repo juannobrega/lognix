@@ -196,3 +196,74 @@ def test_estimate_tokens_is_monotonic() -> None:
     assert estimate_tokens("abc") < estimate_tokens("abc" * 100)
     assert estimate_tokens("") >= 1
     _ = json
+
+
+class TestProviderSpecs:
+    """A lista de providers virou dado. Dado errado quebra em produção, não no import."""
+
+    def test_todo_kind_tem_spec_coerente(self) -> None:
+        from lognix.ai.providers.base import SPECS, ProviderKind
+
+        assert set(SPECS) == set(ProviderKind), "kind sem entrada em SPECS"
+        for kind, spec in SPECS.items():
+            assert spec.kind == kind, f"{kind}: spec aponta para outro kind"
+            assert spec.label.strip(), f"{kind}: sem rótulo"
+            keys = [f["key"] for f in spec.fields]
+            assert keys, f"{kind}: nenhum campo de credencial"
+            assert len(keys) == len(set(keys)), f"{kind}: campo repetido"
+            assert any(f["required"] for f in spec.fields), f"{kind}: nada obrigatório"
+            for f in spec.fields:
+                assert set(f) >= {"key", "label", "secret", "required", "placeholder", "help"}
+
+    def test_url_base_so_falta_em_quem_tem_protocolo_proprio(self) -> None:
+        from lognix.ai.providers.base import SPECS, ProviderKind
+
+        proprios = {ProviderKind.anthropic, ProviderKind.bedrock}
+        for kind, spec in SPECS.items():
+            if kind in proprios:
+                assert spec.base_url is None, f"{kind}: tem protocolo próprio, não URL de chat"
+            else:
+                # Quem fala o dialeto da OpenAI precisa saber para onde falar: ou o spec traz o
+                # padrão, ou o usuário é obrigado a informar. Sem nenhum dos dois, o cliente
+                # sairia batendo em api.openai.com com a credencial de outro serviço.
+                pede_ao_usuario = any(
+                    f["key"] == "base_url" and f["required"] for f in spec.fields
+                )
+                assert spec.base_url or pede_ao_usuario, f"{kind}: ninguém define a URL base"
+                if spec.base_url:
+                    assert spec.base_url.startswith("http"), f"{kind}: URL base estranha"
+                    assert not spec.base_url.endswith("/"), f"{kind}: URL base com barra no fim"
+
+    def test_credencial_que_falta_e_recusada_antes_da_rede(self) -> None:
+        import pytest
+
+        from lognix.ai.provider import AiError
+        from lognix.ai.providers import build_provider
+        from lognix.ai.providers.base import SPECS
+
+        for kind, spec in SPECS.items():
+            obrigatorios = [f for f in spec.fields if f["required"]]
+            if not obrigatorios:
+                continue  # Ollama roda local e não exige chave
+            with pytest.raises(AiError, match="Falta preencher"):
+                build_provider(kind, {})
+
+    def test_cada_tipo_monta_um_cliente_com_o_nome_certo(self) -> None:
+        from lognix.ai.providers import build_provider
+        from lognix.ai.providers.base import SPECS
+
+        valores = {
+            "api_key": "k",
+            "region": "us-east-1",
+            "access_key_id": "AKIA",
+            "secret_access_key": "s",
+            # O Ollama exige endereço: o padrão é localhost, que de dentro do contêiner do
+            # Lognix aponta para o próprio contêiner, não para a máquina de quem instalou.
+            "base_url": "http://192.168.0.10:11434/v1",
+            "organization": "",
+        }
+        for kind, spec in SPECS.items():
+            client = build_provider(kind, valores)
+            assert client.kind == str(kind), f"{kind}: cliente reporta kind errado"
+            # O nome aparece nas mensagens de erro: trocado, manda conferir a credencial errada.
+            assert client.name == spec.label, f"{kind}: cliente se apresenta como {client.name}"

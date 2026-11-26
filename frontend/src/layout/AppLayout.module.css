@@ -211,3 +211,88 @@
     padding: var(--space-6) var(--space-5);
   }
 }
+
+/* ---------- grupo de menu com subitens ---------- */
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+.groupRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.groupLink {
+  flex: 1;
+  min-width: 0;
+}
+/* Grupo fechado com a página ativa lá dentro: a barra de sinal aparece no pai, senão não há
+   nenhuma pista de onde você está. */
+.rowInside .groupLink::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.rowInside .groupLink {
+  color: var(--fg);
+}
+.disclosure {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 26px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--fg-faint);
+  cursor: pointer;
+}
+.disclosure:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+.disclosure:focus-visible {
+  outline: none;
+  box-shadow: var(--glow) var(--accent-ring);
+}
+.caret {
+  transition: transform 140ms ease-out;
+}
+.caretOpen {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    transition: none;
+  }
+}
+.children[hidden] {
+  display: none;
+}
+.children {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  /* A linha vertical liga os filhos ao pai: sem ela a indentação sozinha some na leitura. */
+  margin: 2px 0 2px 21px;
+  padding-left: 11px;
+  border-left: 1px solid var(--divider);
+}
+.child {
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--fg-faint);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: background 110ms, color 110ms;
+}
+.child:hover {
+  background: var(--hover);
+  color: var(--fg);
+  text-decoration: none;
+}
+.childActive {
+  color: var(--accent);
+  font-weight: 600;
+}
