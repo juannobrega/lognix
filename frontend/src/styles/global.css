@@ -148,6 +148,15 @@ pre {
   align-items: center;
   gap: var(--space-3);
 }
+.page-header .eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  font-size: var(--text-meta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-faint);
+}
 .page-header .subtitle {
   color: var(--fg-faint);
   font-size: var(--text-ui);

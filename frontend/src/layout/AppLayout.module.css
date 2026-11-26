@@ -296,3 +296,18 @@
   color: var(--accent);
   font-weight: 600;
 }
+
+/* Sidebar deitado. Precisa vir depois das regras base do grupo: media query não muda
+   especificidade, então quem aparece por último é que vale. */
+@media (max-width: 1024px) {
+  .group {
+    flex-direction: row;
+    align-items: center;
+  }
+  .children {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 0 0 var(--space-2);
+    padding-left: var(--space-2);
+  }
+}

@@ -86,6 +86,11 @@ Decidido em 2026-11-25, depois que a tela de Provedores nasceu em cartões e des
 | **Seletor com busca** | escolher um item de uma lista que não cabe na tela | modelos do catálogo de um provedor |
 | **Dropdown simples** | escolher entre poucas opções fixas dentro de um formulário | tipo de provedor, filtros |
 
+**Navegação mora em um lugar só.** Quando o sidebar passou a abrir os subitens de Configurações, a
+barra de abas dentro da página virou o mesmo menu desenhado duas vezes — duas coisas para manter
+sincronizadas e duas para o olho conferir. A aba saiu; o cabeçalho da página passou a dizer apenas
+onde a pessoa chegou, que é o que ela ainda precisa.
+
 A regra por trás: **a pergunta decide o formato.** "Qual destes está falhando?" e "qual vem
 primeiro?" são perguntas comparativas, e comparação quer colunas alinhadas — um cartão obriga a
 reler o mesmo rótulo em cada bloco. "O que aconteceu neste container?" é uma pergunta de leitura, e
