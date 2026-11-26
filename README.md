@@ -115,6 +115,9 @@ autor. A IA é opcional e o resto funciona com ela desligada.
 
 ## Documentação
 
+**[juannobrega.github.io/lognix](https://juannobrega.github.io/lognix/)** — o mesmo conteúdo
+abaixo, com busca e navegação.
+
 | | |
 |---|---|
 | [Instalação](.documentation/Software/Instalação.md) | requisitos, primeiro uso, variáveis, atualização |

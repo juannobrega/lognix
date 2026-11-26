@@ -4,7 +4,7 @@ Como o Lognix funciona **hoje**. Esta é a área que precisa acompanhar o códig
 comportamento, muda aqui no mesmo pull request.
 
 O **porquê** de cada decisão, com as alternativas descartadas, vive em
-[../Planning/](../Planning/README.md). Quando as duas discordam sobre comportamento, esta vence.
+[../Planning/](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/README.md). Quando as duas discordam sobre comportamento, esta vence.
 
 | Documento | Para quem | Conteúdo |
 |---|---|---|
@@ -17,6 +17,6 @@ O **porquê** de cada decisão, com as alternativas descartadas, vive em
 
 **Versão documentada:** 1.0.0.
 
-Na raiz do repositório há ainda [CONTRIBUTING.md](../../CONTRIBUTING.md), com as convenções de
-código e o fluxo de pull request, e [SECURITY.md](../../SECURITY.md), com o que o Lognix promete,
+Na raiz do repositório há ainda [CONTRIBUTING.md](https://github.com/juannobrega/lognix/blob/main/CONTRIBUTING.md), com as convenções de
+código e o fluxo de pull request, e [SECURITY.md](https://github.com/juannobrega/lognix/blob/main/SECURITY.md), com o que o Lognix promete,
 o que não promete e como relatar uma vulnerabilidade.
