@@ -17,7 +17,15 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lognix.ai.models import AiModelConfig, AiProviderConfig, CostSource, ProviderStatus
+from lognix.ai.models import (
+    AiCall,
+    AiCallStatus,
+    AiModelConfig,
+    AiProviderConfig,
+    AiPurpose,
+    CostSource,
+    ProviderStatus,
+)
 from lognix.ai.provider import AiError, AiProvider, AiResult
 from lognix.ai.providers import build_provider
 from lognix.ai.providers.base import ProviderKind
@@ -189,27 +197,64 @@ async def ensure_model(
     return row
 
 
+def _record_test(
+    db: AsyncSession,
+    provider: AiProviderConfig,
+    model: str,
+    *,
+    result: AiResult | None = None,
+    error: str | None = None,
+) -> None:
+    """Registra o teste em `ai_calls`.
+
+    Um teste é uma chamada de verdade: sai pela rede e é cobrada. Não registrá-la abre um buraco
+    exatamente onde o produto promete não ter nenhum — quem testa dez provedores gasta dez vezes
+    e não vê nada em Consumo. O erro também entra, porque "o teste falhou e por quê" é a pergunta
+    que se faz depois.
+    """
+    db.add(
+        AiCall(
+            provider_id=provider.id,
+            provider=str(provider.kind),
+            provider_name=provider.name,
+            model=model,
+            purpose=AiPurpose.test,
+            input_tokens=result.input_tokens if result else 0,
+            output_tokens=result.output_tokens if result else 0,
+            cost_usd=result.cost_usd if result else Decimal(0),
+            cost_source=result.cost_source if result else CostSource.unknown,
+            latency_ms=result.latency_ms if result else 0,
+            status=AiCallStatus.ok if result else AiCallStatus.error,
+            error=error,
+        )
+    )
+
+
 async def test_provider(
     db: AsyncSession, provider: AiProviderConfig, model: str | None = None
 ) -> tuple[bool, str | None, AiResult | None]:
     """Chamada mínima para validar credencial e modelo. Grava o resultado no provider."""
     target = model or provider.default_model
     if not target:
+        # Nada saiu pela rede: não há chamada para registrar.
         await mark_checked(db, provider, ok=False, error="Nenhum modelo escolhido.")
         return False, "Escolha um modelo antes de testar.", None
     try:
         client = open_provider(provider)
     except AiError as exc:
+        # Credencial incompleta: também não chegou a sair nada.
         await mark_checked(db, provider, ok=False, error=exc.message)
         return False, exc.message, None
     try:
         result = await client.test(target)  # type: ignore[attr-defined]
     except AiError as exc:
+        _record_test(db, provider, target, error=exc.message)
         await mark_checked(db, provider, ok=False, error=exc.message)
         return False, exc.message, None
     finally:
         await client.aclose()
     result = await apply_price(db, provider, target, result)
+    _record_test(db, provider, target, result=result)
     await mark_checked(db, provider, ok=True)
     return True, None, result
 

@@ -196,7 +196,9 @@ jobs:
         run: |
           set -euo pipefail
           motivo="Manual release"
-          [ -n "${PR:-}" ] && motivo="Merged #$PR: $TITLE"
+          if [ -n "${PR:-}" ]; then
+            motivo="Merged #$PR: $TITLE"
+          fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -272,8 +274,13 @@ jobs:
           PRERELEASE: ${{ steps.tags.outputs.prerelease }}
         run: |
           set -euo pipefail
+          # `if` e não `&&`: sob `set -e`, um `[ ... ] && x=y` cujo teste falha devolve 1 como
+          # última instrução e aborta o script inteiro. Com PRERELEASE=false — o caso de qualquer
+          # versão 1.0 ou maior — isso mataria o passo logo depois de a imagem ter sido publicada.
           origem="Manual release"
-          [ -n "${PR:-}" ] && origem="Merged #$PR: $TITLE"
+          if [ -n "${PR:-}" ]; then
+            origem="Merged #$PR: $TITLE"
+          fi
 
           notes=$(cat <<TEXTO
           $origem
@@ -292,10 +299,8 @@ jobs:
           TEXTO
           )
 
-          args=""
-          [ "$PRERELEASE" = "true" ] && args="--prerelease"
-          # shellcheck disable=SC2086
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes "$notes" \
-            --generate-notes $args
+          if [ "$PRERELEASE" = "true" ]; then
+            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes --prerelease
+          else
+            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes
+          fi
