@@ -349,3 +349,51 @@ class TestRegistroDeTeste:
             ok, _, _ = await registry.test_provider(db, provider, None)
             assert not ok
             assert (await db.execute(select(func.count(AiCall.id)))).scalar() == 0
+
+
+class TestMotivoDoLimite:
+    """Um 429 sem o motivo é um beco sem saída.
+
+    "Recusou por limite de uso" não diz se é cota diária, requisições por minuto ou falta de
+    crédito — e as três se resolvem de formas diferentes. O provedor manda isso no corpo.
+    """
+
+    async def test_429_carrega_a_explicacao_do_provedor(self) -> None:
+        import httpx
+        import pytest
+
+        from lognix.ai.provider import RateLimitedError
+        from lognix.ai.providers.openrouter import OpenRouterProvider
+
+        def responde(_req: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                429,
+                json={
+                    "error": {
+                        "message": "Rate limit exceeded: free-models-per-day. "
+                        "Add 10 credits to unlock 1000 free model requests per day",
+                        "code": 429,
+                    }
+                },
+            )
+
+        provider = OpenRouterProvider("k", transport=httpx.MockTransport(responde))
+        with pytest.raises(RateLimitedError) as erro:
+            await provider.test("qualquer/modelo:free")
+        await provider.aclose()
+        assert "free-models-per-day" in str(erro.value)
+        assert "10 credits" in str(erro.value), "o que fazer a respeito precisa sobreviver"
+
+    async def test_429_sem_corpo_ainda_diz_algo_util(self) -> None:
+        import httpx
+        import pytest
+
+        from lognix.ai.provider import RateLimitedError
+        from lognix.ai.providers.openrouter import OpenRouterProvider
+
+        provider = OpenRouterProvider(
+            "k", transport=httpx.MockTransport(lambda _r: httpx.Response(429, text=""))
+        )
+        with pytest.raises(RateLimitedError, match="limite de uso"):
+            await provider.test("m")
+        await provider.aclose()
