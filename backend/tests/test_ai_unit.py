@@ -226,9 +226,7 @@ class TestProviderSpecs:
                 # Quem fala o dialeto da OpenAI precisa saber para onde falar: ou o spec traz o
                 # padrão, ou o usuário é obrigado a informar. Sem nenhum dos dois, o cliente
                 # sairia batendo em api.openai.com com a credencial de outro serviço.
-                pede_ao_usuario = any(
-                    f["key"] == "base_url" and f["required"] for f in spec.fields
-                )
+                pede_ao_usuario = any(f["key"] == "base_url" and f["required"] for f in spec.fields)
                 assert spec.base_url or pede_ao_usuario, f"{kind}: ninguém define a URL base"
                 if spec.base_url:
                     assert spec.base_url.startswith("http"), f"{kind}: URL base estranha"

@@ -46,7 +46,12 @@ def test_variavel_faltando_derruba_a_subida(tmp_path, monkeypatch) -> None:
     """Resolver para string vazia faria o SMTP falhar no primeiro e-mail, longe da causa."""
     monkeypatch.delenv("NAO_DEFINIDA", raising=False)
     with pytest.raises(ConfigError, match="NAO_DEFINIDA"):
-        load(escreve(tmp_path, "providers:\n  - kind: openai\n    credentials:\n      api_key: ${NAO_DEFINIDA}\n"))
+        load(
+            escreve(
+                tmp_path,
+                "providers:\n  - kind: openai\n    credentials:\n      api_key: ${NAO_DEFINIDA}\n",
+            )
+        )
 
 
 def test_chave_desconhecida_e_recusada_dizendo_quais_existem(tmp_path) -> None:
