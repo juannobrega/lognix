@@ -19,9 +19,12 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://lognix:lognix@localhost:5432/lognix", alias="DATABASE_URL"
     )
 
-    loki_url: str = Field(default="http://loki:3100", alias="LOKI_URL")
+    # Loki e Alloy rodam dentro da imagem e escutam só em localhost (ADR 013). O padrão descreve
+    # essa topologia: apontar para um nome de serviço do compose faria a imagem depender de um
+    # arranjo externo que ela mesma não cria.
+    loki_url: str = Field(default="http://127.0.0.1:3100", alias="LOKI_URL")
     loki_retention_days: int = Field(default=15, alias="LOKI_RETENTION_DAYS")
-    alloy_url: str = Field(default="http://alloy:12345", alias="ALLOY_URL")
+    alloy_url: str = Field(default="http://127.0.0.1:12345", alias="ALLOY_URL")
     alloy_config_path: str = Field(default="/alloy-config/config.alloy", alias="ALLOY_CONFIG_PATH")
     tunnels_dir: str = Field(default="/tunnels", alias="TUNNELS_DIR")
     #: Onde o frontend construído foi copiado na imagem. Ausente, a API sobe sem interface.

@@ -86,28 +86,28 @@ jobs:
           docker run -d --name pg --network lognix-ci \
             -e POSTGRES_USER=lognix -e POSTGRES_PASSWORD=lognix -e POSTGRES_DB=lognix \
             postgres:16-alpine
+          # Sem esperar o Postgres de propósito: o entrypoint tem que tolerar banco ainda
+          # abrindo, que é o caso de quem roda a imagem sem compose.
           docker run -d --name app --network lognix-ci -p 8000:8000 \
             -e LOGNIX_SECRET_KEY=$(head -c 32 /dev/urandom | base64) \
             -e DATABASE_URL=postgresql+asyncpg://lognix:lognix@pg:5432/lognix \
             lognix:ci
 
-          for i in $(seq 1 60); do
-            if curl -fsS http://localhost:8000/api/v1/health > /tmp/health.json 2>/dev/null; then
+          # Espera os **três** componentes, não só a API responder: o Loki leva cerca de meio
+          # minuto para sair do "empty ring", e conferir antes disso reprova uma imagem boa.
+          pronto=nao
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/api/v1/health > /tmp/health.json 2>/dev/null \
+               && python3 -c "import json,sys; d=json.load(open('/tmp/health.json')); sys.exit(0 if all(c['ok'] for c in d['components'].values()) else 1)"; then
+              pronto=sim
               break
             fi
-            sleep 2
+            sleep 3
           done
 
-          echo "--- /api/v1/health ---"; cat /tmp/health.json; echo
-          python3 - <<'VERIFICA'
-          import json, sys
-          saude = json.load(open("/tmp/health.json"))
-          ruins = [nome for nome, c in saude["components"].items() if not c["ok"]]
-          if ruins:
-              print(f"componentes fora do ar: {ruins}", file=sys.stderr)
-              sys.exit(1)
-          print("postgres, loki e alloy de pé dentro da imagem")
-          VERIFICA
+          echo "--- /api/v1/health ---"; cat /tmp/health.json 2>/dev/null; echo
+          [ "$pronto" = "sim" ] || { echo "nem todos os componentes ficaram de pé"; exit 1; }
+          echo "postgres, loki e alloy de pé dentro da imagem"
 
           # O frontend tem que estar servido pela própria API, não só construído.
           curl -fsS http://localhost:8000/ | grep -qi "<!doctype html" \
