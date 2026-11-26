@@ -1,6 +1,6 @@
 # Instalação
 
-**Versão:** 0.0.1
+**Versão:** 1.0.0
 
 ## Requisitos
 
@@ -24,7 +24,7 @@ docker compose up -d
 ```
 
 Dois arquivos, nenhum clone: a imagem vem publicada. Para fixar uma versão em vez de seguir a
-última, ponha `LOGNIX_VERSION=0.0.1` no `.env`.
+última, ponha `LOGNIX_VERSION=1.0.0` no `.env`.
 
 São dois contêineres: o Lognix e o Postgres. O **Loki** e o **Alloy** rodam dentro da imagem do
 Lognix, porque a configuração deles é gerada pelo próprio sistema — ver
