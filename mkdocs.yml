@@ -46,12 +46,17 @@ theme:
         name: Tema escuro
   features:
     - navigation.instant
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.sections
     - navigation.top
+    - navigation.footer   # anterior/próximo: a documentação tem ordem de leitura
     - content.code.copy
+    - content.code.annotate
     - content.action.edit
+    - content.tooltips
     - search.suggest
+    - search.highlight
     - toc.follow
 
 extra_css:
@@ -74,12 +79,34 @@ markdown_extensions:
       permalink: true
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  # Mermaid: a convenção do projeto é diagrama em Mermaid dentro do markdown, e sem este
+  # bloco os quinze que existem sairiam como texto cru.
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.inlinehilite
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.keys
+  - footnotes
+  - def_list
   - pymdownx.tabbed:
       alternate_style: true
 
 plugins:
   - search:
       lang: pt
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/juannobrega/lognix
+      name: Código no GitHub
+    - icon: fontawesome/brands/docker
+      link: https://github.com/juannobrega/lognix/pkgs/container/lognix
+      name: Imagem no GHCR
+  generator: false
