@@ -20,7 +20,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lognix.ai import registry
+from lognix.ai import dedupe, registry
 from lognix.ai.context import BuiltContext, build_context
 from lognix.ai.models import (
     AiCall,
@@ -38,7 +38,7 @@ from lognix.analysis.models import LogLevel, Pattern, TriggerFired
 from lognix.containers.models import Container
 from lognix.events.models import DockerEvent
 from lognix.loki.client import LogLine
-from lognix.metrics import ai_calls_total, ai_semaphore_waiting
+from lognix.metrics import ai_calls_skipped, ai_calls_total, ai_semaphore_waiting
 from lognix.notifications.models import NotificationType
 from lognix.notifications.service import notify
 from lognix.settings import service as settings_service
@@ -67,6 +67,8 @@ class AiOutcome:
     insight: Insight | None
     calls: list[AiCall]
     error: str | None = None
+    #: O problema já tinha insight ativo: contamos a ocorrência e não chamamos a IA.
+    deduped: bool = False
     #: Se o próximo provider da cadeia deve ser tentado.
     should_fallback: bool = False
 
@@ -171,6 +173,26 @@ async def analyze_trigger(
     except AiPausedError as exc:
         return AiOutcome(None, [], str(exc))
 
+    # Deduplicação **antes** da cadeia, de propósito: a economia inteira está em não fazer a
+    # chamada. Encolher o contexto corta porcentagem; não chamar corta a chamada. Ver ADR 016.
+    amostras = [str(a.get("line", "")) for a in (trigger.sample_lines or []) if isinstance(a, dict)]
+    chave_dedupe = dedupe.chave(trigger, amostras)
+    existente = await dedupe.insight_ativo(db, container_id=container.id, dedupe_key=chave_dedupe)
+    if existente is not None and not await dedupe.houve_redeploy(
+        db, container_id=container.id, depois_de=existente.last_seen_at or existente.created_at
+    ):
+        dedupe.registrar_ocorrencia(existente, trigger)
+        ai_calls_skipped.inc()
+        log.info(
+            "insight já ativo para este problema; ocorrência somada sem chamar a IA",
+            extra={
+                "container": container.name,
+                "insight": str(existente.id),
+                "ocorrencias": existente.occurrences,
+            },
+        )
+        return AiOutcome(existente, [], None, deduped=True)
+
     events = list(
         (
             await db.execute(
@@ -238,6 +260,7 @@ async def analyze_trigger(
                         max_output=max_output,
                         calls=calls,
                         attempt=attempt,
+                        dedupe_key=chave_dedupe,
                     )
                 finally:
                     await client.aclose()
@@ -272,6 +295,7 @@ async def _call_with_retry(
     max_output: int,
     calls: list[AiCall],
     attempt: int,
+    dedupe_key: str,
 ) -> AiOutcome:
     """Uma tentativa num provider, com um retry se a resposta vier fora do esquema."""
     user_text = context.user_text
@@ -360,6 +384,10 @@ async def _call_with_retry(
         insight = Insight(
             container_id=container.id,
             trigger_id=trigger.id,
+            # Sem a chave aqui, nada deduplica depois: é ela que o próximo ciclo procura.
+            dedupe_key=dedupe_key,
+            occurrences=1,
+            last_seen_at=trigger.window_end,
             severity=Severity(data["severity"]),
             title=data["title"],
             summary=data["summary"],

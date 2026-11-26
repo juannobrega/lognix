@@ -38,6 +38,20 @@ def _detalhe(resp: httpx.Response) -> str:
     return str(erro or "").strip()
 
 
+#: Parâmetros que alguns modelos recusam com HTTP 400. Em vez de manter uma lista de modelos
+#: proibidos — que apodrece a cada lançamento —, o cliente tira o parâmetro que a mensagem de
+#: erro citou e tenta de novo, uma vez. O custo é uma requisição a mais no caso raro; o ganho é
+#: não precisar de release do Lognix toda vez que um fabricante descontinua algo.
+OPCIONAIS = ("temperature",)
+
+
+def _parametro_recusado(detalhe: str) -> str | None:
+    baixo = detalhe.lower()
+    if "deprecat" not in baixo and "unsupported" not in baixo and "not supported" not in baixo:
+        return None
+    return next((p for p in OPCIONAIS if p in baixo), None)
+
+
 class OpenAiProvider:
     kind = "openai"
     name = "OpenAI"
@@ -90,7 +104,15 @@ class OpenAiProvider:
                 "json_schema": {"name": "insight", "strict": True, "schema": schema},
             }
         started = time.perf_counter()
-        data = await self._request("POST", "/chat/completions", json=body)
+        try:
+            data = await self._request("POST", "/chat/completions", json=body)
+        except AiError as exc:
+            recusado = _parametro_recusado(exc.message) if exc.status == 400 else None
+            if recusado is None or recusado not in body:
+                raise
+            log.info("provider recusou '%s'; repetindo sem ele", recusado, extra={"model": model})
+            body.pop(recusado)
+            data = await self._request("POST", "/chat/completions", json=body)
         latency_ms = int((time.perf_counter() - started) * 1000)
 
         choices = data.get("choices") or []

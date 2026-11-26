@@ -131,6 +131,12 @@ class Insight(Base):
         nullable=False,
         index=True,
     )
+    #: Assinatura do problema, não do texto: o mesmo erro sobre ids diferentes é um só.
+    #: Enquanto houver insight ativo com esta chave, o ciclo soma ocorrência em vez de chamar a
+    #: IA de novo. Ver ADR 016.
+    dedupe_key: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    occurrences: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     trigger_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("triggers_fired.id", ondelete="CASCADE"), nullable=False
     )

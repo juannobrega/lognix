@@ -77,7 +77,9 @@ class BedrockProvider:
             {
                 "messages": [{"role": "user", "content": [{"text": prompt}]}],
                 "system": [{"text": system}],
-                "inferenceConfig": {"maxTokens": max_output_tokens, "temperature": 0},
+                # Sem `temperature`: o Bedrock serve os mesmos modelos da Anthropic, que a
+                # descontinuaram e devolvem 400 quando ela aparece.
+                "inferenceConfig": {"maxTokens": max_output_tokens},
             }
         )
         url = f"{self._runtime}/model/{model}/converse"
