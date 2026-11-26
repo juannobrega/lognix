@@ -3,7 +3,7 @@
 **Versão:** 0.9.0
 
 Visão de quem precisa entender o sistema por dentro sem ler o planejamento inteiro. O porquê de
-cada decisão está nos [ADRs](../Planning/02%20Arquitetura/ADR/README.md).
+cada decisão está nos [ADRs](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/README.md).
 
 ## O desenho em uma frase
 
@@ -68,7 +68,7 @@ Cada um que dispara vira uma **ocorrência**. Com a IA ativa, a ocorrência vira
 
 Detalhe que importa para o desempenho: o trabalho do ciclo é CPU em Python puro. O laço cede o
 event loop a cada 250 linhas e há um limite de ciclos simultâneos. Sem isso a interface trava
-enquanto os ciclos rodam. Ver [ADR 010](../Planning/02%20Arquitetura/ADR/ADR%20010%20Desempenho%20do%20Ciclo%20de%20An%C3%A1lise.md).
+enquanto os ciclos rodam. Ver [ADR 010](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/ADR%20010%20Desempenho%20do%20Ciclo%20de%20An%C3%A1lise.md).
 
 ## A análise por IA
 
@@ -91,7 +91,7 @@ tokens, custo, latência, a versão do prompt e se foi fallback.
 
 São três tipos de provedor — OpenRouter, OpenAI e Amazon Bedrock —, cadastráveis em qualquer número e
 ordenáveis pelo usuário. A ordem é a cadeia de fallback. Ver
-[ADR 012](../Planning/02%20Arquitetura/ADR/ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md).
+[ADR 012](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md).
 
 ## O que cada módulo do backend faz
 
@@ -134,7 +134,7 @@ irrecuperáveis.
 ## Processos em execução
 
 Tudo num processo só, sem fila externa. Medido e documentado em
-[ADR 009](../Planning/02%20Arquitetura/ADR/ADR%20009%20Sem%20Redis%20na%20Primeira%20Fase.md).
+[ADR 009](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/ADR%20009%20Sem%20Redis%20na%20Primeira%20Fase.md).
 
 | Laço | Um por | Cadência |
 |---|---|---|

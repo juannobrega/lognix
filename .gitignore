@@ -18,3 +18,7 @@ frontend/dist/
 # Dados locais
 *.sqlite
 .DS_Store
+
+# Saída do mkdocs; o site é construído no CI.
+/site/
+.documentation/Software/CHANGELOG.md

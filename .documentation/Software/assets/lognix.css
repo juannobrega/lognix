@@ -1,0 +1,16 @@
+/* A paleta da marca, a mesma do produto: azul elétrico, ciano e violeta. */
+:root {
+  --md-primary-fg-color: #2f6bff;
+  --md-accent-fg-color: #4d8bff;
+}
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #4d8bff;
+  --md-accent-fg-color: #22d3ee;
+  --md-default-bg-color: #080b11;
+  --md-code-bg-color: #0f141d;
+}
+/* Fio da marca no topo, o mesmo motivo de barra de sinal da navegação do produto. */
+.md-header {
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, #2f6bff, #22d3ee 52%, #a855f7) 1;
+}

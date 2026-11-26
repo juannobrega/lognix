@@ -13,6 +13,28 @@ Porte medido: 10 hosts e 100 containers monitorados cabem em 2 vCPU e 4 GB. O ba
 200 MB de memória. O disco é dominado pela retenção de logs no Loki, que depende do volume dos
 containers e não do número deles.
 
+## Imagens disponíveis
+
+A imagem é publicada em `ghcr.io/juannobrega/lognix`, para **`linux/amd64`** e **`linux/arm64`**,
+com proveniência e SBOM anexados.
+
+| Tag | Aponta para | Quando usar |
+|---|---|---|
+| `1.0.0` | exatamente aquela versão | produção, quando você decide quando atualizar |
+| `1.0` | a última correção da 1.0 | recebe correção sem receber novidade |
+| `1` | a última 1.x | recebe novidade compatível |
+| `latest` | a última estável | avaliação e desenvolvimento |
+
+```bash
+docker pull ghcr.io/juannobrega/lognix:1.0.0
+```
+
+Versões `0.x` não recebem `latest` nem a tag de major: antes da 1.0 não havia promessa de
+compatibilidade, e deixar alguém seguir `0` seria fazer essa promessa sem querer.
+
+Para fixar a versão no compose, ponha `LOGNIX_VERSION=1.0.0` no `.env`. Em branco, segue a
+`latest`.
+
 ## Primeiro uso
 
 ```bash

@@ -1,0 +1,85 @@
+# Site de documentação. Publicado em GitHub Pages pelo workflow `pages.yml`.
+#
+# `docs_dir` aponta para a documentação que já existe no repositório, de propósito: um site com
+# cópia dos textos seria uma segunda fonte para manter em sincronia, e fonte duplicada diverge.
+# Quem edita `.documentation/Software/` publica; não há passo a mais.
+#
+# A área `Planning/` fica de fora: ela é registro datado das decisões, não guia de uso, e os nomes
+# de arquivo lá usam espaços que virariam URLs com %20.
+
+site_name: Lognix
+site_description: Análise de logs de containers com IA, sem instalar nada nos seus servidores.
+site_url: https://juannobrega.github.io/lognix/
+repo_url: https://github.com/juannobrega/lognix
+repo_name: juannobrega/lognix
+edit_uri: edit/main/.documentation/Software/
+copyright: Apache 2.0
+
+docs_dir: .documentation/Software
+site_dir: site
+
+theme:
+  name: material
+  language: pt-BR
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    # O escuro é o desenho principal do produto; o site segue a mesma escolha.
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Tema claro
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Tema escuro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - toc.follow
+
+extra_css:
+  - assets/lognix.css
+
+nav:
+  - Início: README.md
+  - Instalação: Instalação.md
+  - Configuração: Configuração.md
+  - Operação: Operação.md
+  - Arquitetura: Arquitetura.md
+  - Desenvolvimento: Desenvolvimento.md
+  - Mudanças: CHANGELOG.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search:
+      lang: pt

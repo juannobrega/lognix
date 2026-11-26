@@ -1,0 +1,60 @@
+# Publica a documentação em GitHub Pages.
+#
+# O site é construído a partir de `.documentation/Software/`, que é a documentação que já existe
+# no repositório. Nada é duplicado: quem edita aquele diretório publica, sem passo a mais e sem
+# uma segunda cópia para manter em sincronia.
+
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".documentation/Software/**"
+      - mkdocs.yml
+      - scripts/gerar_changelog.py
+      - .github/workflows/pages.yml
+  # Também depois de um release, para o changelog incorporar a tag nova.
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy por vez; o último a chegar é o que vale.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # O changelog é derivado das tags, e `git describe` não vê o que não foi buscado.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mkdocs-material
+      - name: Gerar o changelog a partir das tags
+        run: python scripts/gerar_changelog.py > .documentation/Software/CHANGELOG.md
+      - run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

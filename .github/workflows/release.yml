@@ -49,9 +49,7 @@ permissions:
   contents: write
   # Pushing the image to the GitHub Container Registry.
   packages: write
-  # Writing the buildx layer cache. Without it the build succeeds, pushes the image, and then
-  # fails on the cache export -- which cancels the run and leaves a tag with no release.
-  actions: write
+  # The buildx layer cache lives in the registry, under `packages`, not in the Actions cache.
 
 jobs:
   tag:
@@ -268,8 +266,13 @@ jobs:
           tags: ${{ steps.tags.outputs.tags }}
           provenance: true
           sbom: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Cache no próprio registro, não no do Actions. O `type=gha` negou a escrita duas
+          # vezes seguidas — "token has no writable scopes" — mesmo com `actions: write`
+          # declarado, e cada negativa derrubou o run *depois* de a imagem já ter sido enviada,
+          # deixando tag sem release. O cache de registro usa a credencial do GHCR, que é a
+          # mesma que acabou de publicar a imagem: se ela não valesse, o push teria falhado antes.
+          cache-from: type=registry,ref=${{ steps.tags.outputs.image }}:buildcache
+          cache-to: type=registry,ref=${{ steps.tags.outputs.image }}:buildcache,mode=max
 
       - name: Publish the release
         env:
