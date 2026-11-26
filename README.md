@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="frontend/public/logo.png" alt="Lognix" width="420">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="frontend/public/logo-on-dark.png">
+  <img src="frontend/public/logo-on-light.png" alt="Lognix" width="420">
+</picture>
 
 **Análise de logs de containers com IA, sem instalar nada nos seus servidores.**
 
@@ -44,15 +47,21 @@ de falha de um produto assim, que seria citar um log inventado.
 
 ## Começando
 
-Requisitos: Docker e Docker Compose em qualquer máquina.
+Requisitos: Docker e Docker Compose em qualquer máquina. Dois arquivos, nenhum clone — a imagem
+vem publicada.
 
 ```bash
-git clone https://github.com/juannobrega/lognix.git
-cd lognix
+curl -O https://raw.githubusercontent.com/juannobrega/lognix/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/juannobrega/lognix/main/.env.example
 cp .env.example .env
 openssl rand -base64 48      # cole em LOGNIX_SECRET_KEY no .env
 docker compose up -d
 ```
+
+Sobem dois contêineres: o Lognix e o Postgres. O **Loki** e o **Alloy** rodam dentro da imagem,
+porque a configuração dos dois é gerada pelo próprio sistema — assim não existe combinação de
+versões que nunca foi testada. Para fixar uma versão em vez de seguir a última, ponha
+`LOGNIX_VERSION=1.0.0` no `.env`.
 
 Abra `http://localhost:8080`, crie o primeiro usuário e cadastre um host. Preparar a máquina alvo
 leva dois comandos:
@@ -109,6 +118,7 @@ autor. A IA é opcional e o resto funciona com ela desligada.
 | | |
 |---|---|
 | [Instalação](.documentation/Software/Instalação.md) | requisitos, primeiro uso, variáveis, atualização |
+| [Configuração](.documentation/Software/Configuração.md) | variáveis, `config.yaml`, o que roda dentro da imagem |
 | [Operação](.documentation/Software/Operação.md) | preparar hosts, monitorar, ler logs, IA, métricas, backup |
 | [Arquitetura](.documentation/Software/Arquitetura.md) | as peças e o caminho dos dados |
 | [Desenvolvimento](.documentation/Software/Desenvolvimento.md) | rodar local, testar, convenções |
@@ -122,7 +132,8 @@ erradas depois, como a aposta de que o sistema precisaria de uma fila externa.
 ## Stack
 
 Python com FastAPI, PostgreSQL, Grafana Alloy e Loki no backend. React com Vite e TypeScript no
-frontend. Tudo em containers, um `docker compose up`.
+frontend, servido pela própria API. Imagem única publicada em `ghcr.io/juannobrega/lognix`, para
+`linux/amd64` e `linux/arm64`, com proveniência e SBOM.
 
 ## Contribuindo
 
