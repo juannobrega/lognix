@@ -389,6 +389,15 @@ O custo vem da resposta do provedor quando ele informa; caso contrário é estim
 cadastrado naquele modelo, e a origem fica registrada em cada chamada. Modelo sem preço cadastrado e
 provedor que não informa custo somam zero — o que aparece como consumo de graça, não como erro.
 
+O Lognix evita chamada repetida sozinho. Enquanto houver insight **ainda não visto** para o mesmo
+problema no mesmo container, uma ocorrência nova soma ao contador em vez de virar análise nova —
+você vê "visto 340 vezes, a última há 2 minutos" em lugar de 340 cartões idênticos. Passadas seis
+horas sem reaparecer, ou depois de um redeploy, ou depois de você marcar como visto, o problema
+conta como novo e vale análise nova: deduplicação serve contra ruído, não contra notícia.
+
+Isso é o que separa centavos de centenas de dólares. Um container em erro contínuo dispararia 2.880
+análises por dia; com a deduplicação, dispara quatro.
+
 Nesta versão **não há orçamento com bloqueio**: você vê o gasto, mas o Lognix não para de chamar
 sozinho. Para controlar o custo, os botões são a concorrência, os limites de tokens e, no limite,
 desligar a IA.

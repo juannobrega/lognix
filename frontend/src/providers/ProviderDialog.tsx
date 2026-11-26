@@ -17,9 +17,11 @@ interface Props {
   provider?: Provider
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Chamado com o provedor salvo, para a verificação em etapas emendar no cadastro. */
+  onSaved?: (provider: Provider) => void
 }
 
-export function ProviderDialog({ provider, open, onOpenChange }: Props) {
+export function ProviderDialog({ provider, open, onOpenChange, onSaved }: Props) {
   const qc = useQueryClient()
   const toast = useToast()
   const editing = provider !== undefined
@@ -54,8 +56,9 @@ export function ProviderDialog({ provider, open, onOpenChange }: Props) {
       void qc.invalidateQueries({ queryKey: ['providers'] })
       void qc.invalidateQueries({ queryKey: ['settings', 'ai'] })
       void qc.invalidateQueries({ queryKey: ['summary'] })
-      toast.show(editing ? `${r.name} atualizado.` : `${r.name} cadastrado. Cadastre um modelo e teste.`, 'success')
+      toast.show(editing ? `${r.name} atualizado.` : `${r.name} cadastrado.`, 'success')
       onOpenChange(false)
+      onSaved?.(r)
     },
     onError: (e) => toast.show(e instanceof ApiError ? [e.message, e.action].filter(Boolean).join(' ') : 'Falha ao salvar.', 'error'),
   })

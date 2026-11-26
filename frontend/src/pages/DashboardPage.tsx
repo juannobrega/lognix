@@ -2,17 +2,28 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { TriggerList } from '../analysis/TriggerList'
 import { api } from '../api/client'
-import type { Insight, Summary, TriggerFired } from '../api/types'
+import type { Insight, Severity, Summary, TriggerFired } from '../api/types'
 import { InsightCard } from '../insights/InsightCard'
 import { Alert } from '../components/Alert'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
 import { SkeletonRows } from '../components/Skeleton'
-import { compact } from '../components/format'
+import { compact, usd } from '../components/format'
 import { Stat, StatGrid } from '../components/Stat'
+import { AreaChart } from '../charts/AreaChart'
+import { BarList } from '../charts/BarList'
+import { SEVERITY_LABEL, TRIGGER_LABEL } from '../insights/severity'
 import { HostStatusBadge } from '../components/StatusBadge'
 import { useNotifications } from '../notifications/useNotifications'
 import { NotificationItem } from './NotificationsPage'
+
+/** Da mais grave para a menos: a ordem da lista é a ordem de quem precisa de atenção. */
+const ORDEM_SEVERIDADE: Severity[] = ['critical', 'high', 'medium', 'low', 'info']
+
+/** Só a hora: a data inteira em 24 marcas não cabe e não acrescenta. */
+function hora(iso: string): string {
+  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit' }) + 'h'
+}
 
 export function DashboardPage() {
   const summary = useQuery({ queryKey: ['summary'], queryFn: () => api<Summary>('/summary'), refetchInterval: 20_000 })
@@ -74,28 +85,147 @@ export function DashboardPage() {
       <div className="stack">
         <section className="card card-brand">
           <div className="card-header">
-            <h2>Últimas 24 horas</h2>
-            {s && s.cycles_24h > 0 && (
-              <span className="meta">{s.cycles_24h} ciclos de análise</span>
+            <div>
+              <h2>Volume e erros, últimas 24 horas</h2>
+              <p className="muted" style={{ margin: '2px 0 0', fontSize: 'var(--text-sm)' }}>
+                {s && s.lines_24h > 0
+                  ? `${((s.errors_24h / Math.max(1, s.lines_24h)) * 100).toFixed(1)}% das linhas foram erro`
+                  : 'Nenhuma linha analisada ainda.'}
+              </p>
+            </div>
+            {s && s.cycles_24h > 0 && <span className="meta">{s.cycles_24h} ciclos</span>}
+          </div>
+          <div className="card-body">
+            {!s ? (
+              <SkeletonRows rows={3} />
+            ) : (
+              <>
+                <AreaChart
+                  aria-label="Linhas analisadas por hora, nas últimas 24 horas"
+                  altura={120}
+                  formata={compact}
+                  rotulos={s.lines_by_hour.map((p) => hora(p.hour))}
+                  series={[
+                    { nome: 'linhas analisadas', cor: 'var(--accent)', valores: s.lines_by_hour.map((p) => p.lines) },
+                  ]}
+                />
+                {/* A taxa em gráfico próprio, e não como segunda série do volume: com erro em
+                    torno de 5% do total, a linha ficaria rente ao zero e esconderia exatamente
+                    o pico que alguém abre o painel para ver. */}
+                <div style={{ marginTop: 'var(--space-5)' }}>
+                  <AreaChart
+                    aria-label="Porcentagem de linhas de erro por hora, nas últimas 24 horas"
+                    altura={64}
+                    formata={(v) => `${v.toFixed(1)}%`}
+                    rotulos={s.lines_by_hour.map((p) => hora(p.hour))}
+                    series={[
+                      {
+                        nome: 'taxa de erro',
+                        cor: 'var(--error)',
+                        valores: s.lines_by_hour.map((p) => (p.lines ? (p.errors / p.lines) * 100 : 0)),
+                      },
+                    ]}
+                  />
+                </div>
+              </>
             )}
+          </div>
+        </section>
+
+        <div className="grid-3">
+          <section className="card">
+            <div className="card-header">
+              <h2>Insights em aberto</h2>
+              <Link to="/insights">ver todos</Link>
+            </div>
+            <div className="card-body">
+              {!s ? (
+                <SkeletonRows rows={2} />
+              ) : (
+                <BarList
+                  vazio="Nenhum insight em aberto."
+                  itens={ORDEM_SEVERIDADE.filter((sev) =>
+                    s.insights_by_severity.some((f) => f.key === sev),
+                  ).map((sev) => ({
+                    rotulo: SEVERITY_LABEL[sev] ?? sev,
+                    valor: s.insights_by_severity.find((f) => f.key === sev)?.count ?? 0,
+                    cor: `var(--sev-${sev})`,
+                  }))}
+                />
+              )}
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="card-header">
+              <h2>Ocorrências por tipo</h2>
+              <span className="meta">24 h</span>
+            </div>
+            <div className="card-body">
+              {!s ? (
+                <SkeletonRows rows={2} />
+              ) : (
+                <BarList
+                  vazio="Nenhuma ocorrência nas últimas 24 horas."
+                  itens={s.triggers_by_type.map((f) => ({
+                    rotulo: TRIGGER_LABEL[f.key] ?? f.key,
+                    valor: f.count,
+                  }))}
+                />
+              )}
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="card-header">
+              <h2>Custo da IA</h2>
+              <Link to="/settings/usage">consumo</Link>
+            </div>
+            <div className="card-body">
+              {!s ? (
+                <SkeletonRows rows={2} />
+              ) : s.cost_by_day.length === 0 ? (
+                <p className="muted" style={{ margin: 0, fontSize: 'var(--text-sm)' }}>
+                  {s.ai_enabled ? 'Nenhuma chamada ainda.' : 'A IA está desligada.'}
+                </p>
+              ) : (
+                <>
+                  <AreaChart
+                    aria-label="Custo da IA por dia, nos últimos sete dias"
+                    altura={80}
+                    formata={(v) => usd(v)}
+                    rotulos={s.cost_by_day.map((p) => p.day.slice(5))}
+                    series={[
+                      {
+                        nome: 'custo',
+                        cor: 'var(--brand-violet)',
+                        valores: s.cost_by_day.map((p) => Number(p.cost_usd)),
+                      },
+                    ]}
+                  />
+                  <p className="muted" style={{ margin: 'var(--space-3) 0 0', fontSize: 'var(--text-sm)' }}>
+                    {usd(s.cost_by_day.reduce((a, p) => a + Number(p.cost_usd), 0))} em{' '}
+                    {s.cost_by_day.reduce((a, p) => a + p.calls, 0)} chamadas
+                  </p>
+                </>
+              )}
+            </div>
+          </section>
+        </div>
+
+        <section className="card">
+          <div className="card-header">
+            <h2>Estado agora</h2>
           </div>
           <div className="card-body">
             {!s ? (
               <SkeletonRows rows={2} />
             ) : (
               <StatGrid>
-                <Stat value={compact(s.lines_24h)} label="Linhas analisadas" hint={`${s.cycles_24h} ciclos`} />
                 <Stat
-                  value={compact(s.errors_24h)}
-                  label="Linhas de erro"
-                  tone={s.errors_24h > 0 ? 'warn' : undefined}
-                  hint={s.lines_24h ? `${((s.errors_24h / s.lines_24h) * 100).toFixed(1)}% do total` : '—'}
-                />
-                <Stat
-                  value={s.triggers_new_24h}
-                  label="Ocorrências"
-                  tone={s.triggers_new_24h > 0 ? 'warn' : undefined}
-                  hint={s.triggers_unanalyzed > 0 ? `${s.triggers_unanalyzed} sem análise` : 'todas analisadas'}
+                  value={`${s.hosts_connected}/${s.hosts_total}`}
+                  label="Hosts conectados"
+                  tone={s.hosts_connected < s.hosts_total ? 'warn' : 'ok'}
                 />
                 <Stat
                   value={s.projects_with_errors_1h}
@@ -103,10 +233,16 @@ export function DashboardPage() {
                   tone={s.projects_with_errors_1h > 0 ? 'error' : 'ok'}
                 />
                 <Stat
+                  value={s.triggers_unanalyzed}
+                  label="Ocorrências sem análise"
+                  tone={s.triggers_unanalyzed > 0 ? 'warn' : 'ok'}
+                  hint={s.ai_enabled ? undefined : 'a IA está desligada'}
+                />
+                <Stat
                   value={s.cycles_failed_24h}
                   label="Ciclos com falha"
                   tone={s.cycles_failed_24h > 0 ? 'error' : 'ok'}
-                  hint={s.cycles_failed_24h > 0 ? 'veja Sistema' : 'nenhuma'}
+                  hint={s.cycles_failed_24h > 0 ? 'veja Sistema' : undefined}
                 />
               </StatGrid>
             )}

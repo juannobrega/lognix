@@ -42,6 +42,11 @@ ai_latency = Histogram(
     buckets=(0.5, 1, 2, 5, 10, 20, 40, 60, 120),
 )
 ai_semaphore_waiting = Gauge("lognix_ai_semaphore_waiting", "Chamadas de IA aguardando vaga")
+# Economia invisível não é percebida: este contador é o argumento do recurso de deduplicação.
+ai_calls_skipped = Counter(
+    "lognix_ai_calls_skipped_total",
+    "Chamadas de IA evitadas por já existir insight ativo para o mesmo problema",
+)
 
 # --- túneis e hosts ----------------------------------------------------------
 tunnels = Gauge("lognix_tunnels", "Túneis por estado", ["state"])

@@ -12,11 +12,11 @@
 .card {
   width: 100%;
   max-width: 400px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
+  background: var(--block-bg);
+  border: 1px solid var(--block-border);
+  border-radius: var(--radius-block);
   padding: var(--space-2);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-block);
 }
 .well {
   background: var(--well-bg);

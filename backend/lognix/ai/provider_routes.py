@@ -5,12 +5,12 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
 
-from lognix.ai import registry
+from lognix.ai import registry, validation
 from lognix.ai.models import AiModelConfig, AiProviderConfig, ProviderStatus
 from lognix.ai.provider import AiError
 from lognix.ai.providers import ProviderKind
@@ -93,6 +93,20 @@ class TestIn(BaseModel):
     model: str | None = Field(default=None, max_length=160)
 
 
+class ValidationStepOut(BaseModel):
+    number: int
+    name: str
+    status: Literal["pending", "running", "ok", "failed"]
+    message: str | None = None
+    action: str | None = None
+    detail: str | None = None
+
+
+class ValidationOut(BaseModel):
+    ok: bool
+    steps: list[ValidationStepOut]
+
+
 class TestOut(BaseModel):
     ok: bool
     model: str | None = None
@@ -158,6 +172,21 @@ async def _get(db: DbSession, provider_id: uuid.UUID) -> AiProviderConfig:
     return p
 
 
+async def _garante_modelo_padrao(db: DbSession, provider: AiProviderConfig) -> None:
+    """Cadastra o modelo padrão, se ele ainda não estiver na lista.
+
+    Sem isso, apontar o modelo padrão no diálogo deixava o provedor funcionando e o consumo
+    zerado: quem não devolve custo na resposta — Anthropic, Bedrock, OpenAI — depende do preço
+    cadastrado no modelo, e sem linha de modelo não há onde guardar preço. A tela mostrava
+    "0 modelos" ao lado de um modelo padrão preenchido, que é uma contradição visível.
+    """
+    if not provider.default_model:
+        return
+    # Direto no `ensure_model`, que já é idempotente: ler `provider.models` aqui dispararia uma
+    # carga lazy em contexto async, e o SQLAlchemy recusa (MissingGreenlet).
+    await registry.ensure_model(db, provider, provider.default_model, label=provider.default_model)
+
+
 @router.get("/kinds", response_model=list[ProviderKindOut])
 async def kinds(_: CurrentUser) -> list[ProviderKindOut]:
     """Tipos disponíveis e os campos que cada um pede. A interface se monta a partir daqui."""
@@ -199,6 +228,7 @@ async def create_provider(body: ProviderCreate, _: CurrentUser, db: DbSession) -
                 "Preencha os campos e salve; depois ative.",
             )
         provider.enabled = True
+    await _garante_modelo_padrao(db, provider)
     await db.commit()
     await db.refresh(provider)
     return _out(provider)
@@ -224,6 +254,7 @@ async def update_provider(
                 "Preencha os campos e salve; depois ative.",
             )
         provider.enabled = body.enabled
+    await _garante_modelo_padrao(db, provider)
     provider.updated_at = datetime.now(tz=None).astimezone()
     await db.commit()
     await db.refresh(provider)
@@ -248,6 +279,17 @@ async def reorder(body: ReorderIn, _: CurrentUser, db: DbSession) -> list[Provid
         providers[provider_id].priority = position
     await db.commit()
     return [_out(p) for p in await registry.list_providers(db)]
+
+
+@router.post("/{provider_id}/validate", response_model=ValidationOut)
+async def validate_provider(provider_id: uuid.UUID, _: CurrentUser, db: DbSession) -> ValidationOut:
+    """Valida o provedor em etapas, para dizer **onde** falhou e não só que falhou."""
+    provider = await _get(db, provider_id)
+    resultado = await validation.validar(db, provider)
+    return ValidationOut(
+        ok=resultado.ok,
+        steps=[ValidationStepOut(**vars(s)) for s in resultado.steps],
+    )
 
 
 @router.post("/{provider_id}/test", response_model=TestOut)

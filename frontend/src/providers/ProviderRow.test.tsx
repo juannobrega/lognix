@@ -43,7 +43,7 @@ function renderRow(provider: Provider, { index = 0, position = 0, total = 2 } = 
           <MemoryRouter>
             <table>
               <tbody>
-                <ProviderRow provider={provider} index={index} position={position} total={total} onEdit={() => {}} onMove={() => {}} />
+                <ProviderRow provider={provider} index={index} position={position} total={total} onEdit={() => {}} onVerify={() => {}} onMove={() => {}} />
               </tbody>
             </table>
           </MemoryRouter>
@@ -96,6 +96,7 @@ describe('ProviderRow', () => {
     renderRow({ ...base, has_credentials: false, credential_keys: [], ready: false }, { index: -1 })
     await userEvent.click(screen.getByRole('button', { name: 'Ações de OpenRouter principal' }))
     expect(screen.getByRole('menuitem', { name: 'Editar credenciais' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Verificar em etapas' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Remover' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Testar agora' })).toHaveAttribute('aria-disabled', 'true')
   })

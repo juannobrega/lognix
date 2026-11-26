@@ -15,8 +15,8 @@
   max-height: calc(100vh - 64px);
   overflow: auto;
   background: var(--panel);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
+  border: 1px solid var(--block-border);
+  border-radius: var(--radius-block);
   box-shadow: var(--shadow-pop);
   padding: var(--space-6);
   z-index: calc(var(--z-modal) + 1);

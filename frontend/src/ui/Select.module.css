@@ -35,7 +35,7 @@
      parece outro controle. O `min-` deixa crescer quando a opção é mais larga que o campo. */
   min-width: var(--radix-select-trigger-width);
   background: var(--panel);
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--block-border);
   border-radius: var(--radius-well);
   box-shadow: var(--shadow-pop);
   z-index: var(--z-popup);

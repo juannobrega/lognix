@@ -397,3 +397,75 @@ class TestMotivoDoLimite:
         with pytest.raises(RateLimitedError, match="limite de uso"):
             await provider.test("m")
         await provider.aclose()
+
+
+class TestParametroRecusado:
+    """Modelo novo recusa parâmetro antigo: o cliente tira e tenta de novo.
+
+    A Anthropic descontinuou `temperature` e passou a responder 400. Manter uma lista de modelos
+    proibidos apodreceria a cada lançamento; tirar o parâmetro que a própria mensagem de erro
+    citou resolve sem release.
+    """
+
+    @staticmethod
+    def _transporte(chamadas: list[dict]):
+        import httpx
+
+        def responde(req: httpx.Request) -> httpx.Response:
+            import json as _json
+
+            # O OpenRouter busca o custo real numa chamada separada, sem corpo.
+            if req.method != "POST" or not req.content:
+                return httpx.Response(200, json={"data": {}})
+            corpo = _json.loads(req.content)
+            chamadas.append(corpo)
+            if "temperature" in corpo:
+                return httpx.Response(
+                    400,
+                    json={"error": {"message": "`temperature` is deprecated for this model"}},
+                )
+            return httpx.Response(
+                200,
+                json={
+                    "id": "x",
+                    "model": "m",
+                    "choices": [{"message": {"content": "ok"}, "finish_reason": "stop"}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 2},
+                },
+            )
+
+        return httpx.MockTransport(responde)
+
+    async def test_tira_o_parametro_e_a_chamada_passa(self) -> None:
+        from lognix.ai.providers.openrouter import OpenRouterProvider
+
+        chamadas: list[dict] = []
+        p = OpenRouterProvider("k", transport=self._transporte(chamadas))
+        resultado = await p.complete(
+            system="s", user="u", schema=None, model="claude-haiku-5-5", max_output_tokens=16
+        )
+        await p.aclose()
+
+        assert resultado.text == "ok"
+        assert len(chamadas) == 2, "era para tentar de novo, uma vez"
+        assert "temperature" in chamadas[0] and "temperature" not in chamadas[1]
+
+    async def test_400_por_outro_motivo_nao_e_repetido(self) -> None:
+        """Repetir um 400 que não é sobre parâmetro só gastaria dinheiro duas vezes."""
+        import httpx
+        import pytest
+
+        from lognix.ai.provider import AiError
+        from lognix.ai.providers.openrouter import OpenRouterProvider
+
+        tentativas = {"n": 0}
+
+        def responde(_req: httpx.Request) -> httpx.Response:
+            tentativas["n"] += 1
+            return httpx.Response(400, json={"error": {"message": "context length exceeded"}})
+
+        p = OpenRouterProvider("k", transport=httpx.MockTransport(responde))
+        with pytest.raises(AiError, match="context length"):
+            await p.complete(system="s", user="u", schema=None, model="m", max_output_tokens=16)
+        await p.aclose()
+        assert tentativas["n"] == 1

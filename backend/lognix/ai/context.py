@@ -8,6 +8,7 @@ evidência diretamente.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -123,6 +124,8 @@ def build_context(
         )
         for n, i in enumerate(focus)
     ]
+    # Sempre, não só quando estoura: linha idêntica repetida é custo puro, sem informação nova.
+    error_evs = _collapse_identical(error_evs)
     context_lines = [truncate_middle(lines[i].line) for i in before]
     event_evs = [
         Evidence("docker_event", n, _event_text(ev), {"type": ev.type.value})
@@ -230,17 +233,51 @@ def build_context(
 _NUM = re.compile(r"\d+")
 
 
-def _collapse_repeats(items: list[Evidence]) -> list[Evidence]:
-    """Junta linhas de erro com a mesma forma: 'linha X, repetida N vezes'."""
-    seen: dict[str, Evidence] = {}
-    counts: dict[str, int] = {}
+def _collapse(items: list[Evidence], *, chave: Callable[[Evidence], str]) -> list[Evidence]:
+    """Junta linhas sob a mesma chave, guardando quantas foram e em que intervalo.
+
+    O intervalo importa: cem cópias da mesma linha em dois segundos é um estouro, e em duas
+    horas é um gotejamento. Mandar os cem carimbos de hora separados não diz isso melhor — diz
+    pior, porque enterra o padrão em repetição.
+    """
+    primeiro: dict[str, Evidence] = {}
+    contagem: dict[str, int] = {}
+    ultimo_at: dict[str, str] = {}
     for ev in items:
-        key = _NUM.sub("<n>", ev.text)[:300]
-        counts[key] = counts.get(key, 0) + 1
-        seen.setdefault(key, ev)
-    out: list[Evidence] = []
-    for n, (key, ev) in enumerate(seen.items()):
-        repeats = counts[key]
-        text = ev.text if repeats == 1 else f"{ev.text}   (repetida {repeats} vezes)"
-        out.append(Evidence("log_line", n, text, ev.payload))
-    return out
+        k = chave(ev)
+        contagem[k] = contagem.get(k, 0) + 1
+        primeiro.setdefault(k, ev)
+        ultimo_at[k] = str(ev.payload.get("at") or "")
+    saida: list[Evidence] = []
+    for n, (k, ev) in enumerate(primeiro.items()):
+        vezes = contagem[k]
+        if vezes == 1:
+            saida.append(Evidence("log_line", n, ev.text, ev.payload))
+            continue
+        inicio, fim = str(ev.payload.get("at") or ""), ultimo_at[k]
+        quando = f" entre {inicio} e {fim}" if inicio and fim and inicio != fim else ""
+        texto = f"{ev.text}   (repetida {vezes} vezes{quando})"
+        saida.append(Evidence("log_line", n, texto, {**ev.payload, "repeats": vezes}))
+    return saida
+
+
+def _collapse_identical(items: list[Evidence]) -> list[Evidence]:
+    """Junta linhas **exatamente** iguais. Seguro de aplicar sempre.
+
+    A centésima cópia idêntica não ensina nada ao modelo, e custa o mesmo que a primeira: num
+    container que cospe o mesmo erro em laço, isso sozinho derruba o contexto em mais de 90%.
+    A contagem informa mais do que a repetição, porque vira dado.
+
+    Diferente de `_collapse_repeats`, aqui nada que difira é fundido — dois erros sobre ids
+    diferentes continuam sendo duas linhas, porque o id pode ser exatamente a pista.
+    """
+    return _collapse(items, chave=lambda ev: ev.text)
+
+
+def _collapse_repeats(items: list[Evidence]) -> list[Evidence]:
+    """Junta linhas com a mesma *forma*, ignorando números. Só no corte por orçamento.
+
+    Mais agressivo: funde "falhou para o usuário 12" com "falhou para o usuário 99". Perde o
+    valor específico, que às vezes é a pista — por isso só entra quando o contexto não cabe.
+    """
+    return _collapse(items, chave=lambda ev: _NUM.sub("<n>", ev.text)[:300])

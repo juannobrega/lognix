@@ -119,6 +119,10 @@
   background: var(--canvas);
 }
 .problem {
+  margin-top: 2px;
+  max-width: 46ch;
   color: var(--error);
   font-size: var(--text-sm);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }

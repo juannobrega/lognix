@@ -293,6 +293,23 @@ export interface ProjectActivity {
   triggers_24h: number
 }
 
+export interface PontoHora {
+  hour: string
+  lines: number
+  errors: number
+}
+
+export interface Fatia {
+  key: string
+  count: number
+}
+
+export interface PontoDia {
+  day: string
+  cost_usd: string
+  calls: number
+}
+
 export interface Summary {
   hosts_total: number
   hosts_connected: number
@@ -308,6 +325,10 @@ export interface Summary {
   ai_enabled: boolean
   hosts: HostSummary[]
   top_projects: ProjectActivity[]
+  lines_by_hour: PontoHora[]
+  triggers_by_type: Fatia[]
+  insights_by_severity: Fatia[]
+  cost_by_day: PontoDia[]
 }
 
 export interface AiSettings {
@@ -427,7 +448,23 @@ export interface TestKeyResult {
   error: string | null
 }
 
-export type ProviderKind = 'openrouter' | 'openai' | 'bedrock'
+/** Espelha `ProviderKind` do backend. Acrescentar um tipo lá exige acrescentar aqui. */
+export type ProviderKind =
+  | 'openrouter'
+  | 'openai'
+  | 'anthropic'
+  | 'bedrock'
+  | 'gemini'
+  | 'groq'
+  | 'mistral'
+  | 'deepseek'
+  | 'xai'
+  | 'together'
+  | 'fireworks'
+  | 'cerebras'
+  | 'perplexity'
+  | 'ollama'
+  | 'custom'
 
 export interface CredentialField {
   key: string

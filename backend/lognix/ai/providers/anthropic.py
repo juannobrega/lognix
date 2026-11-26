@@ -67,10 +67,13 @@ class AnthropicProvider:
                 f"{system}\n\nResponda com um único objeto JSON válido, sem cercas de código e "
                 f"sem texto em volta, exatamente neste esquema:\n{schema}"
             )
+        # Sem `temperature`: os modelos novos da Anthropic a descontinuaram e respondem HTTP 400
+        # quando ela vem no corpo. O padrão do serviço já é determinístico o bastante para o que
+        # pedimos — JSON num esquema fechado —, e mandar o parâmetro só para "garantir" trocaria
+        # um ganho nenhum por uma recusa na cara do usuário.
         body: dict[str, Any] = {
             "model": model,
             "max_tokens": max_output_tokens,
-            "temperature": 0,
             "system": instructions,
             "messages": [{"role": "user", "content": [{"type": "text", "text": user}]}],
         }
