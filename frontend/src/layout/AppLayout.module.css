@@ -1,0 +1,304 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100%;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: var(--sidebar);
+  border-right: 1px solid var(--divider);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-3);
+  gap: var(--space-5);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+}
+.logoImg {
+  /* Fundo em vez de <img> porque a arte muda com o tema: assim o browser baixa só a que vai
+     mostrar, e a troca acompanha tanto o data-theme quanto a preferência do sistema. */
+  height: 26px;
+  aspect-ratio: 2172 / 724;
+  background: url('/logo-on-light.png') left center / contain no-repeat;
+  display: block;
+}
+:global(:root[data-theme='dark']) .logoImg {
+  background-image: url('/logo-on-dark.png');
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .logoImg {
+    background-image: url('/logo-on-dark.png');
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sectionLabel {
+  font-size: var(--text-meta);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-faint);
+  padding: var(--space-3) var(--space-3) var(--space-2);
+}
+
+/* Barra de sinal: o item ativo ganha uma barra vertical com o gradiente da marca, que é o
+ * motivo das barras do símbolo. O fundo fica apenas levemente aceso. */
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px var(--space-3) 7px 11px;
+  border-radius: var(--radius-control);
+  color: var(--fg-dim);
+  text-decoration: none;
+  font-size: var(--text-ui);
+  font-weight: 500;
+  transition: background 110ms, color 110ms;
+}
+.link:hover {
+  background: var(--hover);
+  color: var(--fg);
+  text-decoration: none;
+}
+.link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: var(--signal-w);
+  height: 17px;
+  border-radius: 0 var(--signal-w) var(--signal-w) 0;
+  background: var(--brand-gradient);
+  transition: transform 140ms ease-out;
+}
+.active {
+  color: var(--fg);
+  background: var(--accent-soft);
+}
+.active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.tile {
+  display: grid;
+  place-items: center;
+  color: var(--fg-faint);
+  flex-shrink: 0;
+  transition: color 110ms;
+}
+.link:hover .tile {
+  color: var(--fg-dim);
+}
+.active .tile {
+  color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .link::before {
+    transition: none;
+  }
+}
+.count {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  font-size: var(--text-meta);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: var(--error);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 0 5px;
+}
+
+.footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+.user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+}
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--brand-gradient);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: var(--text-meta);
+  flex-shrink: 0;
+}
+.userName {
+  font-size: var(--text-ui);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.version {
+  font-size: var(--text-meta);
+  color: var(--fg-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--space-3);
+}
+.footerRow {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+}
+.footerRow > * {
+  flex: 1;
+}
+
+.main {
+  padding: var(--space-7) var(--space-8);
+  max-width: 1360px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--divider);
+  }
+  .section {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .sectionLabel {
+    display: none;
+  }
+  .main {
+    padding: var(--space-6) var(--space-5);
+  }
+}
+
+/* ---------- grupo de menu com subitens ---------- */
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+.groupRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.groupLink {
+  flex: 1;
+  min-width: 0;
+}
+/* Grupo fechado com a página ativa lá dentro: a barra de sinal aparece no pai, senão não há
+   nenhuma pista de onde você está. */
+.rowInside .groupLink::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.rowInside .groupLink {
+  color: var(--fg);
+}
+.disclosure {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 26px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--fg-faint);
+  cursor: pointer;
+}
+.disclosure:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+.disclosure:focus-visible {
+  outline: none;
+  box-shadow: var(--glow) var(--accent-ring);
+}
+.caret {
+  transition: transform 140ms ease-out;
+}
+.caretOpen {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    transition: none;
+  }
+}
+.children[hidden] {
+  display: none;
+}
+.children {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  /* A linha vertical liga os filhos ao pai: sem ela a indentação sozinha some na leitura. */
+  margin: 2px 0 2px 21px;
+  padding-left: 11px;
+  border-left: 1px solid var(--divider);
+}
+.child {
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--fg-faint);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: background 110ms, color 110ms;
+}
+.child:hover {
+  background: var(--hover);
+  color: var(--fg);
+  text-decoration: none;
+}
+.childActive {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Sidebar deitado. Precisa vir depois das regras base do grupo: media query não muda
+   especificidade, então quem aparece por último é que vale. */
+@media (max-width: 1024px) {
+  .group {
+    flex-direction: row;
+    align-items: center;
+  }
+  .children {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 0 0 var(--space-2);
+    padding-left: var(--space-2);
+  }
+}

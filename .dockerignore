@@ -1,0 +1,13 @@
+# Contexto do build da imagem, que é a raiz do repositório.
+.git
+.documentation
+frontend/node_modules
+frontend/dist
+frontend/coverage
+backend/.venv
+backend/.pytest_cache
+backend/.mypy_cache
+backend/.ruff_cache
+**/__pycache__
+**/*.pyc
+.DS_Store

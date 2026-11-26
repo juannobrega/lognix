@@ -1,0 +1,120 @@
+# Lint, tipos e testes do backend e do frontend. Build das imagens sem publicar.
+name: ci
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lognix
+          POSTGRES_PASSWORD: lognix
+          POSTGRES_DB: lognix_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lognix -d lognix_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy lognix
+      - run: pytest -q
+        env:
+          LOGNIX_SECRET_KEY: ci-only-secret-key-not-for-real-use-0123456789
+          DATABASE_URL: postgresql+asyncpg://lognix:lognix@localhost:5432/lognix_test
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --run
+      - run: npm run build
+
+  # Constrói a imagem sem publicar. Descobrir que o Dockerfile não constrói durante o release é
+  # descobrir tarde: a tag já foi cortada e a publicação falha depois dela.
+  image:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: lognix:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # A imagem subir importa tanto quanto construir: o entrypoint põe três processos de pé, e
+      # um erro ali só aparece em tempo de execução.
+      - name: O contêiner sobe e responde
+        run: |
+          set -euo pipefail
+          docker network create lognix-ci
+          docker run -d --name pg --network lognix-ci \
+            -e POSTGRES_USER=lognix -e POSTGRES_PASSWORD=lognix -e POSTGRES_DB=lognix \
+            postgres:16-alpine
+          # Sem esperar o Postgres de propósito: o entrypoint tem que tolerar banco ainda
+          # abrindo, que é o caso de quem roda a imagem sem compose.
+          docker run -d --name app --network lognix-ci -p 8000:8000 \
+            -e LOGNIX_SECRET_KEY=$(head -c 32 /dev/urandom | base64) \
+            -e DATABASE_URL=postgresql+asyncpg://lognix:lognix@pg:5432/lognix \
+            lognix:ci
+
+          # Espera os **três** componentes, não só a API responder: o Loki leva cerca de meio
+          # minuto para sair do "empty ring", e conferir antes disso reprova uma imagem boa.
+          pronto=nao
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/api/v1/health > /tmp/health.json 2>/dev/null \
+               && python3 -c "import json,sys; d=json.load(open('/tmp/health.json')); sys.exit(0 if all(c['ok'] for c in d['components'].values()) else 1)"; then
+              pronto=sim
+              break
+            fi
+            sleep 3
+          done
+
+          echo "--- /api/v1/health ---"; cat /tmp/health.json 2>/dev/null; echo
+          [ "$pronto" = "sim" ] || { echo "nem todos os componentes ficaram de pé"; exit 1; }
+          echo "postgres, loki e alloy de pé dentro da imagem"
+
+          # O frontend tem que estar servido pela própria API, não só construído.
+          curl -fsS http://localhost:8000/ | grep -qi "<!doctype html" \
+            || { echo "a API não serviu o frontend"; exit 1; }
+          # E um asset que não existe precisa ser 404, nunca o index com status 200.
+          codigo=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/assets/nao-existe.js)
+          [ "$codigo" = "404" ] || { echo "asset inexistente devolveu $codigo"; exit 1; }
+      - name: Logs em caso de falha
+        if: failure()
+        run: docker logs app 2>&1 | tail -50

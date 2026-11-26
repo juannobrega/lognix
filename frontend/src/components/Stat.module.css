@@ -1,0 +1,34 @@
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.value {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.label {
+  color: var(--fg-dim);
+  font-size: var(--text-ui);
+}
+.hint {
+  font-size: var(--text-meta);
+  color: var(--fg-faint);
+}
+.ok .value {
+  color: var(--ok);
+}
+.warn .value {
+  color: var(--warn);
+}
+.error .value {
+  color: var(--error);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-6);
+}

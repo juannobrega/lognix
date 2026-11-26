@@ -1,0 +1,55 @@
+/* Estado do Lognix: um ponto com halo. O halo é o "sinal vivo" — um painel de monitoramento
+ * mostra coisas que estão acontecendo agora, e o ponto chapado não transmite isso. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 22px;
+  font-size: var(--text-ui);
+  white-space: nowrap;
+  color: var(--fg-dim);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+  flex-shrink: 0;
+}
+.ok {
+  color: var(--ok);
+}
+.warn {
+  color: var(--warn);
+}
+.error {
+  color: var(--error);
+}
+.neutral {
+  color: var(--fg-faint);
+}
+.neutral .dot {
+  box-shadow: none;
+}
+.label {
+  color: var(--fg-dim);
+}
+/* Em transição, o halo pulsa. */
+.pulsing .dot {
+  animation: signal 1.8s ease-in-out infinite;
+}
+@keyframes signal {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 22%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 6%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulsing .dot {
+    animation: none;
+  }
+}

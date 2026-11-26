@@ -1,0 +1,72 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: var(--control-h);
+  padding: 0 10px 0 var(--space-4);
+  min-width: 140px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--control-bg);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: var(--text-input);
+  cursor: pointer;
+}
+.trigger:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--control-border));
+}
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--glow) var(--accent-ring);
+}
+.trigger[data-placeholder] {
+  color: var(--fg-faint);
+}
+.chevron {
+  color: var(--fg-faint);
+  flex-shrink: 0;
+}
+.content {
+  overflow: hidden;
+  /* Acompanha o gatilho: uma lista mais estreita que o campo que a abriu corta nome de modelo e
+     parece outro controle. O `min-` deixa crescer quando a opção é mais larga que o campo. */
+  min-width: var(--radix-select-trigger-width);
+  background: var(--panel);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-well);
+  box-shadow: var(--shadow-pop);
+  z-index: var(--z-popup);
+  max-height: var(--radix-select-content-available-height);
+}
+.viewport {
+  padding: var(--space-1);
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 30px;
+  padding: 0 var(--space-3);
+  border-radius: 6px;
+  font-size: var(--text-ui);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+.item[data-highlighted] {
+  background: var(--hover);
+}
+.item[data-state='checked'] {
+  color: var(--accent);
+  font-weight: 500;
+}
+.check {
+  margin-left: auto;
+  opacity: 0;
+}
+.item[data-state='checked'] .check {
+  opacity: 1;
+}

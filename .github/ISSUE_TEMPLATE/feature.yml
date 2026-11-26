@@ -1,0 +1,27 @@
+name: Propor uma melhoria
+description: Uma ideia para o Lognix
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de abrir, veja se a ideia já está no
+        [Roadmap](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/08%20Gest%C3%A3o/Roadmap.md).
+        Muita coisa já foi deliberadamente deixada para depois, e o roadmap diz o porquê.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Que problema isso resolve
+      description: Descreva a situação concreta, não a solução.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: O que você propõe
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: O que mais você considerou

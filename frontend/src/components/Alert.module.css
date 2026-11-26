@@ -1,0 +1,35 @@
+.alert {
+  display: flex;
+  gap: 10px;
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-well);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-ui);
+  line-height: 1.5;
+}
+.icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--info);
+}
+.error {
+  border-color: color-mix(in srgb, var(--error) 30%, transparent);
+  background: var(--error-soft);
+}
+.error .icon {
+  color: var(--error);
+}
+.warn {
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+  background: var(--warn-soft);
+}
+.warn .icon {
+  color: var(--warn);
+}
+.action {
+  display: block;
+  margin-top: 3px;
+  color: var(--fg-faint);
+}

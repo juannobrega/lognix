@@ -1,0 +1,25 @@
+.field {
+  margin-bottom: var(--space-5);
+}
+.label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  color: var(--fg-dim);
+}
+.help {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--fg-faint);
+}
+.error {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--error);
+}
+.input[aria-invalid='true'] {
+  border-color: var(--error);
+}

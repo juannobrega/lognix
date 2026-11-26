@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Vulnerabilidade de segurança
+    url: https://github.com/juannobrega/lognix/security/advisories/new
+    about: Relate em privado, nunca em uma issue pública.
+  - name: Como o Lognix funciona por dentro
+    url: https://github.com/juannobrega/lognix/blob/main/.documentation/Software/Arquitetura.md
+    about: A arquitetura e o caminho dos dados, antes de perguntar.

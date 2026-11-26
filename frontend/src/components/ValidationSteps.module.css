@@ -1,0 +1,58 @@
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.step {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-2) 0;
+}
+.step + .step {
+  border-top: 1px solid var(--divider);
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--control-bg);
+}
+.ok {
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+.failed {
+  color: var(--error);
+  background: var(--error-soft);
+}
+.running {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.pending {
+  color: var(--fg-dim);
+}
+.message {
+  color: var(--error);
+  margin-top: var(--space-1);
+}
+.action {
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+  white-space: pre-wrap;
+}
+.detail {
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+}
