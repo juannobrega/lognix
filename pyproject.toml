@@ -2,7 +2,7 @@
 # O código do backend vive em backend/, o do frontend em frontend/.
 [project]
 name = "lognix"
-version = "0.0.1"
+version = "1.0.0"
 description = "Analisador de logs de containers Docker com IA. Coleta sem agente via SSH, Grafana Alloy e Loki."
 readme = "README.md"
 license = { file = "LICENSE" }
