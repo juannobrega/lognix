@@ -1,13 +1,13 @@
 # Instalação
 
-**Versão:** 1.0.0
+**Versão:** 0.0.1
 
 ## Requisitos
 
 - Docker 24 ou mais novo e Docker Compose v2, em qualquer máquina Linux ou macOS.
 - Acesso de saída à internet para baixar as imagens.
 - Para monitorar hosts: acesso SSH da máquina do Lognix até cada host.
-- Para a análise por IA: uma chave do OpenRouter. Opcional; o resto funciona sem.
+- Para a análise por IA: uma chave de algum dos provedores suportados. Opcional; o resto funciona sem.
 
 Porte medido: 10 hosts e 100 containers monitorados cabem em 2 vCPU e 4 GB. O backend usa cerca de
 200 MB de memória. O disco é dominado pela retenção de logs no Loki, que depende do volume dos
@@ -16,12 +16,20 @@ containers e não do número deles.
 ## Primeiro uso
 
 ```bash
-git clone https://github.com/juannobrega/lognix.git
-cd lognix
+curl -O https://raw.githubusercontent.com/juannobrega/lognix/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/juannobrega/lognix/main/.env.example
 cp .env.example .env
 openssl rand -base64 48      # cole o resultado em LOGNIX_SECRET_KEY no .env
 docker compose up -d
 ```
+
+Dois arquivos, nenhum clone: a imagem vem publicada. Para fixar uma versão em vez de seguir a
+última, ponha `LOGNIX_VERSION=0.0.1` no `.env`.
+
+São dois contêineres: o Lognix e o Postgres. O **Loki** e o **Alloy** rodam dentro da imagem do
+Lognix, porque a configuração deles é gerada pelo próprio sistema — ver
+[Configuração](Configuração.md). Quem clonar o repositório e rodar `docker compose up` constrói a
+imagem localmente, o que também funciona.
 
 Abra `http://localhost:8080`. Como o sistema está vazio, a tela de criação do primeiro usuário
 aparece. Esse usuário pode cadastrar os demais em Configurações › Usuários.
@@ -29,8 +37,8 @@ aparece. Esse usuário pode cadastrar os demais em Configurações › Usuários
 Em seguida, cadastre o primeiro host. O guia de [Operação](Operação.md) mostra como preparar a
 máquina alvo, o que leva dois comandos.
 
-O primeiro uso foi medido em 2026-11-25 numa instalação limpa: **158 segundos** do `git clone` ao
-primeiro log na tela, dos quais 88 segundos são o build das imagens. Da marcação do container à
+O primeiro uso foi medido em 2026-11-25, quando a instalação ainda construía as imagens: **158
+segundos** do `git clone` ao primeiro log na tela, dos quais 88 segundos são o build das imagens. Da marcação do container à
 primeira linha aparecer: 12 segundos.
 
 ## O que sobe

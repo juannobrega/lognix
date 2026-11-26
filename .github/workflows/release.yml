@@ -26,6 +26,15 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  # Manual trigger. Exists to republish a version whose image failed after the tag was
+  # already cut, and to release something that did not come from a merge.
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Size of the version bump"
+        required: true
+        type: choice
+        options: [patch, minor, major]
 
 # Two merges landing together must not race for the same version number.
 concurrency:
@@ -34,6 +43,8 @@ concurrency:
 
 permissions:
   contents: write
+  # Pushing the image to the GitHub Container Registry.
+  packages: write
 
 jobs:
   tag:
@@ -42,8 +53,9 @@ jobs:
     # failed, so a green run means "no release was wanted" rather than
     # "something went wrong".
     if: >-
-      github.event.pull_request.merged == true &&
-      !contains(github.event.pull_request.labels.*.name, 'release:skip')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       !contains(github.event.pull_request.labels.*.name, 'release:skip'))
     runs-on: ubuntu-latest
 
     steps:
@@ -55,12 +67,20 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Read the bump from the pull request label
+      - name: Read the bump, from the dispatch input or the pull request label
         id: bump
         env:
           LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          INPUT: ${{ inputs.release }}
         run: |
           set -euo pipefail
+          # Manual run says it outright; a merge says it through the label, which is visible
+          # while the change is still under review.
+          if [ -n "${INPUT:-}" ]; then
+            echo "kind=$INPUT" >> "$GITHUB_OUTPUT"
+            echo "Bump: $INPUT (manual)"
+            exit 0
+          fi
           kinds=$(jq -r '.[] | select(startswith("release:")) | sub("release:"; "")' <<< "$LABELS")
           count=$(wc -w <<< "$kinds" | tr -d ' ')
 
@@ -148,6 +168,8 @@ jobs:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -euo pipefail
+          motivo="Manual release"
+          [ -n "${PR:-}" ] && motivo="Merged #$PR: $TITLE"
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -155,12 +177,60 @@ jobs:
           if git diff --cached --quiet; then
             echo "version files already at $VERSION; tagging the merge itself."
           else
-            git commit -m "Release $TAG" -m "Merged #$PR: $TITLE"
+            git commit -m "Release $TAG" -m "$motivo"
           fi
 
-          git tag -a "$TAG" -m "$TAG" -m "Merged #$PR: $TITLE"
+          git tag -a "$TAG" -m "$TAG" -m "$motivo"
           git push origin HEAD:main
           git push origin "$TAG"
+
+      - name: Set up buildx for the multi-architecture build
+        uses: docker/setup-qemu-action@v3
+      - name: Set up buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Work out the image tags
+        id: tags
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${{ github.repository }}"
+          image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
+          IFS=. read -r major minor _ <<< "$VERSION"
+
+          tags="$image:$VERSION,$image:$major.$minor"
+          # Pré-1.0 não recebe `latest` nem a tag de major. 0.x não promete compatibilidade, e
+          # deixar alguém seguir `0` ou `latest` seria prometer sem querer.
+          if [ "$major" != "0" ]; then
+            tags="$tags,$image:$major,$image:latest"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+          echo "$tags"
+
+      - name: Build and publish the image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Publish the release
         env:
@@ -169,15 +239,36 @@ jobs:
           PREVIOUS: ${{ steps.version.outputs.previous }}
           PR: ${{ github.event.pull_request.number }}
           TITLE: ${{ github.event.pull_request.title }}
+          IMAGE: ${{ steps.tags.outputs.image }}
+          VERSION: ${{ steps.version.outputs.version }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          PRERELEASE: ${{ steps.tags.outputs.prerelease }}
         run: |
           set -euo pipefail
-          notes="Merged #$PR: $TITLE"
-          if [ "$PREVIOUS" != "none" ]; then
-            notes="$notes
+          origem="Manual release"
+          [ -n "${PR:-}" ] && origem="Merged #$PR: $TITLE"
 
-          Changes since $PREVIOUS are listed below."
-          fi
+          notes=$(cat <<TEXTO
+          $origem
+
+          ## Instalação
+
+          \`\`\`bash
+          curl -O https://raw.githubusercontent.com/${{ github.repository }}/$TAG/docker-compose.yml
+          curl -O https://raw.githubusercontent.com/${{ github.repository }}/$TAG/.env.example
+          cp .env.example .env   # gere LOGNIX_SECRET_KEY
+          LOGNIX_VERSION=$VERSION docker compose up -d
+          \`\`\`
+
+          Imagem: \`$IMAGE:$VERSION\` — \`linux/amd64\` e \`linux/arm64\`
+          Digest: \`$DIGEST\`
+          TEXTO
+          )
+
+          args=""
+          [ "$PRERELEASE" = "true" ] && args="--prerelease"
+          # shellcheck disable=SC2086
           gh release create "$TAG" \
             --title "$TAG" \
             --notes "$notes" \
-            --generate-notes
+            --generate-notes $args

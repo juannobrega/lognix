@@ -1,0 +1,41 @@
+# Lognix — configuração declarativa. Opcional: sem este arquivo, tudo se configura pela interface.
+#
+# Copie para config.yaml, no mesmo diretório, e suba o Lognix. Ver ADR 014.
+#
+# Três coisas que vale saber antes:
+#
+#   1. Variável de ambiente ganha deste arquivo, que ganha do banco. O ambiente é o que um
+#      operador usa para corrigir uma instalação sem editar arquivo.
+#   2. O que estiver aqui aparece na interface preenchido e **desabilitado**, dizendo que veio
+#      daqui. Para voltar a editar pela tela, tire do arquivo.
+#   3. Segredo não se escreve aqui. Use ${VARIAVEL}, que é resolvida do ambiente na subida.
+#      Variável faltando impede a subida — de propósito, para a falha aparecer junto da causa.
+
+ai:
+  enabled: true
+  max_input_tokens: 12000
+  max_output_tokens: 1500
+  concurrency: 3
+
+# Provedores de IA, na ordem da cadeia de fallback: o primeiro atende, os seguintes entram se ele
+# recusar. Os tipos disponíveis são os mesmos da tela de Provedores.
+providers:
+  - kind: openrouter
+    name: OpenRouter
+    default_model: anthropic/claude-sonnet-4.5
+    enabled: true
+    credentials:
+      api_key: ${OPENROUTER_API_KEY}
+
+  # - kind: openai
+  #   name: OpenAI
+  #   default_model: gpt-5
+  #   credentials:
+  #     api_key: ${OPENAI_API_KEY}
+
+  # - kind: ollama
+  #   name: Ollama local
+  #   default_model: llama3.1
+  #   credentials:
+  #     # localhost aqui seria o contêiner do Lognix: use o IP do host.
+  #     base_url: http://192.168.0.10:11434/v1

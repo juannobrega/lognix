@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 
@@ -13,6 +14,7 @@ from lognix.ai.registry import import_legacy_openrouter
 from lognix.alloy.service import get_alloy_manager
 from lognix.analysis.manager import get_analysis_manager
 from lognix.api import api_router
+from lognix.api.static import mount_frontend
 from lognix.config import get_settings
 from lognix.db import get_engine, get_sessionmaker
 from lognix.errors import install_error_handlers
@@ -22,6 +24,7 @@ from lognix.logging_setup import setup_logging
 from lognix.metrics import metrics_middleware
 from lognix.realtime.hub import get_tail_hub
 from lognix.realtime.ws import router as ws_router
+from lognix.settings import config_file
 
 log = logging.getLogger("lognix")
 
@@ -41,6 +44,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             await import_legacy_openrouter(db)
         except Exception:
             log.exception("import da chave antiga do OpenRouter falhou")
+        # Arquivo inválido derruba a subida de propósito: configuração ignorada em silêncio é
+        # pior que configuração ausente, porque quem escreveu acredita que ela está valendo.
+        await config_file.apply(db, config_file.load(settings.config_file))
     try:
         await get_alloy_manager().apply("inicialização do backend")
     except Exception:
@@ -67,6 +73,8 @@ def create_app() -> FastAPI:
     install_error_handlers(app)
     app.include_router(api_router)
     app.include_router(ws_router)
+    # Por último: a rota coringa do frontend engoliria as da API se viesse antes.
+    mount_frontend(app, Path(get_settings().frontend_dir))
     return app
 
 

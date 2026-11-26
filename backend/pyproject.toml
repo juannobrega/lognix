@@ -26,6 +26,9 @@ dependencies = [
   "drain3>=0.9",
   "prometheus-client>=0.20",
   "botocore>=1.34",
+  # Arquivo de configuração declarativa (ADR 014). Vinha transitivo pelo uvicorn[standard];
+  # dependência direta precisa estar declarada, senão some numa atualização alheia.
+  "PyYAML>=6",
 ]
 
 [project.optional-dependencies]

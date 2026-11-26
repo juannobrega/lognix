@@ -1,8 +1,0 @@
-# O build roda dentro da imagem: o que está na máquina de quem builda não entra.
-node_modules
-dist
-dist-preview
-coverage
-*.tsbuildinfo
-.vite
-.DS_Store

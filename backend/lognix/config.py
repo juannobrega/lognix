@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     alloy_url: str = Field(default="http://alloy:12345", alias="ALLOY_URL")
     alloy_config_path: str = Field(default="/alloy-config/config.alloy", alias="ALLOY_CONFIG_PATH")
     tunnels_dir: str = Field(default="/tunnels", alias="TUNNELS_DIR")
+    #: Onde o frontend construído foi copiado na imagem. Ausente, a API sobe sem interface.
+    frontend_dir: str = Field(default="/app/static", alias="LOGNIX_FRONTEND_DIR")
+    #: Arquivo de configuração declarativa. Ver ADR 014.
+    config_file: str = Field(default="/config/config.yaml", alias="LOGNIX_CONFIG_FILE")
 
     # Pool do banco. O padrão do SQLAlchemy (5+10) é pequeno para muitos ciclos simultâneos:
     # os ciclos consomem o pool e a API fica na fila. Medido na fase 0.7.0.

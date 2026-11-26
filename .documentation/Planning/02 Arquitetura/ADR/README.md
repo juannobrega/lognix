@@ -31,6 +31,9 @@ Cada decisão não óbvia de arquitetura vira um arquivo `ADR NNN Título.md`.
 | 010 | [Desempenho do Ciclo de Análise](ADR%20010%20Desempenho%20do%20Ciclo%20de%20An%C3%A1lise.md) | Aceito |
 | 011 | [Identidade Visual do Lognix](ADR%20011%20Identidade%20Visual%20do%20Lognix.md) | Aceito |
 | 012 | [Múltiplos Provedores de IA com Cadeia de Fallback](ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md) | Aceito. Amplia o 006 |
+| 013 | [Distribuição como Imagem Docker](ADR%20013%20Distribui%C3%A7%C3%A3o%20como%20Imagem%20Docker.md) | Proposto |
+| 014 | [Configuração por Arquivo](ADR%20014%20Configura%C3%A7%C3%A3o%20por%20Arquivo.md) | Proposto |
+| 015 | [Pipeline de Release e Publicação](ADR%20015%20Pipeline%20de%20Release%20e%20Publica%C3%A7%C3%A3o.md) | Proposto |
 
 ## Candidatos ainda não decididos
 

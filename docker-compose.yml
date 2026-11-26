@@ -1,39 +1,41 @@
 # Lognix — instalação padrão.
 #   cp .env.example .env   (gere LOGNIX_SECRET_KEY)
 #   docker compose up -d
-# Só a porta do frontend é exposta. Backend, Postgres, Loki e Alloy ficam na rede interna.
+#
+# Só a porta do Lognix é exposta. Loki e Alloy rodam dentro da imagem, escutando em
+# localhost; o Postgres fica na rede interna.
+#
+# `image` e `build` juntos de propósito: a partir de um clone o compose constrói, e quem quer a
+# versão publicada roda `docker compose pull` antes do `up`. Sem o `build`, um clone não sobe;
+# sem o `image`, não há como usar a publicada.
 
 services:
-  frontend:
-    build: ./frontend
+  lognix:
+    image: ghcr.io/juannobrega/lognix:${LOGNIX_VERSION:-latest}
+    build: .
     ports:
-      - "${LOGNIX_PORT:-8080}:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-      target: runtime
+      - "${LOGNIX_PORT:-8080}:8000"
     environment:
       LOGNIX_SECRET_KEY: ${LOGNIX_SECRET_KEY:?defina LOGNIX_SECRET_KEY no .env}
       LOGNIX_PUBLIC_URL: ${LOGNIX_PUBLIC_URL:-http://localhost:8080}
       LOGNIX_LOG_LEVEL: ${LOGNIX_LOG_LEVEL:-INFO}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lognix}:${POSTGRES_PASSWORD:-lognix}@postgres:5432/${POSTGRES_DB:-lognix}
-      LOKI_URL: http://loki:3100
+      LOKI_URL: http://127.0.0.1:3100
       LOKI_RETENTION_DAYS: ${LOKI_RETENTION_DAYS:-15}
-      ALLOY_URL: http://alloy:12345
+      ALLOY_URL: http://127.0.0.1:12345
       ALLOY_CONFIG_PATH: /alloy-config/config.alloy
       TUNNELS_DIR: /tunnels
       LOGNIX_ANALYSIS_CONCURRENCY: ${LOGNIX_ANALYSIS_CONCURRENCY:-8}
       LOGNIX_DB_POOL_SIZE: ${LOGNIX_DB_POOL_SIZE:-20}
       LOGNIX_DB_MAX_OVERFLOW: ${LOGNIX_DB_MAX_OVERFLOW:-10}
+      LOGNIX_CONFIG_FILE: /config/config.yaml
     volumes:
       - tunnels:/tunnels
+      # Configuração declarativa, opcional. Ver ADR 014 e Software/Configuração.
+      - ./config:/config:ro
       - alloy-config:/alloy-config
+      - loki-data:/var/lib/loki
+      - alloy-data:/var/lib/alloy
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,49 +64,9 @@ services:
 
   # Loki e Alloy entram em uso na fase 0.3.0. Já sobem aqui para que o compose
   # final não mude de forma entre fases.
-  loki:
-    image: grafana/loki:3.3.2
-    command: -config.file=/etc/loki/loki-config.yaml -config.expand-env=true
-    environment:
-      LOKI_RETENTION_DAYS: ${LOKI_RETENTION_DAYS:-15}
-    volumes:
-      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
-      - loki-data:/loki
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:3100/ready | grep -q ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 15s
-    restart: unless-stopped
 
-  alloy:
-    image: grafana/alloy:v1.6.1
-    command:
-      - run
-      - /lognix/alloy/config.alloy
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-    volumes:
-      # Fora de /etc/alloy de propósito: lá a imagem traz uma config padrão que
-      # popularia o volume vazio e seria executada no lugar da nossa.
-      - alloy-config:/lognix/alloy
-      - tunnels:/tunnels
-      - alloy-data:/var/lib/alloy/data
-    depends_on:
-      loki:
-        condition: service_healthy
-      alloy-init:
-        condition: service_completed_successfully
-    restart: unless-stopped
 
   # Copia a config inicial (vazia) para o volume compartilhado uma única vez.
-  alloy-init:
-    image: busybox:1.36
-    command: sh -c "[ -f /lognix/alloy/config.alloy ] || cp /seed/config.alloy /lognix/alloy/config.alloy"
-    volumes:
-      - ./alloy/config.alloy:/seed/config.alloy:ro
-      - alloy-config:/lognix/alloy
 
 volumes:
   postgres-data:
