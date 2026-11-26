@@ -163,7 +163,11 @@ export function ProviderRow({ provider: p, index, position, total, onEdit, onMov
               <Badge tone={status.tone} label={status.label} />
             </span>
           </Tooltip>
-          {p.last_status === 'error' && p.last_error && <div className={styles.problem}>{p.last_error.slice(0, 70)}</div>}
+          {p.last_status === 'error' && p.last_error && (
+            /* Sem corte: a parte acionável de uma mensagem de erro costuma estar no fim.
+               "...is deprecated for this mod" esconde justamente o que resolve. */
+            <div className={styles.problem}>{p.last_error}</div>
+          )}
         </td>
 
         <td>

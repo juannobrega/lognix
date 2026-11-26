@@ -8,8 +8,8 @@
   align-items: flex-start;
   gap: var(--space-4);
   padding: var(--space-5);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
+  border: 1px solid var(--block-border);
+  border-radius: var(--radius-block);
   background: var(--panel);
   box-shadow: var(--shadow-block);
   color: inherit;
@@ -17,7 +17,7 @@
   transition: border-color 120ms, transform 120ms, box-shadow 120ms;
 }
 .card:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--card-border));
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--block-border));
   box-shadow: var(--shadow-pop);
   text-decoration: none;
   transform: translateY(-1px);

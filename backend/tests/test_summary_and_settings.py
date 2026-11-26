@@ -151,3 +151,36 @@ async def test_legacy_openrouter_key_becomes_a_provider(authed: AsyncClient) -> 
     assert [m["model_id"] for m in listed[0]["models"]] == ["anthropic/claude-sonnet-4.5"]
     # Com a chave migrada, o interruptor que já estava ligado volta a valer.
     assert (await authed.get("/api/v1/settings/ai")).json()["active"] is True
+
+
+async def test_modelo_padrao_entra_na_lista_de_modelos(authed: AsyncClient) -> None:
+    """Apontar o modelo padrão tem que cadastrá-lo, senão o custo fica zerado para sempre.
+
+    Quem não devolve custo na resposta — Anthropic, Bedrock, OpenAI — depende do preço guardado
+    na linha do modelo. Sem linha, não há onde guardar preço, e a tela mostrava "0 modelos" ao
+    lado de um modelo padrão preenchido.
+    """
+    criado = (
+        await authed.post(
+            "/api/v1/settings/ai/providers",
+            json={
+                "kind": "anthropic",
+                "name": "Anthropic",
+                "credentials": {"api_key": "sk-ant-x"},
+                "default_model": "claude-haiku-5-5",
+            },
+        )
+    ).json()
+    assert [m["model_id"] for m in criado["models"]] == ["claude-haiku-5-5"]
+
+    # Trocar o padrão depois cadastra o novo e mantém o antigo, que pode ter preço configurado.
+    trocado = (
+        await authed.put(
+            f"/api/v1/settings/ai/providers/{criado['id']}",
+            json={"default_model": "claude-sonnet-5"},
+        )
+    ).json()
+    assert sorted(m["model_id"] for m in trocado["models"]) == [
+        "claude-haiku-5-5",
+        "claude-sonnet-5",
+    ]

@@ -158,6 +158,21 @@ async def _get(db: DbSession, provider_id: uuid.UUID) -> AiProviderConfig:
     return p
 
 
+async def _garante_modelo_padrao(db: DbSession, provider: AiProviderConfig) -> None:
+    """Cadastra o modelo padrão, se ele ainda não estiver na lista.
+
+    Sem isso, apontar o modelo padrão no diálogo deixava o provedor funcionando e o consumo
+    zerado: quem não devolve custo na resposta — Anthropic, Bedrock, OpenAI — depende do preço
+    cadastrado no modelo, e sem linha de modelo não há onde guardar preço. A tela mostrava
+    "0 modelos" ao lado de um modelo padrão preenchido, que é uma contradição visível.
+    """
+    if not provider.default_model:
+        return
+    # Direto no `ensure_model`, que já é idempotente: ler `provider.models` aqui dispararia uma
+    # carga lazy em contexto async, e o SQLAlchemy recusa (MissingGreenlet).
+    await registry.ensure_model(db, provider, provider.default_model, label=provider.default_model)
+
+
 @router.get("/kinds", response_model=list[ProviderKindOut])
 async def kinds(_: CurrentUser) -> list[ProviderKindOut]:
     """Tipos disponíveis e os campos que cada um pede. A interface se monta a partir daqui."""
@@ -199,6 +214,7 @@ async def create_provider(body: ProviderCreate, _: CurrentUser, db: DbSession) -
                 "Preencha os campos e salve; depois ative.",
             )
         provider.enabled = True
+    await _garante_modelo_padrao(db, provider)
     await db.commit()
     await db.refresh(provider)
     return _out(provider)
@@ -224,6 +240,7 @@ async def update_provider(
                 "Preencha os campos e salve; depois ative.",
             )
         provider.enabled = body.enabled
+    await _garante_modelo_padrao(db, provider)
     provider.updated_at = datetime.now(tz=None).astimezone()
     await db.commit()
     await db.refresh(provider)

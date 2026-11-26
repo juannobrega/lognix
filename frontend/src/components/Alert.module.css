@@ -3,8 +3,8 @@
   gap: 10px;
   padding: 10px var(--space-4);
   border-radius: var(--radius-well);
-  border: 1px solid var(--card-border);
-  background: var(--card-bg);
+  border: 1px solid var(--block-border);
+  background: var(--block-bg);
   margin-bottom: var(--space-5);
   font-size: var(--text-ui);
   line-height: 1.5;
