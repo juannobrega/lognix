@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './auth/RequireAuth'
+import { SectionHome } from './layout/SectionHome'
 import { AppLayout } from './layout/AppLayout'
 import { AiSettingsPage } from './pages/AiSettingsPage'
 import { DashboardPage } from './pages/DashboardPage'
@@ -36,7 +37,7 @@ export function App() {
           <Route path="insights/:id" element={<InsightDetailPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<SettingsPage />}>
-            <Route index element={<Navigate to="users" replace />} />
+            <Route index element={<SectionHome />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="ai" element={<AiSettingsPage />} />
             <Route path="providers" element={<ProvidersPage />} />

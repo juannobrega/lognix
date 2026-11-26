@@ -47,6 +47,34 @@ export const Icons = {
       <path d="M10 18.5a2 2 0 0 0 4 0" />
     </svg>
   ),
+  users: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20" />
+      <circle cx="10" cy="8" r="3.4" />
+      <path d="M20 20v-1.5a3.5 3.5 0 0 0-2.6-3.4M15.4 4.6a3.4 3.4 0 0 1 0 6.6" />
+    </svg>
+  ),
+  plug: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <path d="M9 3v5M15 3v5" />
+      <path d="M6 8h12v3a6 6 0 0 1-12 0z" />
+      <path d="M12 17v4" />
+    </svg>
+  ),
+  coins: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <ellipse cx="12" cy="6.5" rx="7.5" ry="3" />
+      <path d="M4.5 6.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5" />
+      <path d="M4.5 11.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5" />
+    </svg>
+  ),
+  cpu: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <rect x="6" y="6" width="12" height="12" rx="2.5" />
+      <rect x="10" y="10" width="4" height="4" rx="1" />
+      <path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3" />
+    </svg>
+  ),
   settings: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
       <circle cx="12" cy="12" r="3" />

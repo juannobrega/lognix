@@ -1,11 +1,7 @@
 import { useEffect, useId, useState, type SVGProps } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import type { NavChild } from './navigation'
 import styles from './AppLayout.module.css'
-
-export interface NavChild {
-  to: string
-  label: string
-}
 
 interface Props {
   to: string

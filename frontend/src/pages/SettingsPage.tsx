@@ -1,25 +1,24 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { childFor, groupFor } from '../layout/navigation'
 
-/** Título por rota. A navegação mora no sidebar; aqui só dizemos onde a pessoa chegou. */
-const TITLES: Record<string, { title: string; hint: string }> = {
-  users: { title: 'Usuários', hint: 'Quem entra no Lognix e com qual acesso.' },
-  ai: { title: 'IA', hint: 'O interruptor geral da análise e os limites por chamada.' },
-  providers: { title: 'Provedores', hint: 'Quem atende as chamadas, em que ordem, e com quais modelos.' },
-  usage: { title: 'Consumo', hint: 'Chamadas, tokens, custo e confiabilidade de cada provedor.' },
-  system: { title: 'Sistema', hint: 'Versão, serviços, métricas e retenção.' },
-}
-
+/**
+ * Moldura das Configurações. A navegação mora no sidebar e na tela de entrada; aqui o cabeçalho
+ * só diz onde a pessoa chegou, lendo a mesma fonte que desenha as duas.
+ */
 export function SettingsPage() {
   const { pathname } = useLocation()
-  const current = TITLES[pathname.split('/')[2] ?? ''] ?? { title: 'Configurações', hint: '' }
+  const group = groupFor(pathname)
+  const child = childFor(pathname)
 
   return (
     <>
       <div className="page-header">
         <div>
-          <span className="eyebrow">Configurações</span>
-          <h1>{current.title}</h1>
-          {current.hint && <p className="subtitle">{current.hint}</p>}
+          {child && <span className="eyebrow">{group?.label ?? 'Configurações'}</span>}
+          <h1>{child?.label ?? group?.label ?? 'Configurações'}</h1>
+          <p className="subtitle">
+            {child?.description ?? 'Tudo que o Lognix guarda sobre si mesmo: acesso, IA, provedores e estado do sistema.'}
+          </p>
         </div>
       </div>
       <Outlet />

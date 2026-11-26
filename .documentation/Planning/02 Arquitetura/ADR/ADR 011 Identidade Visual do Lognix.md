@@ -91,6 +91,18 @@ barra de abas dentro da página virou o mesmo menu desenhado duas vezes — duas
 sincronizadas e duas para o olho conferir. A aba saiu; o cabeçalho da página passou a dizer apenas
 onde a pessoa chegou, que é o que ela ainda precisa.
 
+**Clicar no pai leva a algum lugar.** Um grupo de navegação tem uma tela de entrada: um card por
+subpágina, com ícone e uma frase do que se resolve ali. A alternativa que existia antes —
+redirecionar para a primeira subpágina — escondia as outras e fazia "Configurações" parecer
+sinônimo de "Usuários". O card é o formato certo aqui pela mesma regra de sempre: não se compara
+uma opção com a outra, lê-se uma de cada vez para decidir para onde ir.
+
+**Isso é mecanismo, não tela.** `layout/navigation.ts` é a fonte única: o sidebar, o cabeçalho das
+páginas e a tela de entrada leem dela. Dar subpáginas a Hosts amanhã é acrescentar `children` ali e
+apontar a rota índice para `SectionHome`, que descobre o grupo pelo caminho. Antes disso, a mesma
+informação estava escrita em três arquivos, e bastava acrescentar uma subpágina para um dos três
+ficar para trás sem ninguém perceber.
+
 A regra por trás: **a pergunta decide o formato.** "Qual destes está falhando?" e "qual vem
 primeiro?" são perguntas comparativas, e comparação quer colunas alinhadas — um cartão obriga a
 reler o mesmo rótulo em cada bloco. "O que aconteceu neste container?" é uma pergunta de leitura, e

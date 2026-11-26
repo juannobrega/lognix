@@ -1,4 +1,3 @@
-import type { SVGProps } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { ExecutorPanel } from '../analysis/ExecutorPanel'
 import { useAuth } from '../auth/useAuth'
@@ -6,53 +5,10 @@ import { Button } from '../components/Button'
 import { useNotificationCount } from '../notifications/useNotifications'
 import { Tooltip } from '../ui/Tooltip'
 import { Icons } from './icons'
-import { NavGroup, type NavChild } from './NavGroup'
+import { NavGroup } from './NavGroup'
+import { SECTIONS } from './navigation'
 import { useTheme } from './useTheme'
 import styles from './AppLayout.module.css'
-
-interface NavLinkItem {
-  to: string
-  label: string
-  icon: (p: SVGProps<SVGSVGElement>) => JSX.Element
-  end?: boolean
-  /** Quando presente, o item vira um grupo que abre e fecha. */
-  children?: NavChild[]
-}
-
-const SECTIONS: { label: string; links: NavLinkItem[] }[] = [
-  {
-    label: 'Monitoramento',
-    links: [
-      { to: '/', label: 'Painel', end: true, icon: Icons.dashboard },
-      { to: '/hosts', label: 'Hosts', icon: Icons.server },
-      { to: '/projects', label: 'Projetos', icon: Icons.box },
-    ],
-  },
-  {
-    label: 'Análise',
-    links: [
-      { to: '/insights', label: 'Insights', icon: Icons.spark },
-      { to: '/notifications', label: 'Notificações', icon: Icons.bell },
-    ],
-  },
-  {
-    label: 'Sistema',
-    links: [
-      {
-        to: '/settings',
-        label: 'Configurações',
-        icon: Icons.settings,
-        children: [
-          { to: '/settings/users', label: 'Usuários' },
-          { to: '/settings/ai', label: 'IA' },
-          { to: '/settings/providers', label: 'Provedores' },
-          { to: '/settings/usage', label: 'Consumo' },
-          { to: '/settings/system', label: 'Sistema' },
-        ],
-      },
-    ],
-  },
-]
 
 export function AppLayout() {
   const { user, logout } = useAuth()
