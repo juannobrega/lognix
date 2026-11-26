@@ -189,6 +189,7 @@ jobs:
       - name: Commit, tag and push
         if: ${{ !inputs.tag }}
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
           PR: ${{ github.event.pull_request.number }}
@@ -196,7 +197,9 @@ jobs:
         run: |
           set -euo pipefail
           motivo="Manual release"
-          [ -n "${PR:-}" ] && motivo="Merged #$PR: $TITLE"
+          if [ -n "${PR:-}" ]; then
+            motivo="Merged #$PR: $TITLE"
+          fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -207,9 +210,18 @@ jobs:
             git commit -m "Release $TAG" -m "$motivo"
           fi
 
-          git tag -a "$TAG" -m "$TAG" -m "$motivo"
           git push origin HEAD:main
-          git push origin "$TAG"
+
+          # A tag é criada pela API, não por `git push origin "$TAG"`. O push de tag pelo
+          # GITHUB_TOKEN foi rejeitado com um "[remote rejected] (failed)" sem nenhuma linha de
+          # motivo — o mesmo token que acabara de empurrar o commit para a main. A API devolve
+          # JSON com a razão, o que transforma uma falha muda em uma falha que se lê.
+          sha=$(git rev-parse HEAD)
+          objeto=$(gh api "repos/$GITHUB_REPOSITORY/git/tags" \
+            -f tag="$TAG" -f message="$motivo" -f object="$sha" -f type=commit \
+            --jq .sha)
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$TAG" -f sha="$objeto" --jq .ref
 
       - name: Set up buildx for the multi-architecture build
         uses: docker/setup-qemu-action@v3
@@ -272,8 +284,13 @@ jobs:
           PRERELEASE: ${{ steps.tags.outputs.prerelease }}
         run: |
           set -euo pipefail
+          # `if` e não `&&`: sob `set -e`, um `[ ... ] && x=y` cujo teste falha devolve 1 como
+          # última instrução e aborta o script inteiro. Com PRERELEASE=false — o caso de qualquer
+          # versão 1.0 ou maior — isso mataria o passo logo depois de a imagem ter sido publicada.
           origem="Manual release"
-          [ -n "${PR:-}" ] && origem="Merged #$PR: $TITLE"
+          if [ -n "${PR:-}" ]; then
+            origem="Merged #$PR: $TITLE"
+          fi
 
           notes=$(cat <<TEXTO
           $origem
@@ -292,10 +309,8 @@ jobs:
           TEXTO
           )
 
-          args=""
-          [ "$PRERELEASE" = "true" ] && args="--prerelease"
-          # shellcheck disable=SC2086
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes "$notes" \
-            --generate-notes $args
+          if [ "$PRERELEASE" = "true" ]; then
+            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes --prerelease
+          else
+            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes
+          fi

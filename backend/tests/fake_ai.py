@@ -64,6 +64,15 @@ class FakeAiProvider:
             latency_ms=123,
         )
 
+    async def test(self, model: str) -> AiResult:
+        return await self.complete(
+            system="Responda exatamente: ok",
+            user="ok",
+            schema=None,
+            model=model,
+            max_output_tokens=16,
+        )
+
     async def models(self) -> list[ModelInfo]:
         return self.model_list
 

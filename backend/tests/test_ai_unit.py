@@ -265,3 +265,135 @@ class TestProviderSpecs:
             assert client.kind == str(kind), f"{kind}: cliente reporta kind errado"
             # O nome aparece nas mensagens de erro: trocado, manda conferir a credencial errada.
             assert client.name == spec.label, f"{kind}: cliente se apresenta como {client.name}"
+
+
+class TestRegistroDeTeste:
+    """Testar um provider é uma chamada cobrada: ela precisa aparecer em Consumo.
+
+    O enum `AiPurpose` já previa `test` e a documentação promete que toda chamada é registrada,
+    mas `test_provider` não gravava nada. Quem testasse dez provedores gastaria dez vezes sem ver
+    nada — buraco justamente onde o produto diz não ter nenhum.
+    """
+
+    @staticmethod
+    async def _monta(monkeypatch, falha=None):
+        """Um provider no banco e um cliente falso no lugar do real."""
+        from lognix.ai import registry
+        from lognix.ai.models import AiProviderConfig
+        from lognix.db import get_sessionmaker
+        from tests.fake_ai import VALID_INSIGHT, FakeAiProvider
+
+        fake = FakeAiProvider()
+        fake.reply(falha if falha is not None else VALID_INSIGHT)
+        monkeypatch.setattr(registry, "open_provider", lambda _p: fake)
+
+        db = get_sessionmaker()()
+        provider = AiProviderConfig(
+            kind="openrouter",
+            name="OpenRouter",
+            enabled=True,
+            priority=1,
+            default_model="fake/model",
+        )
+        db.add(provider)
+        await db.flush()
+        return db, provider
+
+    async def test_sucesso_vira_linha_em_ai_calls(self, monkeypatch) -> None:
+        from sqlalchemy import select
+
+        from lognix.ai import registry
+        from lognix.ai.models import AiCall, AiCallStatus, AiPurpose
+
+        db, provider = await self._monta(monkeypatch)
+        async with db:
+            ok, erro, resultado = await registry.test_provider(db, provider, "fake/model")
+            assert ok and erro is None and resultado is not None
+
+            chamada = (await db.execute(select(AiCall))).scalar_one()
+            assert chamada.purpose == AiPurpose.test
+            assert chamada.status == AiCallStatus.ok
+            assert chamada.provider_id == provider.id
+            assert chamada.model == "fake/model"
+            assert chamada.output_tokens > 0, "o teste gastou tokens; eles precisam ser contados"
+
+    async def test_falha_tambem_vira_linha_com_o_motivo(self, monkeypatch) -> None:
+        """ "O teste falhou e por quê" é a pergunta que se faz logo depois."""
+        from sqlalchemy import select
+
+        from lognix.ai import registry
+        from lognix.ai.models import AiCall, AiCallStatus
+        from tests.fake_ai import error
+
+        db, provider = await self._monta(
+            monkeypatch, falha=error("O OpenRouter recusou por limite de uso.")
+        )
+        async with db:
+            ok, erro, _ = await registry.test_provider(db, provider, "fake/model")
+            assert not ok and erro is not None
+
+            chamada = (await db.execute(select(AiCall))).scalar_one()
+            assert chamada.status == AiCallStatus.error
+            assert chamada.error is not None and "limite de uso" in chamada.error
+
+    async def test_sem_modelo_nao_registra_nada(self, monkeypatch) -> None:
+        """Nada saiu pela rede, então não houve chamada: registrar seria inventar consumo."""
+        from sqlalchemy import func, select
+
+        from lognix.ai import registry
+        from lognix.ai.models import AiCall
+
+        db, provider = await self._monta(monkeypatch)
+        async with db:
+            provider.default_model = None
+            ok, _, _ = await registry.test_provider(db, provider, None)
+            assert not ok
+            assert (await db.execute(select(func.count(AiCall.id)))).scalar() == 0
+
+
+class TestMotivoDoLimite:
+    """Um 429 sem o motivo é um beco sem saída.
+
+    "Recusou por limite de uso" não diz se é cota diária, requisições por minuto ou falta de
+    crédito — e as três se resolvem de formas diferentes. O provedor manda isso no corpo.
+    """
+
+    async def test_429_carrega_a_explicacao_do_provedor(self) -> None:
+        import httpx
+        import pytest
+
+        from lognix.ai.provider import RateLimitedError
+        from lognix.ai.providers.openrouter import OpenRouterProvider
+
+        def responde(_req: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                429,
+                json={
+                    "error": {
+                        "message": "Rate limit exceeded: free-models-per-day. "
+                        "Add 10 credits to unlock 1000 free model requests per day",
+                        "code": 429,
+                    }
+                },
+            )
+
+        provider = OpenRouterProvider("k", transport=httpx.MockTransport(responde))
+        with pytest.raises(RateLimitedError) as erro:
+            await provider.test("qualquer/modelo:free")
+        await provider.aclose()
+        assert "free-models-per-day" in str(erro.value)
+        assert "10 credits" in str(erro.value), "o que fazer a respeito precisa sobreviver"
+
+    async def test_429_sem_corpo_ainda_diz_algo_util(self) -> None:
+        import httpx
+        import pytest
+
+        from lognix.ai.provider import RateLimitedError
+        from lognix.ai.providers.openrouter import OpenRouterProvider
+
+        provider = OpenRouterProvider(
+            "k", transport=httpx.MockTransport(lambda _r: httpx.Response(429, text=""))
+        )
+        with pytest.raises(RateLimitedError, match="limite de uso"):
+            await provider.test("m")
+        await provider.aclose()

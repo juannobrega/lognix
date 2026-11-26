@@ -22,6 +22,24 @@ TIMEOUT = 60.0
 NETWORK_RETRIES = 2
 
 
+def _detalhe(resp: httpx.Response) -> str:
+    """A explicação que o provedor mandou no corpo, se houver.
+
+    Um 429 sem ela vira "recusou por limite de uso", que não diz se o problema é cota diária,
+    requisições por minuto ou falta de crédito — e as três se resolvem de formas diferentes. O
+    provedor costuma dizer exatamente qual é; jogar isso fora é transformar um erro acionável
+    num beco sem saída.
+    """
+    try:
+        corpo = resp.json()
+    except ValueError:
+        return resp.text[:200].strip()
+    erro = corpo.get("error") if isinstance(corpo, dict) else None
+    if isinstance(erro, dict):
+        return str(erro.get("message") or "").strip()
+    return str(erro or "").strip()
+
+
 class OpenRouterProvider:
     kind = "openrouter"
     name = "OpenRouter"
@@ -179,8 +197,11 @@ class OpenRouterProvider:
                 raise last from exc
             if resp.status_code == 429:
                 retry_after = resp.headers.get("retry-after")
+                motivo = _detalhe(resp)
                 raise RateLimitedError(
-                    "O OpenRouter recusou por limite de uso.",
+                    f"O OpenRouter recusou por limite de uso: {motivo}"
+                    if motivo
+                    else "O OpenRouter recusou por limite de uso.",
                     float(retry_after) if retry_after and retry_after.isdigit() else None,
                 )
             if resp.status_code in (401, 403):
