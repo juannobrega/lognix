@@ -34,7 +34,7 @@
 | **Insight** | Saída estruturada de IA: resumo, causa provável, ação sugerida, trecho de código suspeito, ligada às linhas que a embasaram. |
 | **Diagnóstico de código** | Insight que aponta arquivo e trecho no repositório GitHub do projeto ligado ao container. |
 | **Vínculo de repositório** | Associação entre um container/projeto e um repositório GitHub, com referência de commit ou branch. |
-| **Provider de IA** | Serviço de modelo de linguagem atrás da interface interna `AIProvider`. Na v1 só OpenRouter. |
+| **Provider de IA** | Serviço de modelo de linguagem atrás da interface interna `AiProvider`. Vários podem ser cadastrados, e a ordem entre eles é a cadeia de fallback. |
 | **OpenRouter** | Serviço que expõe dezenas de modelos de vários fabricantes por uma única API. Único provider da v1. |
 | **Trigger** | Condição programática avaliada pela rotina de análise que, quando verdadeira, aciona a IA. O primeiro é o trigger de erro. |
 | **Chamada de IA** | Registro de cada requisição ao provider: horário, modelo, tokens, custo, trigger, workload e insight gerado. |

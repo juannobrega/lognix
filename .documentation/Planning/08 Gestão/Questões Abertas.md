@@ -16,7 +16,7 @@ Movidas para ADR ou documento de área. Mantidas aqui só como histórico.
 | ID | Questão | Área | Decisão |
 |----|---------|------|---------|
 | Q-003 | Fila e agendamento das rotinas | 05 Backend | Sem Redis. APScheduler e async no processo, condicionado a medição. ADR 009 |
-| Q-006 | Provider de IA padrão | 04 IA | OpenRouter único provider, configurado na interface, abstração interna, custos e chamadas contabilizados. ADR 006 |
+| Q-006 | Provider de IA padrão | 04 IA | Decidido como OpenRouter único (ADR 006) e revisto na 1.0.0: vários provedores em cadeia de fallback, cadastrados na interface. ADR 012 |
 | Q-007 | Autenticação com GitHub | 09 GitHub | GitHub App. Integração entra em fase posterior ao núcleo. ADR 007 |
 | Q-008 | Como vincular container a repositório e commit | 09 GitHub | Usuário vincula workload a repositório de código. Labels OCI pré-preenchem. Sem repositório, workload é somente imagem. GitOps não aceito. Área 09 |
 | Q-010 | Gatilhos que acionam a IA na rotina de 30 s | 04 IA | Triggers programáticos. Trigger de erro obrigatório: contexto do log, eventos e metadados viram prompt, resposta vira insight. Janela normal não gasta IA. Área 04 |

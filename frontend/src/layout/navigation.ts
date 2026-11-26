@@ -42,7 +42,7 @@ export const SECTIONS: NavSection[] = [
   {
     label: 'Análise',
     links: [
-      { to: '/insights', label: 'Insights', icon: Icons.spark },
+      { to: '/insights', label: 'Insights', icon: Icons.bulb },
       { to: '/notifications', label: 'Notificações', icon: Icons.bell },
     ],
   },
@@ -76,7 +76,7 @@ export const SECTIONS: NavSection[] = [
             to: '/settings/usage',
             label: 'Consumo',
             description: 'Chamadas, tokens, custo e confiabilidade de cada provedor.',
-            icon: Icons.coins,
+            icon: Icons.cost,
           },
           {
             to: '/settings/system',

@@ -9,8 +9,7 @@ Como mexer no código. A visão de como o sistema funciona está em [Arquitetura
 ```
 lognix/
 ├── pyproject.toml          versão do produto, fonte de verdade para as tags
-├── docker-compose.yml      instalação padrão
-├── docker-compose.dev.yml  hot reload e portas internas expostas
+├── docker-compose.yml      a instalação, e a única que existe
 ├── backend/
 │   ├── pyproject.toml      dependências e configuração de lint, tipos e testes
 │   ├── lognix/             o pacote, organizado por domínio
@@ -25,10 +24,12 @@ lognix/
 
 ## Rodar
 
-Com Docker, hot reload no backend:
+Há **um** compose, o de instalação. Para desenvolver, suba a infraestrutura por ele e rode backend e
+frontend fora do Docker, onde o reload é imediato e o depurador funciona:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose up -d postgres loki alloy
+cd backend && .venv/bin/uvicorn lognix.main:app --reload
 ```
 
 Backend em `localhost:8000`, OpenAPI em `/api/docs`. Frontend separado, com proxy para o backend:

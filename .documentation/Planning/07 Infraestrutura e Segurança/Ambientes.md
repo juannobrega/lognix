@@ -6,7 +6,7 @@
 
 | Ambiente | Onde | Como sobe | Para quê |
 |---|---|---|---|
-| **Desenvolvimento** | máquina do dev | `docker compose -f docker-compose.yml -f docker-compose.dev.yml up` | hot reload de backend e frontend, portas expostas, Grafana opcional para inspecionar o Loki |
+| **Desenvolvimento** | máquina do dev | `docker compose up -d` para a infra, backend e frontend fora do Docker | hot reload de verdade, com o venv e o Vite locais |
 | **Instalação do usuário** | qualquer máquina com Docker | `docker compose up -d` | o produto. É o ambiente de "produção" de quem usa |
 | **CI** | GitHub Actions | serviços Postgres e Loki efêmeros | testes |
 

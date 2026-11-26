@@ -1,9 +1,17 @@
 # API
 
-**Status:** Aprovado em 2026-11-21 (endpoints até a 0.4.0) · **Atualizado:** 2026-11-21
+**Status:** Aprovado em 2026-11-21 · **Atualizado:** 2026-11-26
 
-REST sob `/api/v1`, JSON, autenticado por JWT exceto onde indicado. WebSocket sob `/ws`. OpenAPI gerado
-pelo FastAPI em `/api/docs`.
+REST sob `/api/v1`, JSON, autenticado por JWT exceto onde indicado. WebSocket sob `/ws`.
+
+> **A lista de endpoints deste documento é a da 0.4.0 e não é mantida.** A referência da API é a
+> OpenAPI que a própria instalação serve em `/api/docs`, gerada do código e portanto sempre certa.
+> O que vale aqui são as **convenções** da seção 1: elas são contrato, valem para rota que ainda
+> nem existe, e é por isso que o documento continua de pé.
+>
+> Manter uma cópia da lista em markdown foi tentado e não funcionou: a 1.0.0 tem 56 rotas, a lista
+> abaixo tem as de quatro fases atrás, e ninguém percebeu até esta revisão. Lista copiada à mão é
+> lista que envelhece calada — e uma errada é pior que nenhuma, porque parece confiável.
 
 ## 1. Convenções
 

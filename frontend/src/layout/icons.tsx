@@ -35,10 +35,16 @@ export const Icons = {
       <path d="M3 8.5 12 13l9-4.5M12 13v7" />
     </svg>
   ),
+  bulb: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <path d="M9 17.5a5.8 5.8 0 1 1 6 0v1.3a1.4 1.4 0 0 1-1.4 1.4h-3.2A1.4 1.4 0 0 1 9 18.8z" />
+      <path d="M9.6 17.6h4.8" />
+    </svg>
+  ),
   spark: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
-      <path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M5.8 18.2l1.8-1.8M16.4 7.6l1.8-1.8" />
-      <circle cx="12" cy="12" r="3" />
+      <path d="M13 2.5 14.9 8 20.5 10l-5.6 2L13 17.5 11.1 12 5.5 10l5.6-2z" />
+      <path d="M6 16.5 6.7 18.6 8.8 19.3 6.7 20 6 22.1 5.3 20 3.2 19.3 5.3 18.6z" />
     </svg>
   ),
   bell: (p: SVGProps<SVGSVGElement>) => (
@@ -61,11 +67,11 @@ export const Icons = {
       <path d="M12 17v4" />
     </svg>
   ),
-  coins: (p: SVGProps<SVGSVGElement>) => (
+  cost: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
-      <ellipse cx="12" cy="6.5" rx="7.5" ry="3" />
-      <path d="M4.5 6.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5" />
-      <path d="M4.5 11.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5" />
+      <rect x="2" y="6" width="20" height="12" rx="2.5" />
+      <circle cx="12" cy="12" r="2.8" />
+      <path d="M5.5 9.5v5M18.5 9.5v5" />
     </svg>
   ),
   cpu: (p: SVGProps<SVGSVGElement>) => (

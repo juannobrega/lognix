@@ -2,6 +2,13 @@
 
 **Status:** Aprovado em 2026-11-24 · **Atualizado:** 2026-11-21
 
+> **Nota de 2026-11-26.** A interface passou por dois redesenhos depois deste documento: a
+> identidade própria (ADR 011) e a passagem de cartão para tabela nas telas de lista, mais o
+> sidebar com grupos que abrem e a tela de entrada com cards. O que está descrito abaixo é a
+> intenção de origem, que em boa parte sobreviveu; onde divergir, valem o
+> [ADR 011](../02%20Arquitetura/ADR/ADR%20011%20Identidade%20Visual%20do%20Lognix.md) e o código.
+
+
 Biblioteca própria, sem framework de UI. CSS Modules. Cada componente: pasta com `.tsx`, `.module.css`,
 teste e história curta em Markdown.
 

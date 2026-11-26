@@ -6,18 +6,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 RUN apt-get update && apt-get install -y --no-install-recommends openssh-client && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-FROM base AS deps
-COPY backend/pyproject.toml ./
-RUN pip install -e ".[dev]" 2>/dev/null || pip install .
-
-FROM deps AS dev
-COPY backend/ ./
-COPY pyproject.toml /lognix-root-pyproject.toml
-RUN python -c "import re,pathlib; t=pathlib.Path('/lognix-root-pyproject.toml').read_text(); v=re.search(r'(?m)^version = \"([^\"]+)\"', t).group(1); pathlib.Path('lognix/VERSION').write_text(v)"
-RUN pip install -e ".[dev]"
-EXPOSE 8000
-CMD ["uvicorn", "lognix.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
 FROM base AS runtime
 COPY backend/ ./
 COPY pyproject.toml /lognix-root-pyproject.toml

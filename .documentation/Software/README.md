@@ -1,7 +1,10 @@
 # Lognix — Documentação do Software
 
-Documentação do sistema construído. O planejamento, com as decisões e o porquê de cada uma,
-vive em [../Planning/](../Planning/README.md).
+Como o Lognix funciona **hoje**. Esta é a área que precisa acompanhar o código: mudou
+comportamento, muda aqui no mesmo pull request.
+
+O **porquê** de cada decisão, com as alternativas descartadas, vive em
+[../Planning/](../Planning/README.md). Quando as duas discordam sobre comportamento, esta vence.
 
 | Documento | Para quem | Conteúdo |
 |---|---|---|
