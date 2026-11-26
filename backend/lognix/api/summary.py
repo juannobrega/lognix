@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -36,6 +37,25 @@ class ProjectActivity(BaseModel):
     triggers_24h: int
 
 
+class PontoHora(BaseModel):
+    """Uma hora da série. `hour` é o começo da hora, em UTC."""
+
+    hour: datetime
+    lines: int
+    errors: int
+
+
+class Fatia(BaseModel):
+    key: str
+    count: int
+
+
+class PontoDia(BaseModel):
+    day: str
+    cost_usd: Decimal
+    calls: int
+
+
 class SummaryOut(BaseModel):
     hosts_total: int
     hosts_connected: int
@@ -51,6 +71,80 @@ class SummaryOut(BaseModel):
     ai_enabled: bool
     hosts: list[HostSummary]
     top_projects: list[ProjectActivity]
+    #: Séries para os gráficos. Um número sozinho diz o tamanho; a série diz a direção, que é
+    #: a pergunta que alguém faz ao abrir um painel.
+    lines_by_hour: list[PontoHora]
+    triggers_by_type: list[Fatia]
+    insights_by_severity: list[Fatia]
+    cost_by_day: list[PontoDia]
+
+
+async def _series(
+    db: DbSession, day_ago: datetime
+) -> dict[str, list[PontoHora] | list[Fatia] | list[PontoDia]]:
+    """As quatro séries dos gráficos, em quatro consultas agregadas.
+
+    Agregar no banco e não em Python: trazer 24 horas de ciclos para somar na aplicação seria
+    mover milhares de linhas pela rede para produzir 24 números.
+    """
+    from lognix.ai.models import AiCall, Insight, InsightStatus
+
+    hora = func.date_trunc("hour", AnalysisRun.window_end)
+    por_hora = (
+        await db.execute(
+            select(
+                hora.label("hour"),
+                func.coalesce(func.sum(AnalysisRun.lines_count), 0),
+                func.coalesce(func.sum(AnalysisRun.error_lines_count), 0),
+            )
+            .where(AnalysisRun.window_end >= day_ago)
+            .group_by(hora)
+            .order_by(hora)
+        )
+    ).all()
+
+    por_tipo = (
+        await db.execute(
+            select(TriggerFired.type, func.count())
+            .where(TriggerFired.fired_at >= day_ago)
+            .group_by(TriggerFired.type)
+            .order_by(func.count().desc())
+        )
+    ).all()
+
+    # Só os insights ainda não vistos: o painel mostra o que está em aberto, não o histórico.
+    por_severidade = (
+        await db.execute(
+            select(Insight.severity, func.count())
+            .where(Insight.status == InsightStatus.new)
+            .group_by(Insight.severity)
+        )
+    ).all()
+
+    dia = func.date_trunc("day", AiCall.created_at)
+    por_dia = (
+        await db.execute(
+            select(dia.label("day"), func.coalesce(func.sum(AiCall.cost_usd), 0), func.count())
+            .where(AiCall.created_at >= day_ago - timedelta(days=6))
+            .group_by(dia)
+            .order_by(dia)
+        )
+    ).all()
+
+    return {
+        "lines_by_hour": [
+            PontoHora(hour=h, lines=int(linhas or 0), errors=int(erros or 0))
+            for h, linhas, erros in por_hora
+        ],
+        "triggers_by_type": [Fatia(key=str(t.value), count=int(n)) for t, n in por_tipo],
+        "insights_by_severity": [
+            Fatia(key=str(sev.value), count=int(n)) for sev, n in por_severidade
+        ],
+        "cost_by_day": [
+            PontoDia(day=d.date().isoformat(), cost_usd=Decimal(custo or 0), calls=int(n))
+            for d, custo, n in por_dia
+        ],
+    }
 
 
 @router.get("", response_model=SummaryOut)
@@ -156,6 +250,7 @@ async def summary(_: CurrentUser, db: DbSession) -> SummaryOut:
         cycles_24h=cycles_24h,
         cycles_failed_24h=cycles_failed,
         ai_enabled=await ai_is_active(db),
+        **await _series(db, day_ago),
         hosts=[
             HostSummary(
                 id=h.id,

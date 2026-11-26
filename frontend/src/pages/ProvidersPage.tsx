@@ -11,11 +11,15 @@ import { SkeletonRows } from '../components/Skeleton'
 import { useToast } from '../components/useToast'
 import { ProviderRow } from '../providers/ProviderRow'
 import { ProviderDialog } from '../providers/ProviderDialog'
+import { ProviderValidation } from '../providers/ProviderValidation'
 
 export function ProvidersPage() {
   const qc = useQueryClient()
   const toast = useToast()
   const [dialog, setDialog] = useState<{ open: boolean; provider?: Provider }>({ open: false })
+  // Quem acabou de ser cadastrado é verificado na hora: descobrir dias depois que a credencial
+  // estava errada é o pior jeito de descobrir.
+  const [verificando, setVerificando] = useState<Provider | null>(null)
   const providers = useQuery({ queryKey: ['providers'], queryFn: () => api<Provider[]>('/settings/ai/providers') })
   const ai = useQuery({ queryKey: ['settings', 'ai'], queryFn: () => api<AiSettings>('/settings/ai') })
 
@@ -108,6 +112,7 @@ export function ProvidersPage() {
                   position={i}
                   total={list.length}
                   onEdit={() => setDialog({ open: true, provider: p })}
+              onVerify={() => setVerificando(p)}
                   onMove={(d: -1 | 1) => move(p.id, d)}
                 />
               ))}
@@ -138,6 +143,13 @@ export function ProvidersPage() {
         provider={dialog.provider}
         open={dialog.open}
         onOpenChange={(open) => setDialog((d) => ({ open, provider: open ? d.provider : undefined }))}
+        onSaved={(salvo) => setVerificando(salvo)}
+      />
+
+      <ProviderValidation
+        provider={verificando}
+        onOpenChange={(open) => !open && setVerificando(null)}
+        onEditar={() => setDialog({ open: true, provider: verificando ?? undefined })}
       />
     </div>
   )

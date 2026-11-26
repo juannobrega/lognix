@@ -22,10 +22,11 @@ interface Props {
   position: number
   total: number
   onEdit: () => void
+  onVerify: () => void
   onMove: (direction: -1 | 1) => void
 }
 
-export function ProviderRow({ provider: p, index, position, total, onEdit, onMove }: Props) {
+export function ProviderRow({ provider: p, index, position, total, onEdit, onVerify, onMove }: Props) {
   const qc = useQueryClient()
   const toast = useToast()
   const [open, setOpen] = useState(false)
@@ -192,6 +193,7 @@ export function ProviderRow({ provider: p, index, position, total, onEdit, onMov
                   disabled: !!blocked || test.isPending,
                   hint: blocked,
                 },
+                { label: 'Verificar em etapas', onSelect: onVerify },
                 { label: 'Editar credenciais', onSelect: onEdit },
                 { label: 'Remover', onSelect: () => setConfirming(true), danger: true, separatorBefore: true },
               ]}

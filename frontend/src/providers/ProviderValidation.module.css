@@ -1,0 +1,25 @@
+.cabecalho {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.glifo {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  color: var(--tint, var(--fg-dim));
+}
+.ok,
+.erro {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.ok {
+  color: var(--ok);
+}
+.erro {
+  color: var(--error);
+}

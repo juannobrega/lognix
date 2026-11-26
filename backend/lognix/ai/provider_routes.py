@@ -5,12 +5,12 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
 
-from lognix.ai import registry
+from lognix.ai import registry, validation
 from lognix.ai.models import AiModelConfig, AiProviderConfig, ProviderStatus
 from lognix.ai.provider import AiError
 from lognix.ai.providers import ProviderKind
@@ -91,6 +91,20 @@ class ReorderIn(BaseModel):
 
 class TestIn(BaseModel):
     model: str | None = Field(default=None, max_length=160)
+
+
+class ValidationStepOut(BaseModel):
+    number: int
+    name: str
+    status: Literal["pending", "running", "ok", "failed"]
+    message: str | None = None
+    action: str | None = None
+    detail: str | None = None
+
+
+class ValidationOut(BaseModel):
+    ok: bool
+    steps: list[ValidationStepOut]
 
 
 class TestOut(BaseModel):
@@ -265,6 +279,17 @@ async def reorder(body: ReorderIn, _: CurrentUser, db: DbSession) -> list[Provid
         providers[provider_id].priority = position
     await db.commit()
     return [_out(p) for p in await registry.list_providers(db)]
+
+
+@router.post("/{provider_id}/validate", response_model=ValidationOut)
+async def validate_provider(provider_id: uuid.UUID, _: CurrentUser, db: DbSession) -> ValidationOut:
+    """Valida o provedor em etapas, para dizer **onde** falhou e não só que falhou."""
+    provider = await _get(db, provider_id)
+    resultado = await validation.validar(db, provider)
+    return ValidationOut(
+        ok=resultado.ok,
+        steps=[ValidationStepOut(**vars(s)) for s in resultado.steps],
+    )
 
 
 @router.post("/{provider_id}/test", response_model=TestOut)
