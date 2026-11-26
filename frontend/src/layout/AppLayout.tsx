@@ -25,7 +25,7 @@ export function AppLayout() {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
+          <span role="img" aria-label="Lognix" className={styles.logoImg} />
         </div>
 
         <nav aria-label="Principal" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>

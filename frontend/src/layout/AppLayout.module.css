@@ -22,29 +22,20 @@
   padding: var(--space-2) var(--space-3);
 }
 .logoImg {
+  /* Fundo em vez de <img> porque a arte muda com o tema: assim o browser baixa só a que vai
+     mostrar, e a troca acompanha tanto o data-theme quanto a preferência do sistema. */
   height: 26px;
-  width: auto;
+  aspect-ratio: 2172 / 724;
+  background: url('/logo-on-light.png') left center / contain no-repeat;
   display: block;
 }
-/* A logo tem texto branco, então no tema claro ela ganha um painel escuro da própria marca. */
-:global(:root[data-theme='light']) .brand,
-:global(:root:not([data-theme='dark'])) .brand {
-  background: #080b11;
-  border-radius: var(--radius-well);
-  padding: var(--space-4);
-  justify-content: center;
+:global(:root[data-theme='dark']) .logoImg {
+  background-image: url('/logo-on-dark.png');
 }
 @media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme='light'])) .brand {
-    background: none;
-    padding: var(--space-3);
-    justify-content: flex-start;
+  :global(:root:not([data-theme='light'])) .logoImg {
+    background-image: url('/logo-on-dark.png');
   }
-}
-:global(:root[data-theme='dark']) .brand {
-  background: none;
-  padding: var(--space-3);
-  justify-content: flex-start;
 }
 
 .section {

@@ -44,7 +44,7 @@ export function SetupPage() {
       <form className={styles.card} onSubmit={onSubmit} aria-labelledby="setup-title">
         <div className={styles.well}>
           <div className={styles.brand} id="setup-title">
-            <img src="/logo.png" alt="Lognix" className={styles.logoImg} />
+            <span role="img" aria-label="Lognix" className={styles.logoImg} />
             <span>Bem-vindo ao Lognix</span>
           </div>
           <p className={styles.sub}>Crie o primeiro usuário. Ele poderá cadastrar os demais.</p>

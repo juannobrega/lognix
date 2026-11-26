@@ -37,10 +37,22 @@
   gap: var(--space-3);
 }
 .logoImg {
+  /* Fundo em vez de <img> porque a arte muda com o tema: assim o browser baixa só a que vai
+     mostrar, e a troca acompanha tanto o data-theme quanto a preferência do sistema. */
   height: 34px;
-  width: auto;
+  aspect-ratio: 2172 / 724;
+  background: url('/logo-on-light.png') left center / contain no-repeat;
   display: block;
 }
+:global(:root[data-theme='dark']) .logoImg {
+  background-image: url('/logo-on-dark.png');
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .logoImg {
+    background-image: url('/logo-on-dark.png');
+  }
+}
+
 .brand span {
   color: rgb(255 255 255 / 70%);
   font-size: var(--text-ui);
