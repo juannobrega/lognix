@@ -16,6 +16,13 @@ docker compose up -d
 Abra `http://localhost:8080` e crie o primeiro usuário. O guia de
 [Instalação](Instalação.md) tem o resto.
 
+![O painel do Lognix](assets/painel.png){ loading=lazy }
+
+/// caption
+O painel, com dados de exemplo. A taxa de erro fica em gráfico próprio porque, somada ao volume,
+a linha ficaria rente ao zero e esconderia exatamente o pico que alguém abre o painel para ver.
+///
+
 ## Três decisões que definem o produto
 
 !!! info "Nada é instalado no host monitorado"

@@ -1,6 +1,6 @@
 # Arquitetura
 
-**Versão:** 0.9.0
+**Versão documentada:** 1.0.0
 
 Visão de quem precisa entender o sistema por dentro sem ler o planejamento inteiro. O porquê de
 cada decisão está nos [ADRs](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/README.md).
@@ -10,31 +10,49 @@ cada decisão está nos [ADRs](https://github.com/juannobrega/lognix/blob/main/.
 O Lognix roda inteiro na sua máquina, alcança os hosts monitorados por SSH, lê os logs pela Docker
 API sem instalar nada neles, guarda tudo no Loki, e analisa janelas de log em ciclos curtos.
 
-```
-Host monitorado                      Máquina do Lognix
-┌──────────────────┐   SSH    ┌────────────────────────────────────────────┐
-│ /var/run/        │◄────────►│ backend ──► proxy somente leitura          │
-│   docker.sock    │  túnel   │    │              ▲                        │
-│                  │          │    │              │ /tunnels/<host>.sock   │
-│ containers…      │          │    │           alloy ──► loki              │
-└──────────────────┘          │    │                      ▲                │
-                              │    └── ciclo de análise ───┘                │
-                              │           │                                 │
-                              │           └─► IA ─► insights ─► frontend    │
-                              └────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+  subgraph host["Host monitorado · nada instalado"]
+    direction LR
+    cts["containers"] -.-> sock["/var/run/docker.sock"]
+  end
+
+  subgraph img["Imagem do Lognix · um contêiner"]
+    direction TB
+    proxy["proxy somente leitura<br/>só GET, lista fechada"]
+    alloy["Alloy"]
+    loki[("Loki")]
+    ciclo["ciclo de análise · 30s"]
+    api["API + interface"]
+    proxy --> alloy --> loki --> ciclo
+    ciclo --> api
+    proxy --> api
+  end
+
+  pg[("Postgres<br/>contêiner próprio")]
+  ia{{"provedor de IA"}}
+
+  sock <==>|"túnel SSH"| proxy
+  ciclo -->|"trigger disparou"| ia --> api
+  api <--> pg
 ```
 
 ## As peças
 
 | Peça | O que faz | Onde |
 |---|---|---|
-| **backend** | API, túneis, proxy, ciclos, IA | `backend/lognix/` |
-| **frontend** | interface; nginx serve os arquivos e repassa `/api` e `/ws` | `frontend/` |
-| **postgres** | tudo que o Lognix produz: hosts, containers, padrões, ocorrências, insights, custos | volume `postgres-data` |
-| **loki** | as linhas de log, e só elas | volume `loki-data` |
-| **alloy** | lê os logs dos containers e escreve no Loki | config gerada pelo backend |
+| **API** | rotas, túneis, proxy, ciclos, IA — e serve o frontend construído | na imagem, `backend/lognix/` |
+| **frontend** | a interface, servida pela própria API | na imagem, `/app/static` |
+| **Alloy** | lê os logs dos containers e escreve no Loki | na imagem, config gerada pela API |
+| **Loki** | as linhas de log, e só elas | na imagem, volume `loki-data` |
+| **Postgres** | tudo que o Lognix produz: hosts, containers, padrões, ocorrências, insights, custos | contêiner próprio, volume `postgres-data` |
 
-Só a porta do frontend é exposta. O resto conversa pela rede interna do compose.
+As quatro primeiras peças vivem **na mesma imagem**, porque a configuração das quatro é do Lognix
+— a do Alloy é gerada pela API a cada mudança de monitoramento. O Postgres fica fora porque é um
+banco: quem instala pode já ter um, ou querer gerenciado. Ver
+[ADR 013](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/ADR%20013%20Distribui%C3%A7%C3%A3o%20como%20Imagem%20Docker.md).
+
+Só a porta do Lognix é exposta. Loki e Alloy escutam apenas em `localhost`, dentro do contêiner.
 
 ## Como os logs chegam
 

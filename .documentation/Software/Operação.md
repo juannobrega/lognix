@@ -1,6 +1,6 @@
 # Operação
 
-**Versão:** 0.9.0
+**Versão documentada:** 1.0.0
 
 ## Preparar um host para o Lognix
 
