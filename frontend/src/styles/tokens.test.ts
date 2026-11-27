@@ -4,7 +4,7 @@ import { join } from 'node:path'
 const SRC = join(process.cwd(), 'src')
 
 /** Definidas em tempo de execução pelo componente, não em tokens.css. */
-const LOCAIS = new Set(['--tint', '--v'])
+const LOCAIS = new Set(['--tint'])
 
 function cssFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((e) => {

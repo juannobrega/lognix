@@ -1,0 +1,5 @@
+
+# Artefato do pytest-cov
+.coverage
+coverage.xml
+htmlcov/

@@ -3,6 +3,7 @@ import { RequireAuth } from './auth/RequireAuth'
 import { SectionHome } from './layout/SectionHome'
 import { AppLayout } from './layout/AppLayout'
 import { AiSettingsPage } from './pages/AiSettingsPage'
+import { AccountPage } from './pages/AccountPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HostDetailPage } from './pages/HostDetailPage'
 import { HostsPage } from './pages/HostsPage'
@@ -28,6 +29,7 @@ export function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="conta" element={<AccountPage />} />
           <Route path="hosts" element={<HostsPage />} />
           <Route path="hosts/new" element={<NewHostPage />} />
           <Route path="hosts/:id" element={<HostDetailPage />} />

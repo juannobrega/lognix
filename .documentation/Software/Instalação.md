@@ -1,7 +1,5 @@
 # Instalação
 
-**Versão documentada:** 1.0.0
-
 ## Requisitos
 
 - Docker 24 ou mais novo e Docker Compose v2, em qualquer máquina Linux ou macOS.
@@ -18,22 +16,24 @@ containers e não do número deles.
 A imagem é publicada em `ghcr.io/juannobrega/lognix`, para **`linux/amd64`** e **`linux/arm64`**,
 com proveniência e SBOM anexados.
 
+Cada versão publica quatro tags, e a escolha decide quando você recebe mudança:
+
 | Tag | Aponta para | Quando usar |
 |---|---|---|
-| `1.0.0` | exatamente aquela versão | produção, quando você decide quando atualizar |
-| `1.0` | a última correção da 1.0 | recebe correção sem receber novidade |
-| `1` | a última 1.x | recebe novidade compatível |
+| `X.Y.Z` | exatamente aquela versão | produção, quando você decide quando atualizar |
+| `X.Y` | a última correção daquela minor | recebe correção sem receber novidade |
+| `X` | a última daquela major | recebe novidade compatível |
 | `latest` | a última estável | avaliação e desenvolvimento |
 
+Os números de cada versão estão em
+[Releases](https://github.com/juannobrega/lognix/releases) e em [Mudanças](CHANGELOG.md).
+
 ```bash
-docker pull ghcr.io/juannobrega/lognix:1.0.0
+docker pull ghcr.io/juannobrega/lognix:latest
 ```
 
-Versões `0.x` não recebem `latest` nem a tag de major: antes da 1.0 não havia promessa de
-compatibilidade, e deixar alguém seguir `0` seria fazer essa promessa sem querer.
-
-Para fixar a versão no compose, ponha `LOGNIX_VERSION=1.0.0` no `.env`. Em branco, segue a
-`latest`.
+Para fixar uma versão no compose, ponha `LOGNIX_VERSION` no `.env` com o número que você quer.
+Em branco, segue a `latest`.
 
 ## Primeiro uso
 
@@ -46,7 +46,7 @@ docker compose up -d
 ```
 
 Dois arquivos, nenhum clone: a imagem vem publicada. Para fixar uma versão em vez de seguir a
-última, ponha `LOGNIX_VERSION=1.0.0` no `.env`.
+última, ponha o número em `LOGNIX_VERSION` no `.env`.
 
 São dois contêineres: o Lognix e o Postgres. O **Loki** e o **Alloy** rodam dentro da imagem do
 Lognix, porque a configuração deles é gerada pelo próprio sistema — ver

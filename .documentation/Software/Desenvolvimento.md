@@ -1,7 +1,5 @@
 # Desenvolvimento
 
-**Versão documentada:** 1.0.0
-
 Como mexer no código. A visão de como o sistema funciona está em [Arquitetura](Arquitetura.md).
 
 ## Estrutura
@@ -52,9 +50,13 @@ Há **um** compose, o de instalação. Para desenvolver, suba a infraestrutura p
 frontend fora do Docker, onde o reload é imediato e o depurador funciona:
 
 ```bash
-docker compose up -d postgres loki alloy
+docker compose up -d postgres
 cd backend && .venv/bin/uvicorn lognix.main:app --reload
 ```
+
+Só o Postgres: Loki e Alloy rodam dentro da imagem do Lognix, e o backend fora do Docker sobe
+sem eles — a API responde, e o que depende de log fica indisponível até você subir a stack
+inteira com `docker compose up -d`.
 
 Backend em `localhost:8000`, OpenAPI em `/api/docs`. Frontend separado, com proxy para o backend:
 

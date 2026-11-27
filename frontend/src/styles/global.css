@@ -522,24 +522,3 @@ input[type='number'] {
 
 /* ---------- barras de sinal: o motivo da marca como gráfico ---------- */
 
-/* Minigráfico de barras, usado para mostrar atividade recente sem trazer uma biblioteca
- * de charts. Cada barra é um valor normalizado de 0 a 1 em --v. */
-.sparkbars {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 28px;
-}
-.sparkbars i {
-  display: block;
-  width: 4px;
-  min-height: 2px;
-  height: calc(var(--v) * 100%);
-  border-radius: 1px;
-  background: var(--brand-gradient);
-  opacity: 0.85;
-}
-.sparkbars i.empty {
-  background: var(--divider);
-  opacity: 1;
-}

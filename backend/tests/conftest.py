@@ -62,8 +62,28 @@ TABLES = [
 ]
 
 
+def _garante_banco_de_teste() -> None:
+    """Cria `lognix_test` se ele não existir, no mesmo Postgres do compose.
+
+    Antes a suíte exigia um segundo contêiner, criado à mão, na mesma porta que o compose usa —
+    dois Postgres disputando a 5432, e um passo manual que só se descobre quando os testes
+    falham com "database does not exist". Um banco a mais no servidor que já está de pé custa
+    nada e tira o passo.
+    """
+    import psycopg  # type: ignore[import-not-found]
+
+    url = os.environ["DATABASE_URL"]
+    alvo = url.rsplit("/", 1)[-1]
+    admin = url.replace("+asyncpg", "").rsplit("/", 1)[0] + "/postgres"
+    with psycopg.connect(admin, autocommit=True) as conexao:
+        existe = conexao.execute("select 1 from pg_database where datname = %s", (alvo,)).fetchone()
+        if not existe:
+            conexao.execute(f'create database "{alvo}"')
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _migrate() -> None:
+    _garante_banco_de_teste()
     cfg = Config(os.path.join(os.path.dirname(__file__), "..", "alembic.ini"))
     cfg.set_main_option("script_location", os.path.join(os.path.dirname(__file__), "..", "alembic"))
     command.downgrade(cfg, "base")

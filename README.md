@@ -61,7 +61,7 @@ docker compose up -d
 Sobem dois contêineres: o Lognix e o Postgres. O **Loki** e o **Alloy** rodam dentro da imagem,
 porque a configuração dos dois é gerada pelo próprio sistema — assim não existe combinação de
 versões que nunca foi testada. Para fixar uma versão em vez de seguir a última, ponha
-`LOGNIX_VERSION=1.0.0` no `.env`.
+o número em `LOGNIX_VERSION` no `.env`.
 
 Abra `http://localhost:8080`, crie o primeiro usuário e cadastre um host. Preparar a máquina alvo
 leva dois comandos:
@@ -85,7 +85,7 @@ O cadastro valida a conexão em seis etapas e, quando falha, diz exatamente o qu
 - Métricas Prometheus e uma tela de Sistema que mostra o estado de cada processo.
 
 **Em construção:** a integração com o GitHub, que vai ligar o erro ao trecho de código que o
-causou e abrir a issue. O [roadmap](.documentation/Planning/08%20Gest%C3%A3o/Roadmap.md) tem o resto.
+causou e abrir a issue.
 
 ## Como funciona
 
@@ -115,22 +115,8 @@ autor. A IA é opcional e o resto funciona com ela desligada.
 
 ## Documentação
 
-**[juannobrega.github.io/lognix](https://juannobrega.github.io/lognix/)** — o mesmo conteúdo
-abaixo, com busca e navegação.
-
-| | |
-|---|---|
-| [Instalação](.documentation/Software/Instalação.md) | requisitos, primeiro uso, variáveis, atualização |
-| [Configuração](.documentation/Software/Configuração.md) | variáveis, `config.yaml`, o que roda dentro da imagem |
-| [Operação](.documentation/Software/Operação.md) | preparar hosts, monitorar, ler logs, IA, métricas, backup |
-| [Arquitetura](.documentation/Software/Arquitetura.md) | as peças e o caminho dos dados |
-| [Desenvolvimento](.documentation/Software/Desenvolvimento.md) | rodar local, testar, convenções |
-| [Planejamento](.documentation/Planning/README.md) | as decisões e o porquê de cada uma |
-
-O planejamento completo está no repositório porque a regra do projeto é: **nada é construído antes
-de estar mapeado**. Toda decisão não óbvia virou um
-[ADR](.documentation/Planning/02%20Arquitetura/ADR/README.md), inclusive as que se mostraram
-erradas depois, como a aposta de que o sistema precisaria de uma fila externa.
+**[juannobrega.github.io/lognix](https://juannobrega.github.io/lognix/)** — instalação,
+configuração, operação e o histórico de mudanças.
 
 ## Stack
 
