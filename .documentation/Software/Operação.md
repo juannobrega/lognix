@@ -52,8 +52,11 @@ Ao reiniciar o backend, todos os túneis de hosts não removidos são reabertos.
 ## Remover um host
 
 "Remover" oculta o host e encerra o túnel, preservando dados. Para apagar de fato,
-`DELETE /api/v1/hosts/{id}?purge=true` com `{"confirm_name": "<nome>"}`. Na 0.2.0 isso apaga só o
-banco; os logs no Loki entram na 0.3.0.
+`DELETE /api/v1/hosts/{id}?purge=true` com `{"confirm_name": "<nome>"}`.
+
+Isso apaga o host e tudo que o Lognix produziu sobre ele — containers, padrões, ocorrências,
+insights. **As linhas de log já coletadas continuam no Loki** até a retenção expirar; não há hoje
+uma forma de apagá-las junto.
 
 ## Monitorar containers
 
@@ -83,8 +86,10 @@ Na tela do projeto:
   chegar ao topo. Janela máxima de consulta: 16 dias.
 - **Filtro de texto**: busca literal (contém), aplicada no Loki para o histórico e no navegador para
   o ao vivo.
-- Linhas com `ERROR`, `FATAL`, `Exception`, `Traceback`, `panic` ou `[error]` ganham destaque. É só
-  visual; a classificação de verdade chega na 0.6.0.
+- Linhas com `ERROR`, `FATAL`, `Exception`, `Traceback`, `panic` ou `[error]` ganham destaque.
+  Esse realce é só visual, para leitura; quem decide o nível de verdade — e portanto o que
+  dispara análise — é o classificador do ciclo, que olha o campo de nível quando o log é
+  estruturado e cai no padrão de texto quando não é.
 - Passe o mouse sobre uma linha para ver os labels.
 
 Logo após marcar um container a tela fica vazia até a primeira linha nova: linhas anteriores à
@@ -324,12 +329,6 @@ Na mesma tela ficam os limites por chamada — tokens de entrada, tokens de saí
 
 O aviso sobre dados sensíveis fica fixo no topo da tela de Provedores: trechos de log saem para o
 provedor escolhido e para o fabricante do modelo, sem redação automática nesta versão.
-
-### Subindo da 0.9.0
-
-Quem já tinha a chave do OpenRouter configurada não reconfigura nada. Na primeira subida, a chave vira
-um provedor OpenRouter habilitado, com o modelo que estava escolhido, e a configuração antiga é
-apagada.
 
 ## Insights
 
