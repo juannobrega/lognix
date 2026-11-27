@@ -50,7 +50,7 @@ function ProviderTable({ rows, paused }: { rows: ProviderUsage[]; paused: Record
     <section className="card">
       <div className="card-header">
         <h2>Provedores</h2>
-        <Link to="/settings/providers" style={{ fontSize: 'var(--text-sm)' }}>
+        <Link to="/ai/providers" style={{ fontSize: 'var(--text-sm)' }}>
           Configurar cadeia
         </Link>
       </div>

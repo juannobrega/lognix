@@ -108,6 +108,13 @@ export const Icons = {
       <path d="M12 5v14M5 12h14" />
     </svg>
   ),
+  sliders: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="10" cy="17" r="2" />
+    </svg>
+  ),
   key: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
       <circle cx="8" cy="15" r="4" />

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './auth/RequireAuth'
 import { SectionHome } from './layout/SectionHome'
+import { SectionPage } from './layout/SectionPage'
 import { AppLayout } from './layout/AppLayout'
 import { AiSettingsPage } from './pages/AiSettingsPage'
 import { AccountPage } from './pages/AccountPage'
@@ -16,7 +17,6 @@ import { ProjectsPage } from './pages/ProjectsPage'
 import { ProvidersPage } from './pages/ProvidersPage'
 import { LoginPage } from './pages/LoginPage'
 import { McpPage } from './pages/McpPage'
-import { SettingsPage } from './pages/SettingsPage'
 import { SetupPage } from './pages/SetupPage'
 import { SystemPage } from './pages/SystemPage'
 import { UsagePage } from './pages/UsagePage'
@@ -39,15 +39,23 @@ export function App() {
           <Route path="insights" element={<InsightsPage />} />
           <Route path="insights/:id" element={<InsightDetailPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="settings" element={<SettingsPage />}>
+          <Route path="ai" element={<SectionPage />}>
             <Route index element={<SectionHome />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="ai" element={<AiSettingsPage />} />
+            <Route path="behavior" element={<AiSettingsPage />} />
             <Route path="providers" element={<ProvidersPage />} />
             <Route path="usage" element={<UsagePage />} />
             <Route path="mcp" element={<McpPage />} />
+          </Route>
+          <Route path="settings" element={<SectionPage />}>
+            <Route index element={<SectionHome />} />
+            <Route path="users" element={<UsersPage />} />
             <Route path="system" element={<SystemPage />} />
           </Route>
+          {/* A IA saiu de Configurações na 1.3.0. Link antigo continua chegando onde chegava. */}
+          <Route path="settings/ai" element={<Navigate to="/ai/behavior" replace />} />
+          <Route path="settings/providers" element={<Navigate to="/ai/providers" replace />} />
+          <Route path="settings/usage" element={<Navigate to="/ai/usage" replace />} />
+          <Route path="settings/mcp" element={<Navigate to="/ai/mcp" replace />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

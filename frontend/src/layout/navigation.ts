@@ -14,6 +14,8 @@ export interface NavItem {
   label: string
   icon: (p: SVGProps<SVGSVGElement>) => JSX.Element
   end?: boolean
+  /** Uma frase do que o grupo resolve. Vira o subtítulo da tela de entrada. */
+  description?: string
   /** Quando presente, o item abre no sidebar e ganha uma tela de entrada com cards. */
   children?: NavChild[]
 }
@@ -47,42 +49,52 @@ export const SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'Sistema',
+    label: 'Ajustes',
     links: [
+      {
+        to: '/ai',
+        label: 'Inteligência Artificial',
+        icon: Icons.spark,
+        description:
+          'Quem atende as chamadas, quanto custa, e quem pode perguntar ao Lognix pelo MCP.',
+        children: [
+          {
+            to: '/ai/behavior',
+            label: 'Ajustes da IA',
+            description: 'O interruptor geral da análise e os limites de cada chamada.',
+            icon: Icons.sliders,
+          },
+          {
+            to: '/ai/providers',
+            label: 'Provedores',
+            description: 'Quem atende as chamadas, em que ordem, e com quais modelos.',
+            icon: Icons.plug,
+          },
+          {
+            to: '/ai/usage',
+            label: 'Consumo',
+            description: 'Chamadas, tokens, custo e confiabilidade de cada provedor.',
+            icon: Icons.cost,
+          },
+          {
+            to: '/ai/mcp',
+            label: 'MCP',
+            description: 'Conectar um cliente de IA ao Lognix: chaves, permissões e ferramentas.',
+            icon: Icons.key,
+          },
+        ],
+      },
       {
         to: '/settings',
         label: 'Configurações',
         icon: Icons.settings,
+        description: 'Quem entra no Lognix, e como ele está por dentro.',
         children: [
           {
             to: '/settings/users',
             label: 'Usuários',
             description: 'Quem entra no Lognix, e como se cria ou remove acesso.',
             icon: Icons.users,
-          },
-          {
-            to: '/settings/ai',
-            label: 'IA',
-            description: 'O interruptor geral da análise e os limites de cada chamada.',
-            icon: Icons.spark,
-          },
-          {
-            to: '/settings/providers',
-            label: 'Provedores',
-            description: 'Quem atende as chamadas, em que ordem, e com quais modelos.',
-            icon: Icons.plug,
-          },
-          {
-            to: '/settings/usage',
-            label: 'Consumo',
-            description: 'Chamadas, tokens, custo e confiabilidade de cada provedor.',
-            icon: Icons.cost,
-          },
-          {
-            to: '/settings/mcp',
-            label: 'MCP',
-            description: 'Chaves, permissões e ferramentas que a IA acessa pelo protocolo.',
-            icon: Icons.key,
           },
           {
             to: '/settings/system',

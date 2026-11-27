@@ -30,6 +30,23 @@ def test_le_chaves_conhecidas_achatando_a_arvore(tmp_path) -> None:
     assert bool(cfg) is True
 
 
+def test_interruptor_do_mcp_entra_pelo_arquivo(tmp_path) -> None:
+    """Quem sobe a instalação por arquivo precisa poder deixar o MCP ligado de saída."""
+    cfg = load(escreve(tmp_path, "mcp:\n  enabled: true\n"))
+    assert cfg.managed == {"mcp.enabled": True}
+
+
+def test_exemplo_versionado_e_valido(monkeypatch) -> None:
+    """O arquivo que a documentação manda copiar não pode ser recusado na subida."""
+    from pathlib import Path
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-teste")
+    exemplo = Path(__file__).resolve().parents[2] / "config" / "config.yaml.example"
+    cfg = load(exemplo)
+    assert "mcp.enabled" in cfg.managed
+    assert cfg.providers
+
+
 def test_variavel_de_ambiente_entra_no_lugar_do_segredo(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("MINHA_CHAVE", "sk-secreta")
     cfg = load(

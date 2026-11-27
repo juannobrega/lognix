@@ -1,6 +1,6 @@
 # Abertura de Issues
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.5.0
+**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** a seguir, 3 de 3
 
 Única ação externa do Lognix. Abrir, comentar e reabrir é responsabilidade do Lognix.
 

@@ -14,6 +14,8 @@ from lognix.errors import ApiError
 from lognix.mcp import keys as servico
 from lognix.mcp.models import McpKey, McpScope
 from lognix.mcp.server import CATALOGO
+from lognix.settings import config_file
+from lognix.settings import service as config
 
 router = APIRouter(prefix="/settings/mcp", tags=["mcp"])
 
@@ -60,6 +62,10 @@ class ChaveUpdate(BaseModel):
 
 
 class InfoOut(BaseModel):
+    enabled: bool
+    #: Existe chave que responde. Desligado e sem chave são motivos diferentes de não funcionar.
+    has_keys: bool
+    managed: bool
     url: str
     scopes: list[EscopoOut]
     tools: list[FerramentaOut]
@@ -87,15 +93,46 @@ ESCOPOS = [
 ]
 
 
-@router.get("", response_model=InfoOut)
-async def info(_: CurrentUser) -> InfoOut:
-    """O que o cliente precisa para se conectar, e o que cada escopo libera."""
+class InfoIn(BaseModel):
+    enabled: bool
+
+
+async def _info(db: DbSession) -> InfoOut:
+    from sqlalchemy import func, select
+
     base = get_settings().lognix_public_url.rstrip("/")
+    chaves = (
+        await db.execute(select(func.count()).select_from(McpKey).where(McpKey.enabled.is_(True)))
+    ).scalar()
     return InfoOut(
+        enabled=await config.get_bool(db, config.MCP_ENABLED),
+        has_keys=bool(chaves),
+        managed=config_file.is_managed(config.MCP_ENABLED),
         url=f"{base}/mcp",
         scopes=ESCOPOS,
         tools=[FerramentaOut(**f) for f in CATALOGO],
     )
+
+
+@router.get("", response_model=InfoOut)
+async def info(_: CurrentUser, db: DbSession) -> InfoOut:
+    """O que o cliente precisa para se conectar, e o que cada escopo libera."""
+    return await _info(db)
+
+
+@router.put("", response_model=InfoOut)
+async def ligar(body: InfoIn, _: CurrentUser, db: DbSession) -> InfoOut:
+    """Interruptor geral. Desligado, `/mcp` responde 503 a todo mundo, com chave ou sem."""
+    if config_file.is_managed(config.MCP_ENABLED):
+        raise ApiError(
+            409,
+            "managed_by_file",
+            "mcp.enabled está declarado no arquivo de configuração.",
+            "Tire a chave do config.yaml para editar pela tela.",
+        )
+    await config.set_value(db, config.MCP_ENABLED, "true" if body.enabled else "false")
+    await db.commit()
+    return await _info(db)
 
 
 @router.get("/keys", response_model=list[ChaveOut])

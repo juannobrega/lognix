@@ -300,6 +300,7 @@ Configurações globais, chave/valor, valores sensíveis criptografados.
 | `ai.enabled` | interruptor geral da IA. Credenciais e modelos ficam em `AiProviderConfig` |
 | `ai.max_input_tokens`, `ai.max_output_tokens`, `ai.concurrency` | limites por chamada, válidos para todos os provedores |
 | `github.app.id`, `github.app.private_key`, `github.app.installation_id` | criptografados |
+| `mcp.enabled` | interruptor geral do servidor MCP. Padrão `false`: endereço que serve log não começa a responder por atualização de versão |
 | `analysis.interval_seconds` | 30, fixo na v1, preparado para roadmap |
 | `loki.retention_days` | espelha o `.env`, só leitura na interface |
 

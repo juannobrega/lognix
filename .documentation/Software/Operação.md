@@ -267,7 +267,7 @@ Com nenhum host cadastrado, a tela inteira vira o convite para cadastrar o prime
 
 ## Configurar a IA
 
-São duas telas. **Configurações › Provedores** guarda quem atende as chamadas; **Configurações › IA**
+São duas telas. **Inteligência Artificial › Provedores** guarda quem atende as chamadas; **Inteligência Artificial › Ajustes da IA**
 tem o interruptor geral e os limites por chamada.
 
 ### Provedores
@@ -316,7 +316,7 @@ antes de ativar: é a forma mais rápida de saber se a credencial e o modelo est
 
 ### O interruptor geral
 
-Em Configurações › IA. Três estados, e vale distinguir:
+Em Inteligência Artificial › Ajustes da IA. Três estados, e vale distinguir:
 
 | Estado | Significa |
 |---|---|
@@ -375,7 +375,7 @@ corrigir. O segundo erro encerra a tentativa naquele provedor e a chamada desce 
 
 ## Consumo
 
-Configurações › Consumo mostra chamadas, tokens e custo em hoje, 7 dias, 30 dias e total, quantas
+Inteligência Artificial › Consumo mostra chamadas, tokens e custo em hoje, 7 dias, 30 dias e total, quantas
 caíram para o fallback e a latência média. Abaixo, uma tabela **por provedor** — chamadas, taxa de
 sucesso, fallbacks, latência média, p95 e custo — que é o que permite decidir qual provedor merece ser
 o principal. Depois o detalhamento por modelo, projeto, tipo de trigger e dia, e as chamadas

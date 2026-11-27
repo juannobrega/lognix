@@ -179,7 +179,7 @@ export function DashboardPage() {
           <section className="card">
             <div className="card-header">
               <h2>Custo da IA</h2>
-              <Link to="/settings/usage">consumo</Link>
+              <Link to="/ai/usage">consumo</Link>
             </div>
             <div className="card-body">
               {!s ? (
