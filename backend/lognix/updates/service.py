@@ -11,6 +11,7 @@ anunciar nada.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 import time
@@ -105,3 +106,227 @@ async def verificar(
 
     _cache = Resultado(atual=__version__, disponivel=disponivel, verificado_em=momento)
     return _cache
+
+
+# --- autoatualização ----------------------------------------------------------------------
+#
+# Ver ADR 019. Nada aqui roda sem duas chaves: o socket do Docker montado e alcançável, e a
+# configuração ligada. A referência da imagem nunca vem do pedido — ver `alvo_valido`.
+
+IMAGEM = f"ghcr.io/{REPOSITORIO}"
+
+
+@dataclass(frozen=True)
+class Capacidade:
+    """Por que o botão aparece, ou por que não aparece."""
+
+    pode: bool
+    motivo: str
+    #: Contêiner do Lognix, quando o Docker local soube dizer qual é.
+    container: str | None = None
+    nome: str | None = None
+
+
+async def capacidade(socket: str | None = None) -> Capacidade:
+    """Descobre se existe caminho para a troca, e devolve o motivo quando não existe.
+
+    Os estados são distintos de propósito: socket ausente é decisão de quem instalou, e socket
+    presente sem permissão é o processo fora do grupo `docker` — conserto diferente, mensagem
+    diferente.
+    """
+    from pathlib import Path
+
+    from lognix.updates.docker import SOCKET, DockerError, SemPermissaoError, abrir
+
+    caminho = socket or SOCKET
+    try:
+        if not Path(caminho).is_socket():
+            return Capacidade(False, "socket_ausente")
+    except OSError:
+        return Capacidade(False, "socket_ausente")
+
+    docker = abrir(caminho)
+    try:
+        await docker.ping()
+        # O hostname de um contêiner é o id curto dele, salvo quando alguém passou --hostname.
+        import socket as rede
+
+        eu = await docker.inspecionar(rede.gethostname())
+        identificador = str(eu.get("Id") or "")
+        nome = str(eu.get("Name") or "").lstrip("/")
+        if not identificador or not nome:
+            return Capacidade(False, "container_desconhecido")
+        return Capacidade(True, "ok", container=identificador, nome=nome)
+    except SemPermissaoError:
+        return Capacidade(False, "sem_permissao")
+    except DockerError as exc:
+        if exc.status == 404:
+            return Capacidade(False, "container_desconhecido")
+        log.info("Docker local indisponível para autoatualização: %s", exc)
+        return Capacidade(False, "docker_indisponivel")
+    except Exception as exc:
+        log.info("Docker local indisponível para autoatualização: %s", exc)
+        return Capacidade(False, "docker_indisponivel")
+    finally:
+        await docker.aclose()
+
+
+async def alvo_valido(versao: str, *, transport: httpx.AsyncBaseTransport | None = None) -> str:
+    """Devolve a tag confirmada no registro, ou levanta.
+
+    A versão pedida é conferida contra as tags publicadas e tem que ser maior que a atual. Uma
+    rota que aceitasse referência de imagem arbitrária e a executasse com o socket do host seria
+    execução remota de código com um nome bonito.
+    """
+    pedida = tupla(versao)
+    if pedida is None:
+        raise ValueError("versão inválida: use X.Y.Z")
+    aqui = tupla(__version__)
+    if aqui is not None and pedida <= aqui:
+        raise ValueError(f"a versão {versao} não é mais nova que a {__version__}")
+    async with httpx.AsyncClient(transport=transport) as cliente:
+        publicadas = {t for t in await _tags(cliente) if tupla(t)}
+    if versao not in publicadas:
+        raise ValueError(f"a versão {versao} não está publicada no registro")
+    return versao
+
+
+@dataclass
+class Progresso:
+    """Onde a troca está. Em memória: o processo que a acompanha morre junto com ela."""
+
+    versao: str
+    fase: str
+    erro: str | None = None
+
+
+_progresso: Progresso | None = None
+_tarefa: asyncio.Task[None] | None = None
+
+
+def progresso() -> Progresso | None:
+    return _progresso
+
+
+async def atualizar(versao: str, *, socket: str | None = None) -> str:
+    """Baixa a imagem e sobe o auxiliar que faz a troca. Devolve o id do auxiliar.
+
+    A imagem é baixada **antes** de qualquer coisa ser tocada: `pull` que falha deixa o mundo
+    exatamente como estava, e o erro vira estado visível em vez de contêiner parado.
+    """
+    global _progresso
+    from lognix.updates.docker import AUXILIAR, DockerError, abrir
+
+    quem = await capacidade(socket)
+    if not quem.pode or not quem.container or not quem.nome:
+        raise RuntimeError(quem.motivo)
+
+    docker = abrir(socket)
+    try:
+        # Auxiliar em execução é uma troca em curso. Removê-lo à força mataria a sequência no
+        # meio, e sobraria um contêiner renomeado e parado sem ninguém para devolvê-lo.
+        try:
+            anterior = await docker.inspecionar(AUXILIAR)
+            if (anterior.get("State") or {}).get("Running"):
+                raise RuntimeError("troca_em_andamento")
+            await docker.remover(AUXILIAR, forcar=True)
+        except DockerError:
+            # Não existe auxiliar anterior: é o caso comum da primeira atualização.
+            pass
+
+        _progresso = Progresso(versao=versao, fase="baixando")
+        log.info("baixando %s:%s", IMAGEM, versao)
+        await docker.baixar(IMAGEM, versao)
+        _progresso = Progresso(versao=versao, fase="trocando")
+
+        auxiliar = await docker.criar(
+            AUXILIAR,
+            {
+                "Image": f"{IMAGEM}:{versao}",
+                "Cmd": [
+                    "python",
+                    "-m",
+                    "lognix.updates.swap",
+                    "--container",
+                    quem.container,
+                    "--nome",
+                    quem.nome,
+                    "--imagem",
+                    f"{IMAGEM}:{versao}",
+                ],
+                # Tty para os registros voltarem como texto, sem a multiplexação do Docker.
+                "Tty": True,
+                "Labels": {"org.lognix.role": "updater"},
+                "HostConfig": {
+                    "Binds": [f"{docker.socket}:/var/run/docker.sock"],
+                    # Sem rede: o trabalho é todo pelo socket, e quem baixa imagem é o daemon.
+                    "NetworkMode": "none",
+                    "RestartPolicy": {"Name": "no"},
+                    # Precisa ser root para falar com o socket; é um contêiner de uma tarefa só.
+                    "AutoRemove": False,
+                },
+                "User": "0:0",
+            },
+        )
+        await docker.iniciar(auxiliar)
+        log.warning("auxiliar de atualização iniciado para a versão %s", versao)
+        return auxiliar
+    finally:
+        await docker.aclose()
+
+
+async def disparar(versao: str, *, socket: str | None = None) -> None:
+    """Põe a troca para rodar sem segurar a resposta.
+
+    O `pull` de uma imagem multi-arquitetura leva minutos, e uma requisição aberta esse tempo
+    todo morre em qualquer proxy no caminho — e o 504 convida ao clique de novo, que é
+    exatamente o que não pode acontecer no meio de uma troca.
+    """
+    global _progresso
+
+    async def tarefa() -> None:
+        global _progresso
+        try:
+            await atualizar(versao, socket=socket)
+        except Exception as exc:
+            log.exception("a atualização para %s falhou antes de trocar", versao)
+            _progresso = Progresso(versao=versao, fase="falhou", erro=str(exc))
+
+    _progresso = Progresso(versao=versao, fase="baixando")
+    # Referência guardada: tarefa sem dono pode ser coletada no meio pelo garbage collector.
+    global _tarefa
+    _tarefa = asyncio.create_task(tarefa())
+
+
+@dataclass(frozen=True)
+class Tentativa:
+    estado: str
+    codigo: int | None
+    terminou_em: str | None
+    registros: str
+
+
+async def ultima_tentativa(socket: str | None = None) -> Tentativa | None:
+    """Como terminou a última troca, lida do contêiner auxiliar que ficou para trás.
+
+    É isso que permite ao Lognix novo contar, na tela, o fim de uma atualização que derrubou a
+    tela — inclusive quando ela falhou e o antigo voltou.
+    """
+    from lognix.updates.docker import AUXILIAR, abrir
+
+    docker = abrir(socket)
+    try:
+        dados = await docker.inspecionar(AUXILIAR)
+        if not dados:
+            return None
+        estado = dados.get("State") or {}
+        return Tentativa(
+            estado=str(estado.get("Status") or "desconhecido"),
+            codigo=estado.get("ExitCode"),
+            terminou_em=estado.get("FinishedAt"),
+            registros=await docker.registros(AUXILIAR),
+        )
+    except Exception:
+        return None
+    finally:
+        await docker.aclose()

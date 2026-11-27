@@ -42,6 +42,7 @@ mcp:
 
 updates:
   check_enabled: true
+  self_update_enabled: false
 
 providers:
   - kind: openrouter

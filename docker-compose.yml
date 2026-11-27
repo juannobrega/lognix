@@ -15,6 +15,16 @@ services:
     build: .
     ports:
       - "${LOGNIX_PORT:-8080}:8000"
+    # Para atualizar pela interface (ADR 019), descomente o group_add abaixo com o GID do grupo
+    # `docker` deste host — `getent group docker | cut -d: -f3`, ou `stat -f %g
+    # /var/run/docker.sock` no macOS — e a linha do socket dentro do `volumes` logo adiante.
+    #
+    # Isto dá ao contêiner do Lognix **controle do Docker desta máquina**: criar qualquer
+    # contêiner, inclusive privilegiado. Os hosts monitorados continuam intocados — eles são
+    # alcançados por outro caminho, o proxy que recusa tudo que não é GET.
+    #
+    # group_add:
+    #   - "999"
     environment:
       LOGNIX_SECRET_KEY: ${LOGNIX_SECRET_KEY:?defina LOGNIX_SECRET_KEY no .env}
       LOGNIX_PUBLIC_URL: ${LOGNIX_PUBLIC_URL:-http://localhost:8080}
@@ -29,6 +39,8 @@ services:
       LOGNIX_CONFIG_FILE: /config/config.yaml
     volumes:
       - tunnels:/tunnels
+      # Atualizar pela interface: ver o comentário acima antes de descomentar.
+      # - /var/run/docker.sock:/var/run/docker.sock
       # Configuração declarativa, opcional. Ver ADR 014 e Software/Configuração.
       - ./config:/config:ro
       - alloy-config:/alloy-config
