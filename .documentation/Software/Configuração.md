@@ -44,6 +44,22 @@ updates:
   check_enabled: true
   self_update_enabled: false
 
+smtp:
+  enabled: true
+  provider: gmail
+  host: smtp.gmail.com
+  port: 587
+  security: starttls
+  username: lognix@suaempresa.com
+  password: ${SMTP_PASSWORD}
+  from: lognix@suaempresa.com
+  to: ops@suaempresa.com
+
+alerts:
+  min_severity: high
+  projects: ''
+  on_host_down: true
+
 providers:
   - kind: openrouter
     name: OpenRouter

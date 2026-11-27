@@ -86,6 +86,20 @@ export const SECTIONS: NavSection[] = [
         ],
       },
       {
+        to: '/integrations',
+        label: 'Integrações',
+        icon: Icons.plug,
+        description: 'Por onde o Lognix fala com o mundo fora dele, e o que sai daqui.',
+        children: [
+          {
+            to: '/integrations/email',
+            label: 'E-mail',
+            description: 'Avisar por e-mail quando algo grave aparece, e com qual provedor.',
+            icon: Icons.mail,
+          },
+        ],
+      },
+      {
         to: '/settings',
         label: 'Configurações',
         icon: Icons.settings,

@@ -30,6 +30,24 @@ updates:
   # — ver docker-compose.yml. Montar o socket dá ao Lognix controle do Docker deste host.
   self_update_enabled: false
 
+# Avisar por e-mail quando nasce um insight grave, ou quando um host cai. Ver ADR 020.
+# A senha nunca se escreve aqui: use ${VARIAVEL}, resolvida do ambiente na subida.
+# smtp:
+#   enabled: true
+#   provider: gmail
+#   host: smtp.gmail.com
+#   port: 587
+#   security: starttls        # starttls, tls ou none
+#   username: lognix@suaempresa.com
+#   password: ${SMTP_PASSWORD}
+#   from: lognix@suaempresa.com
+#   to: ops@suaempresa.com, plantao@suaempresa.com
+#
+# alerts:
+#   min_severity: high        # critical, high, medium, low ou info
+#   projects: ''              # vazio: todos
+#   on_host_down: true
+
 # Provedores de IA, na ordem da cadeia de fallback: o primeiro atende, os seguintes entram se ele
 # recusar. Os tipos disponíveis são os mesmos da tela de Provedores.
 providers:

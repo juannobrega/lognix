@@ -22,6 +22,7 @@ class NotificationType(enum.StrEnum):
     analysis_skipped = "analysis_skipped"
     ai_error = "ai_error"
     github_error = "github_error"
+    email_failed = "email_failed"
 
 
 class NotificationStatus(enum.StrEnum):

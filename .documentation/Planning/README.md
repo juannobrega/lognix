@@ -27,7 +27,7 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | # | Área | O que define | Status |
 |---|------|--------------|--------|
 | 01 | [Produto](01%20Produto/README.md) | Problema, visão, escopo, personas, requisitos, jornadas, glossário | Implementado |
-| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 19 ADRs |
+| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 20 ADRs |
 | 03 | [Coleta de Logs](03%20Coleta%20de%20Logs/README.md) | Alloy, inventário e conexão de instâncias, Docker, Kubernetes | Implementado |
 | 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Implementado |
 | 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Implementado |
@@ -36,6 +36,7 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | 08 | [Gestão](08%20Gestão/README.md) | Roadmap, fases, questões abertas | Implementado |
 | 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Planejado, três fases a seguir |
 | 10 | [Servidor MCP](10%20Servidor%20MCP/README.md) | Ferramentas, chaves, escopos e auditoria do Model Context Protocol | Implementado na 1.2.0 |
+| 11 | [Integrações](11%20Integrações/README.md) | Canais de notificação por e-mail, e onde o GitHub App vai morar | E-mail na 1.6.0 |
 
 ## Ciclo de vida de um documento
 

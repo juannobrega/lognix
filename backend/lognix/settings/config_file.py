@@ -82,6 +82,18 @@ SETTING_KEYS: dict[str, str] = {
     "mcp.enabled": "mcp.enabled",
     "updates.check_enabled": "updates.check_enabled",
     "updates.self_update_enabled": "updates.self_update_enabled",
+    "smtp.enabled": "smtp.enabled",
+    "smtp.provider": "smtp.provider",
+    "smtp.host": "smtp.host",
+    "smtp.port": "smtp.port",
+    "smtp.security": "smtp.security",
+    "smtp.username": "smtp.username",
+    "smtp.password": "smtp.password",
+    "smtp.from": "smtp.from",
+    "smtp.to": "smtp.to",
+    "alerts.min_severity": "alerts.min_severity",
+    "alerts.projects": "alerts.projects",
+    "alerts.on_host_down": "alerts.on_host_down",
 }
 
 

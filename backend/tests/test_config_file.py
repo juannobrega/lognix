@@ -73,9 +73,10 @@ def test_variavel_faltando_derruba_a_subida(tmp_path, monkeypatch) -> None:
 
 def test_chave_desconhecida_e_recusada_dizendo_quais_existem(tmp_path) -> None:
     """Chave ignorada em silêncio é pior: quem escreveu acredita que ela está valendo."""
+    # `smtp.host` servia de exemplo aqui até a 1.6.0, quando virou chave de verdade.
     with pytest.raises(ConfigError) as erro:
-        load(escreve(tmp_path, "ai:\n  enabled: true\nsmtp:\n  host: exemplo\n"))
-    assert "smtp.host" in str(erro.value)
+        load(escreve(tmp_path, "ai:\n  enabled: true\nsmtp:\n  porta_secreta: 1234\n"))
+    assert "smtp.porta_secreta" in str(erro.value)
     assert "ai.enabled" in str(erro.value), "o erro precisa dizer quais chaves existem"
 
 

@@ -20,7 +20,22 @@ MCP_ENABLED = "mcp.enabled"
 UPDATE_CHECK = "updates.check_enabled"
 SELF_UPDATE = "updates.self_update_enabled"
 
-SECRET_KEYS = frozenset({AI_API_KEY, "github.app.private_key"})
+# Canal de e-mail e a regra de disparo. Ver ADR 020.
+SMTP_ENABLED = "smtp.enabled"
+SMTP_PROVIDER = "smtp.provider"
+SMTP_HOST = "smtp.host"
+SMTP_PORT = "smtp.port"
+SMTP_SECURITY = "smtp.security"
+SMTP_USERNAME = "smtp.username"
+
+SMTP_PASSWORD = "smtp.password"  # noqa: S105
+SMTP_FROM = "smtp.from"
+SMTP_TO = "smtp.to"
+ALERTS_MIN_SEVERITY = "alerts.min_severity"
+ALERTS_PROJECTS = "alerts.projects"
+ALERTS_ON_HOST_DOWN = "alerts.on_host_down"
+
+SECRET_KEYS = frozenset({AI_API_KEY, "github.app.private_key", SMTP_PASSWORD})
 
 DEFAULTS: dict[str, str] = {
     AI_ENABLED: "false",
@@ -33,6 +48,12 @@ DEFAULTS: dict[str, str] = {
     # Desligada, e inútil sem o socket do Docker montado. Duas chaves, não uma: montar socket
     # pode ter sido decisão de outra pessoa, para outra finalidade. Ver ADR 019.
     SELF_UPDATE: "false",
+    SMTP_ENABLED: "false",
+    SMTP_PORT: "587",
+    SMTP_SECURITY: "starttls",
+    # Crítico e alto: é o que a maioria quer sem configurar nada.
+    ALERTS_MIN_SEVERITY: "high",
+    ALERTS_ON_HOST_DOWN: "true",
     AI_MAX_INPUT_TOKENS: "12000",
     AI_MAX_OUTPUT_TOKENS: "1500",
     AI_CONCURRENCY: "3",

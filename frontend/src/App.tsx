@@ -6,6 +6,7 @@ import { AppLayout } from './layout/AppLayout'
 import { AiSettingsPage } from './pages/AiSettingsPage'
 import { AccountPage } from './pages/AccountPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { EmailPage } from './pages/EmailPage'
 import { HostDetailPage } from './pages/HostDetailPage'
 import { HostsPage } from './pages/HostsPage'
 import { InsightDetailPage } from './pages/InsightDetailPage'
@@ -45,6 +46,10 @@ export function App() {
             <Route path="providers" element={<ProvidersPage />} />
             <Route path="usage" element={<UsagePage />} />
             <Route path="mcp" element={<McpPage />} />
+          </Route>
+          <Route path="integrations" element={<SectionPage />}>
+            <Route index element={<SectionHome />} />
+            <Route path="email" element={<EmailPage />} />
           </Route>
           <Route path="settings" element={<SectionPage />}>
             <Route index element={<SectionHome />} />

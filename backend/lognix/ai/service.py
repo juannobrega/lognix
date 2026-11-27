@@ -37,6 +37,7 @@ from lognix.ai.schemas import INSIGHT_SCHEMA, SchemaError, validate_insight
 from lognix.analysis.models import LogLevel, Pattern, TriggerFired
 from lognix.containers.models import Container
 from lognix.events.models import DockerEvent
+from lognix.integrations import alerts
 from lognix.loki.client import LogLine
 from lognix.metrics import ai_calls_skipped, ai_calls_total, ai_semaphore_waiting
 from lognix.notifications.models import NotificationType
@@ -418,6 +419,9 @@ async def _call_with_retry(
         calls.append(call)
         await db.commit()
         await db.refresh(insight)
+        # Só aqui, onde o insight **nasce**: recorrência atualiza a contagem do que já existe
+        # e não manda nada. Ver ADR 020.
+        await alerts.avisar_do_insight(db, insight, container.name, container.host.name)
         log.info(
             "insight criado",
             extra={

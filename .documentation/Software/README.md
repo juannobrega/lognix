@@ -50,6 +50,7 @@ a linha ficaria rente ao zero e esconderia exatamente o pico que alguém abre o 
 | rodar o Lognix | [Instalação](Instalação.md) |
 | declarar a instalação num arquivo | [Configuração](Configuração.md) |
 | usar no dia a dia | [Operação](Operação.md) |
+| ser avisado quando algo quebra | [Alertas por e-mail](Alertas.md) |
 | perguntar ao Claude sobre os seus logs | [Conectar uma IA](MCP.md) |
 | saber o que mudou | [Mudanças](CHANGELOG.md) |
 

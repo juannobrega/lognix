@@ -38,6 +38,7 @@ Cada decisão não óbvia de arquitetura vira um arquivo `ADR NNN Título.md`.
 | 017 | [Servidor MCP do Lognix](ADR%20017%20Servidor%20MCP%20do%20Lognix.md) | Aceito |
 | 018 | [Verificação de Atualização Opcional](ADR%20018%20Verificação%20de%20Atualização%20Opcional.md) | Aceito |
 | 019 | [Autoatualização com Opt-in](ADR%20019%20Autoatualização%20com%20Opt-in.md) | Aceito |
+| 020 | [Alertas por E-mail via SMTP](ADR%20020%20Alertas%20por%20E-mail%20via%20SMTP.md) | Aceito |
 
 ## Candidatos ainda não decididos
 

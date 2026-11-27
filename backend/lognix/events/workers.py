@@ -22,6 +22,7 @@ from lognix.docker.client import DockerApiError, DockerClient, summarize_env
 from lognix.events import service
 from lognix.events.models import HostEventType
 from lognix.hosts.models import Host, HostStatus
+from lognix.integrations import alerts
 from lognix.metrics import (
     docker_events_total,
     events_stream_restarts_total,
@@ -275,6 +276,9 @@ class HostWorkers:
                 )
                 await notify(db, type_, title, host_id=host_id, payload={"error": error or ""})
                 await db.commit()
+                # E-mail só na transição para fora de conectado, que é onde já estamos: host
+                # oscilando não vira uma mensagem por tentativa. Ver ADR 020.
+                await alerts.avisar_host_caiu(db, name, error)
         if new == HostStatus.connected:
             self.ensure(host_id).request_sync()
         else:

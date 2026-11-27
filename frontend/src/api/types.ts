@@ -632,3 +632,32 @@ export interface UpdateInfo {
   blocker: string | null
   last_attempt: UpdateAttempt | null
 }
+
+export interface SmtpPreset {
+  id: string
+  label: string
+  host: string
+  port: number
+  security: string
+  /** O que o provedor esconde na documentação e faz a configuração falhar. */
+  hint: string
+  username: string
+}
+
+export interface EmailIntegration {
+  enabled: boolean
+  provider: string
+  host: string
+  port: number
+  security: string
+  username: string
+  /** Nunca o valor: só se existe uma senha guardada. */
+  has_password: boolean
+  sender: string
+  recipients: string
+  min_severity: string
+  projects: string
+  on_host_down: boolean
+  managed: string[]
+  presets: SmtpPreset[]
+}
