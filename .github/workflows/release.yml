@@ -244,14 +244,31 @@ jobs:
           IFS=. read -r major minor _ <<< "$VERSION"
 
           tags="$image:$VERSION,$image:$major.$minor"
+
+          # `latest` e a tag de major só andam para frente. Republicar uma versão antiga — a
+          # recuperação prevista no cabeçalho deste arquivo — moveria as duas para trás e
+          # rebaixaria silenciosamente todo mundo que segue `latest` no compose.
+          maior=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          maior=${maior#v}
+          mais_nova=true
+          if [ -n "$maior" ] && [ "$maior" != "$VERSION" ]; then
+            vencedora=$(printf '%s\n%s\n' "$maior" "$VERSION" | sort -V | tail -n1)
+            if [ "$vencedora" != "$VERSION" ]; then
+              mais_nova=false
+            fi
+          fi
+
           # Pré-1.0 não recebe `latest` nem a tag de major. 0.x não promete compatibilidade, e
           # deixar alguém seguir `0` ou `latest` seria prometer sem querer.
-          if [ "$major" != "0" ]; then
+          if [ "$major" != "0" ] && [ "$mais_nova" = true ]; then
             tags="$tags,$image:$major,$image:latest"
+          fi
+          if [ "$major" != "0" ]; then
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           else
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
           fi
+          echo "newest=$mais_nova" >> "$GITHUB_OUTPUT"
           echo "image=$image" >> "$GITHUB_OUTPUT"
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
           echo "$tags"
@@ -272,7 +289,8 @@ jobs:
           # deixando tag sem release. O cache de registro usa a credencial do GHCR, que é a
           # mesma que acabou de publicar a imagem: se ela não valesse, o push teria falhado antes.
           cache-from: type=registry,ref=${{ steps.tags.outputs.image }}:buildcache
-          cache-to: type=registry,ref=${{ steps.tags.outputs.image }}:buildcache,mode=max
+          # Republish não escreve cache: a árvore é antiga, e o próximo release leria dela.
+          cache-to: ${{ inputs.tag && '' || format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image) }}
 
       - name: Publish the release
         env:
@@ -285,6 +303,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           DIGEST: ${{ steps.build.outputs.digest }}
           PRERELEASE: ${{ steps.tags.outputs.prerelease }}
+          NEWEST: ${{ steps.tags.outputs.newest }}
         run: |
           set -euo pipefail
           # `if` e não `&&`: sob `set -e`, um `[ ... ] && x=y` cujo teste falha devolve 1 como
@@ -312,8 +331,19 @@ jobs:
           TEXTO
           )
 
-          if [ "$PRERELEASE" = "true" ]; then
-            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes --prerelease
+          # Republicar uma versão antiga não deve marcá-la como "Latest" na página de releases,
+          # pelo mesmo motivo que não move a tag `latest` da imagem.
+          sinalizador=()
+          if [ "$NEWEST" != "true" ]; then
+            sinalizador=(--latest=false)
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # A versão já tem release: republicar atualiza as notas em vez de falhar com
+            # "already exists", que deixaria o run vermelho depois de a imagem ter subido.
+            gh release edit "$TAG" --notes "$notes" "${sinalizador[@]}"
+          elif [ "$PRERELEASE" = "true" ]; then
+            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes --prerelease "${sinalizador[@]}"
           else
-            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes
+            gh release create "$TAG" --title "$TAG" --notes "$notes" --generate-notes "${sinalizador[@]}"
           fi

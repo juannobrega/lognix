@@ -30,6 +30,14 @@ verbatim em [Release Workflow.yml](Release%20Workflow.yml). Resumo do comportame
 | Versão | lê a maior tag `v*`, incrementa conforme a label. Sem tags, parte de `0.0.0` |
 | Fonte de verdade | escreve a versão em `pyproject.toml`, commita em `main` com `Release vX.Y.Z`, cria tag anotada, publica release com notas geradas |
 | Tag existente | falha, para detectar release manual ou corrida |
+| Tags da imagem | `X.Y.Z` e `X.Y` sempre; `X` e `latest` só quando a versão é a **maior** já marcada |
+| Republicação | `workflow_dispatch` com `tag: vX.Y.Z` reconstrói daquele commit. Não move `latest`, não escreve cache, não marca "Latest" na página de releases, e atualiza as notas se a release já existir |
+
+**Corrigido em 2026-11-27:** a republicação movia `latest` e a tag de major para a versão
+republicada. A v1.1.0 ficou com tag no git e sem imagem — o run dela passou 92 minutos no build e
+foi cancelado — e republicá-la teria rebaixado silenciosamente todo mundo que segue `latest` no
+compose, de 1.3.0 para 1.1.0. A recuperação prevista no cabeçalho do workflow era, ela mesma, um
+jeito de causar o estrago que ela deveria consertar.
 
 ## 3. Pontos que o monorepo precisa respeitar
 
