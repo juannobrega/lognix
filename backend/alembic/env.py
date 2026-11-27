@@ -16,7 +16,11 @@ import lognix.events.models
 import lognix.notifications.models
 import lognix.analysis.models
 import lognix.settings.models
-import lognix.ai.models  # noqa: F401
+import lognix.ai.models
+
+# O noqa vale para o bloco todo: `import lognix.x.y` liga só o nome `lognix`, e é no último
+# que o ruff vê o import sem uso. Import novo entra acima desta linha.
+import lognix.mcp.models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

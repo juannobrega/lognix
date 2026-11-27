@@ -15,8 +15,8 @@ Lognix é um **analisador de logs com IA**. Mapeia instâncias (hosts), conecta-
 coleta logs de containers via **Grafana Alloy**, centraliza tudo e usa modelos de linguagem
 para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 
-- **Estado:** 1.0.0 construída, da fundação à análise por IA. As fases estão em [Fases de Construção](08%20Gestão/Fases%20de%20Construção.md)
-- **Versionamento:** SemVer por label de PR. IA entrou na 0.9.0. 1.0.0 é o primeiro release público, só código
+- **Estado:** 1.2.0 construída. A 1.0.0 fechou da fundação à análise por IA; a 1.2.0 abriu o Lognix para clientes de IA pelo MCP. As fases estão em [Fases de Construção](08%20Gestão/Fases%20de%20Construção.md)
+- **Versionamento:** SemVer por label de PR. IA entrou na 0.9.0. 1.0.0 é o primeiro release público, com imagem publicada
 - **Natureza:** código aberto
 - **Alvo inicial:** Docker · **Alvo futuro:** Kubernetes
 - **Diferencial:** diagnóstico de erro ligado ao código no GitHub, com abertura de issue
@@ -27,14 +27,15 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | # | Área | O que define | Status |
 |---|------|--------------|--------|
 | 01 | [Produto](01%20Produto/README.md) | Problema, visão, escopo, personas, requisitos, jornadas, glossário | Implementado |
-| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 12 ADRs |
+| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 17 ADRs |
 | 03 | [Coleta de Logs](03%20Coleta%20de%20Logs/README.md) | Alloy, inventário e conexão de instâncias, Docker, Kubernetes | Implementado |
 | 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Implementado |
 | 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Implementado |
 | 06 | [Frontend](06%20Frontend/README.md) | Telas, navegação, componentes, estado, design system | Implementado |
 | 07 | [Infraestrutura e Segurança](07%20Infraestrutura%20e%20Segurança/README.md) | Ambientes, compose, CI/CD, segredos, RBAC | Implementado |
 | 08 | [Gestão](08%20Gestão/README.md) | Roadmap, fases, questões abertas | Implementado |
-| 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Planejado, fases 1.1 a 1.3 |
+| 09 | [Integração GitHub](09%20Integração%20GitHub/README.md) | Vínculo container e repositório, leitura de código, diagnóstico, issues | Planejado, fases 1.3 a 1.5 |
+| 10 | [Servidor MCP](10%20Servidor%20MCP/README.md) | Ferramentas, chaves, escopos e auditoria do Model Context Protocol | Implementado na 1.2.0 |
 
 ## Ciclo de vida de um documento
 

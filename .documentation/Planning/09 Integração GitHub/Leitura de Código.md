@@ -1,6 +1,6 @@
 # Leitura de Código
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.2.0
+**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.4.0
 
 Como escolher o que enviar à IA a partir de um erro. Repositórios inteiros não cabem no prompt.
 

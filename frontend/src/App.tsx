@@ -15,6 +15,7 @@ import { ProjectPage } from './pages/ProjectPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { ProvidersPage } from './pages/ProvidersPage'
 import { LoginPage } from './pages/LoginPage'
+import { McpPage } from './pages/McpPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SetupPage } from './pages/SetupPage'
 import { SystemPage } from './pages/SystemPage'
@@ -44,6 +45,7 @@ export function App() {
             <Route path="ai" element={<AiSettingsPage />} />
             <Route path="providers" element={<ProvidersPage />} />
             <Route path="usage" element={<UsagePage />} />
+            <Route path="mcp" element={<McpPage />} />
             <Route path="system" element={<SystemPage />} />
           </Route>
         </Route>

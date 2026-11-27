@@ -409,12 +409,18 @@ válvula de escape.
 
 ## Privacidade
 
-Trechos de log saem do seu ambiente para o OpenRouter e, por ele, para o fabricante do modelo
-escolhido. Não há redação automática nesta versão. Variáveis de ambiente nunca são enviadas por
-valor, apenas por nome, exceto uma lista curta de nomes seguros como `APP_VERSION` e `GIT_COMMIT`.
+Trechos de log saem do seu ambiente para os provedores de IA que você configurar e, por eles, para
+o fabricante do modelo escolhido. Não há redação automática nesta versão. Variáveis de ambiente
+nunca são enviadas por valor, apenas por nome, exceto uma lista curta de nomes seguros como
+`APP_VERSION` e `GIT_COMMIT`.
 
 O aviso fica fixo na tela de configuração da IA. Se os logs de um projeto contêm dados que não podem
 sair do seu ambiente, não ative a IA.
 
-Fora o provider de IA, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a
-serviços do autor.
+Há um segundo caminho de saída desde a 1.2.0: as **chaves MCP**. Quem tem uma chave consulta os seus
+logs pelo cliente de IA dele, que pode usar um modelo diferente do que você configurou aqui. A
+escolha do destino passa a ser de quem detém a chave — daí o escopo por chave, o prazo e o registro
+de chamadas. Ver [Conectar uma IA](MCP.md).
+
+Fora os provedores de IA e as chaves MCP que você criar, nada sai: sem telemetria, sem verificação
+de atualização, sem chamadas a serviços do autor.

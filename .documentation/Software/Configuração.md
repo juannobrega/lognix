@@ -22,6 +22,7 @@ São o mínimo para o processo subir, antes de existir banco ou primeiro usuári
 | `LOGNIX_LOG_LEVEL` | `INFO` | |
 | `LOKI_RETENTION_DAYS` | `15` | por quanto tempo as linhas de log ficam |
 | `LOGNIX_CONFIG_FILE` | `/config/config.yaml` | onde procurar o arquivo abaixo |
+| `LOGNIX_MCP_ALLOWED_HOSTS` | vazio | nomes aceitos no `Host` das chamadas [MCP](MCP.md), separados por vírgula. Vazio usa os de `LOGNIX_PUBLIC_URL`; `*` desliga a checagem |
 
 ## O arquivo `config.yaml`
 

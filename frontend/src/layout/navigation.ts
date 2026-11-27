@@ -79,6 +79,12 @@ export const SECTIONS: NavSection[] = [
             icon: Icons.cost,
           },
           {
+            to: '/settings/mcp',
+            label: 'MCP',
+            description: 'Chaves, permissões e ferramentas que a IA acessa pelo protocolo.',
+            icon: Icons.key,
+          },
+          {
             to: '/settings/system',
             label: 'Sistema',
             description: 'Versão, serviços, métricas e retenção dos dados.',

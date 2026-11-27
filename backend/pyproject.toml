@@ -29,6 +29,8 @@ dependencies = [
   # Arquivo de configuração declarativa (ADR 014). Vinha transitivo pelo uvicorn[standard];
   # dependência direta precisa estar declarada, senão some numa atualização alheia.
   "PyYAML>=6",
+  # Servidor MCP (ADR 017). O app Starlette do transporte HTTP vem daqui.
+  "mcp>=2.3",
 ]
 
 [project.optional-dependencies]

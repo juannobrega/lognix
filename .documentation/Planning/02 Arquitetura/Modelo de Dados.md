@@ -318,6 +318,41 @@ As chaves `ai.openrouter.api_key` e `ai.openrouter.model` existiram até a 0.9.0
 
 Permite auditar e reverter a config do Alloy.
 
+### McpKey
+Chave de API do servidor MCP. Ver [ADR 017](ADR/ADR%20017%20Servidor%20MCP%20do%20Lognix.md).
+
+| Campo | Tipo |
+|---|---|
+| id | uuid |
+| name | text, de quem é a chave |
+| prefix | text, `lgxmcp_` + 6 caracteres, **indexado** |
+| key_hash | text, Argon2 |
+| scopes | jsonb, lista de `leitura`, `analise`, `admin` |
+| enabled | bool |
+| expires_at | timestamptz, nulo = sem prazo |
+| last_used_at | timestamptz |
+| calls | int, acumulado |
+| created_by | uuid → users, SET NULL |
+| created_at | timestamptz |
+
+A chave em claro não existe em lugar nenhum: o `prefix` identifica a linha, o `key_hash` autentica.
+O índice em `prefix` é o que evita varredura da tabela a cada chamada MCP.
+
+### McpCall
+| Campo | Tipo |
+|---|---|
+| id | uuid |
+| key_id | uuid → mcp_keys, SET NULL |
+| key_name | text, **copiado** |
+| tool | text |
+| ok | bool |
+| error | text, nulo quando deu certo |
+| duration_ms | int |
+| created_at | timestamptz, indexado |
+
+`key_name` é copiado em vez de referenciado porque revogar a chave não deve apagar o rastro do que
+ela fez.
+
 ## 3. Labels no Loki
 
 Poucos e de baixa cardinalidade. ADR 001.

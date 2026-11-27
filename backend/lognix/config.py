@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     # e a concorrência irrestrita só aumenta a latência da API.
     analysis_concurrency: int = Field(default=8, alias="LOGNIX_ANALYSIS_CONCURRENCY")
 
+    # Nomes aceitos no cabeçalho Host das chamadas MCP, separados por vírgula. Vazio = os
+    # derivados de LOGNIX_PUBLIC_URL mais os de localhost; "*" desliga a checagem, para quem
+    # expõe o Lognix por mais de um nome atrás de proxy. Ver ADR 017.
+    mcp_allowed_hosts: str = Field(default="", alias="LOGNIX_MCP_ALLOWED_HOSTS")
+
     access_token_ttl_seconds: int = Field(default=15 * 60, alias="LOGNIX_ACCESS_TTL")
     refresh_token_ttl_seconds: int = Field(default=7 * 24 * 3600, alias="LOGNIX_REFRESH_TTL")
     login_rate_limit_per_minute: int = Field(default=10, alias="LOGNIX_LOGIN_RATE_LIMIT")
@@ -54,6 +59,22 @@ class Settings(BaseSettings):
     @property
     def cookie_secure(self) -> bool:
         return self.lognix_public_url.startswith("https://")
+
+    @property
+    def mcp_hosts(self) -> list[str]:
+        """Host headers aceitos em /mcp. Lista vazia significa "aceite qualquer um"."""
+        escolhidos = [h.strip() for h in self.mcp_allowed_hosts.split(",") if h.strip()]
+        if "*" in escolhidos:
+            return []
+        if escolhidos:
+            return escolhidos
+        from urllib.parse import urlsplit
+
+        partes = urlsplit(self.lognix_public_url)
+        porta = partes.port or (443 if partes.scheme == "https" else 80)
+        nomes = {partes.netloc, partes.hostname or "", "localhost", "127.0.0.1"}
+        nomes |= {f"localhost:{porta}", f"127.0.0.1:{porta}"}
+        return sorted(n for n in nomes if n)
 
 
 @lru_cache

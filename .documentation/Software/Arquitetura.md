@@ -39,7 +39,7 @@ flowchart TB
 
 | Peça | O que faz | Onde |
 |---|---|---|
-| **API** | rotas, túneis, proxy, ciclos, IA — e serve o frontend construído | na imagem, `backend/lognix/` |
+| **API** | rotas, túneis, proxy, ciclos, IA, servidor MCP — e serve o frontend construído | na imagem, `backend/lognix/` |
 | **frontend** | a interface, servida pela própria API | na imagem, `/app/static` |
 | **Alloy** | lê os logs dos containers e escreve no Loki | na imagem, config gerada pela API |
 | **Loki** | as linhas de log, e só elas | na imagem, volume `loki-data` |
@@ -119,6 +119,8 @@ ordenáveis pelo usuário. A ordem é a cadeia de fallback. Ver
 | Padrões | Postgres | enquanto o container existir |
 | Ocorrências, insights, chamadas de IA | Postgres | permanente |
 | Credenciais SSH, credenciais dos provedores de IA | Postgres, criptografadas | permanente |
+| Chaves MCP | Postgres, só o hash | até serem revogadas |
+| Chamadas MCP | Postgres | permanente |
 
 A chave de criptografia é derivada de `LOGNIX_SECRET_KEY`. Perdê-la torna as credenciais
 irrecuperáveis.
