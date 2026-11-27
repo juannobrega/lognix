@@ -1,6 +1,6 @@
 # Instalação
 
-**Versão:** 1.0.0
+**Versão documentada:** 1.0.0
 
 ## Requisitos
 
