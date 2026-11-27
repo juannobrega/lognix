@@ -80,6 +80,7 @@ SETTING_KEYS: dict[str, str] = {
     "ai.max_output_tokens": "ai.max_output_tokens",
     "ai.concurrency": "ai.concurrency",
     "mcp.enabled": "mcp.enabled",
+    "updates.check_enabled": "updates.check_enabled",
 }
 
 

@@ -407,6 +407,40 @@ projeto quieto não gasta nada. Um projeto com erro contínuo gasta a cada ciclo
 melhoria do roadmap de IA. Até lá, marcar o padrão como ignorado na aba Padrões do projeto é a
 válvula de escape.
 
+## Atualizar
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Isso troca a imagem e sobe de novo. **Subir uma versão nova roda as migrações de banco
+pendentes** — tenha um backup recente do Postgres antes, sobretudo se estiver pulando várias
+versões. Ver [Backup e restauração](#backup-e-restauracao).
+
+Em Configurações › Sistema, no cartão **Atualização**, há um interruptor que nasce **desligado**.
+Ligado, o Lognix consulta o registro de imagens a cada seis horas e avisa na tela quando existir
+versão mais nova que a sua, com link para o que mudou.
+
+Três coisas sobre essa verificação:
+
+- **Ela pergunta, não conta.** A consulta lista quais versões existem no registro público. Nada
+  sobre a sua instalação sai daqui.
+- **Nasce desligada de propósito.** Quem atualiza de versão não deveria ganhar uma chamada para
+  fora sem ter pedido.
+- **Sem internet não vira erro.** Instalação em rede fechada é caso normal: a verificação devolve
+  "não sei" e a tela não mostra nada.
+
+A versão consultada é a **lista de imagens publicadas**, não a de releases do GitHub. O que
+interessa é a versão que você consegue baixar, e as duas já divergiram neste projeto.
+
+Para quem declara a instalação em arquivo, `updates.check_enabled: true` no `config.yaml`.
+
+!!! info "O botão de atualizar não existe, e o motivo é concreto"
+
+    Um contêiner não troca a própria imagem: quem recria o contêiner é o Docker do host. Um botão
+    dentro do Lognix exigiria dar a ele o socket do Docker da sua máquina com escrita — acesso
+    equivalente a root ali. É uma troca que a gente não vai fazer por você sem pedir.
+
 ## Privacidade
 
 Trechos de log saem do seu ambiente para os provedores de IA que você configurar e, por eles, para

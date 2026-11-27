@@ -23,6 +23,7 @@ from lognix.hosts.routes import router as hosts_router
 from lognix.mcp.routes import router as mcp_router
 from lognix.notifications.routes import router as notifications_router
 from lognix.settings.routes import router as settings_router
+from lognix.updates.routes import router as updates_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(health_router)
@@ -46,3 +47,4 @@ api_router.include_router(ai_insights_router)
 api_router.include_router(ai_settings_router)
 api_router.include_router(ai_providers_router)
 api_router.include_router(mcp_router)
+api_router.include_router(updates_router)

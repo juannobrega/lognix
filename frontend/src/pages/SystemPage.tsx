@@ -3,6 +3,7 @@ import { api } from '../api/client'
 import type { SystemInfo } from '../api/types'
 import { Alert } from '../components/Alert'
 import { bytes, duration } from '../components/format'
+import { UpdateCard } from './UpdateCard'
 
 const COUNT_LABELS: Record<string, string> = {
   hosts: 'Hosts',
@@ -50,6 +51,7 @@ export function SystemPage() {
             </dl>
           </div>
         </section>
+        <UpdateCard />
         <section className="card">
           <div className="card-header">
             <h2>Componentes</h2>

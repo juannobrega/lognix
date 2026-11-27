@@ -108,6 +108,13 @@ export function McpPage() {
           ) : info.data?.has_keys === false ? (
             <Alert kind="warn" message="Ligado, mas sem nenhuma chave ativa — ninguém consegue conectar ainda." />
           ) : null}
+          {info.data?.host_allowed === false && (
+            <Alert
+              kind="warn"
+              message={`Você chegou por ${new URL(info.data.url).host}, mas o Lognix só aceita chamadas MCP vindas de ${info.data.public_url}. Um cliente apontado para o endereço abaixo receberia 421.`}
+              action="Ajuste LOGNIX_PUBLIC_URL, ou liste o nome em LOGNIX_MCP_ALLOWED_HOSTS."
+            />
+          )}
           <p className="muted">
             O Lognix atende o protocolo MCP neste endereço. Qualquer cliente compatível — Claude Code, Claude Desktop —
             passa a consultar hosts, logs e insights pelas ferramentas listadas abaixo, usando uma chave criada aqui.

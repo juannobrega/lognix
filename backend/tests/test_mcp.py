@@ -708,3 +708,57 @@ async def test_interruptor_declarado_no_arquivo_nao_muda_pela_tela(authed: Async
         assert resp.json()["error"]["code"] == "managed_by_file"
     finally:
         config_file._ativa = anterior
+
+
+# --- qual endereço a tela mostra ----------------------------------------------------------
+
+
+async def test_endereco_vem_de_quem_chegou_nao_do_arquivo(authed: AsyncClient) -> None:
+    """Atrás de proxy, LOGNIX_PUBLIC_URL sozinho mostraria o endereço interno do contêiner."""
+    corpo = (
+        await authed.get(
+            ROTA,
+            headers={"X-Forwarded-Host": "lognix.exemplo.com", "X-Forwarded-Proto": "https"},
+        )
+    ).json()
+    assert corpo["url"] == "https://lognix.exemplo.com/mcp"
+    assert corpo["public_url"] == "http://localhost:8080"
+    # E avisa: esse Host não passa na checagem do /mcp, o cliente tomaria 421.
+    assert corpo["host_allowed"] is False
+
+
+async def test_proxy_em_cadeia_usa_o_primeiro_nome(authed: AsyncClient) -> None:
+    corpo = (
+        await authed.get(
+            ROTA,
+            headers={
+                "X-Forwarded-Host": "lognix.exemplo.com, interno:8000",
+                "X-Forwarded-Proto": "https, http",
+            },
+        )
+    ).json()
+    assert corpo["url"] == "https://lognix.exemplo.com/mcp"
+
+
+async def test_host_configurado_passa_na_checagem(authed: AsyncClient) -> None:
+    corpo = (await authed.get(ROTA, headers={"Host": "localhost:8080"})).json()
+    assert corpo["url"] == "http://localhost:8080/mcp"
+    assert corpo["host_allowed"] is True
+
+
+async def test_host_liberado_por_configuracao_passa(authed: AsyncClient, monkeypatch) -> None:
+    from lognix.config import get_settings
+
+    monkeypatch.setenv("LOGNIX_MCP_ALLOWED_HOSTS", "lognix.exemplo.com")
+    get_settings.cache_clear()
+    try:
+        corpo = (
+            await authed.get(
+                ROTA,
+                headers={"X-Forwarded-Host": "lognix.exemplo.com", "X-Forwarded-Proto": "https"},
+            )
+        ).json()
+        assert corpo["host_allowed"] is True
+    finally:
+        monkeypatch.delenv("LOGNIX_MCP_ALLOWED_HOSTS")
+        get_settings.cache_clear()

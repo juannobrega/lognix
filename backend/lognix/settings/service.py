@@ -17,6 +17,7 @@ AI_MAX_OUTPUT_TOKENS = "ai.max_output_tokens"
 AI_CONCURRENCY = "ai.concurrency"
 AI_LANGUAGE = "ai.language"
 MCP_ENABLED = "mcp.enabled"
+UPDATE_CHECK = "updates.check_enabled"
 
 SECRET_KEYS = frozenset({AI_API_KEY, "github.app.private_key"})
 
@@ -25,6 +26,9 @@ DEFAULTS: dict[str, str] = {
     # Desligado por padrão, como a IA: o endereço MCP serve logs, e nada que serve log
     # deveria passar a responder porque alguém atualizou a versão.
     MCP_ENABLED: "false",
+    # Desligada: verificar atualização é chamada para fora, e a documentação promete não fazer
+    # nenhuma sem que a pessoa peça. Ver ADR 018.
+    UPDATE_CHECK: "false",
     AI_MAX_INPUT_TOKENS: "12000",
     AI_MAX_OUTPUT_TOKENS: "1500",
     AI_CONCURRENCY: "3",

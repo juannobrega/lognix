@@ -1,0 +1,26 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.note {
+  margin: var(--space-3) 0;
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
+}
+.snippet {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--well-border);
+  border-radius: var(--radius-well);
+  background: var(--block-bg);
+}
+.snippet code {
+  flex: 1;
+  overflow-wrap: anywhere;
+  user-select: all;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
