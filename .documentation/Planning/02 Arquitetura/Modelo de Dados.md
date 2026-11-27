@@ -302,6 +302,7 @@ Configurações globais, chave/valor, valores sensíveis criptografados.
 | `github.app.id`, `github.app.private_key`, `github.app.installation_id` | criptografados |
 | `mcp.enabled` | interruptor geral do servidor MCP. Padrão `false`: endereço que serve log não começa a responder por atualização de versão |
 | `updates.check_enabled` | verificação de atualização. Padrão `false`: chamada para fora não se liga por atualização de versão. ADR 018 |
+| `updates.self_update_enabled` | botão de atualizar na interface. Padrão `false`, e inútil sem o socket do Docker montado. ADR 019 |
 | `analysis.interval_seconds` | 30, fixo na v1, preparado para roadmap |
 | `loki.retention_days` | espelha o `.env`, só leitura na interface |
 

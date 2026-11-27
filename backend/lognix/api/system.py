@@ -53,6 +53,15 @@ class VolumeOut(BaseModel):
     free_bytes: int | None
 
 
+class ConfigFileOut(BaseModel):
+    """Onde o Lognix procurou o config.yaml, e o que achou lá."""
+
+    path: str
+    found: bool
+    keys: list[str]
+    providers: int
+
+
 class SystemOut(BaseModel):
     version: str
     started_at: datetime
@@ -64,6 +73,7 @@ class SystemOut(BaseModel):
     loops: list[LoopOut]
     volumes: list[VolumeOut]
     proxy_rejected_total: int
+    config_file: ConfigFileOut
 
 
 _started_at = datetime.now(UTC)
@@ -81,7 +91,10 @@ def _volume(path: str) -> VolumeOut:
 
 @router.get("/system", response_model=SystemOut)
 async def system(_: CurrentUser, db: DbSession) -> SystemOut:
+    from lognix.settings import config_file
+
     settings = get_settings()
+    arquivo = config_file.active()
     postgres = await check_postgres()
     loki = await check_http(f"{settings.loki_url}/ready")
     alloy = await check_http(f"{settings.alloy_url}/-/ready")
@@ -156,4 +169,10 @@ async def system(_: CurrentUser, db: DbSession) -> SystemOut:
             _volume(os.path.dirname(settings.alloy_config_path) or "/"),
         ],
         proxy_rejected_total=rejected,
+        config_file=ConfigFileOut(
+            path=str(arquivo.path or settings.config_file),
+            found=bool(arquivo.managed or arquivo.providers),
+            keys=sorted(arquivo.managed),
+            providers=len(arquivo.providers),
+        ),
     )

@@ -81,6 +81,7 @@ SETTING_KEYS: dict[str, str] = {
     "ai.concurrency": "ai.concurrency",
     "mcp.enabled": "mcp.enabled",
     "updates.check_enabled": "updates.check_enabled",
+    "updates.self_update_enabled": "updates.self_update_enabled",
 }
 
 
@@ -99,7 +100,11 @@ def load(path: str | Path) -> FileConfig:
     """Lê o arquivo. Ausente devolve vazio; presente e inválido levanta."""
     arquivo = Path(path)
     if not arquivo.is_file():
-        return FileConfig()
+        # Dizer o caminho procurado importa mais aqui do que no caso de sucesso: arquivo no
+        # lugar errado é indistinguível de arquivo inexistente, e sem esta linha a pessoa fica
+        # olhando para uma tela que ignora o que ela escreveu, sem nenhuma pista.
+        log.info("nenhum arquivo de configuração em %s: tudo se configura pela interface", arquivo)
+        return FileConfig(path=arquivo)
 
     try:
         bruto = yaml.safe_load(arquivo.read_text(encoding="utf-8")) or {}

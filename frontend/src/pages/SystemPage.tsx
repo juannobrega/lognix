@@ -48,6 +48,24 @@ export function SystemPage() {
               <dd>{s.analysis_interval_seconds} s</dd>
               <dt>Requisições bloqueadas pelo proxy</dt>
               <dd style={{ color: s.proxy_rejected_total > 0 ? 'var(--warn)' : undefined }}>{s.proxy_rejected_total}</dd>
+              <dt>Arquivo de configuração</dt>
+              <dd>
+                {s.config_file.found ? (
+                  <>
+                    <span className="mono">{s.config_file.path}</span>
+                    <br />
+                    <span className="muted">
+                      {s.config_file.keys.length} chave(s), {s.config_file.providers} provedor(es)
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {/* Dizer onde foi procurado é o que separa "não quis usar" de "pus no lugar errado". */}
+                    <span className="muted">nenhum, procurado em </span>
+                    <span className="mono">{s.config_file.path}</span>
+                  </>
+                )}
+              </dd>
             </dl>
           </div>
         </section>

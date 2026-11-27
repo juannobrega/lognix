@@ -15,7 +15,7 @@ Lognix é um **analisador de logs com IA**. Mapeia instâncias (hosts), conecta-
 coleta logs de containers via **Grafana Alloy**, centraliza tudo e usa modelos de linguagem
 para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 
-- **Estado:** 1.4.0 construída. A 1.0.0 fechou da fundação à análise por IA; a 1.2.0 abriu o Lognix para clientes de IA pelo MCP; a 1.3.0 deu à IA área própria na interface; a 1.4.0 fez o Lognix saber que existe versão nova. As fases estão em [Fases de Construção](08%20Gestão/Fases%20de%20Construção.md)
+- **Estado:** 1.5.0 construída. A 1.0.0 fechou da fundação à análise por IA; a 1.2.0 abriu o Lognix para clientes de IA pelo MCP; a 1.3.0 deu à IA área própria na interface; a 1.4.0 fez o Lognix saber que existe versão nova, e a 1.5.0 deu a ele o botão de se atualizar. As fases estão em [Fases de Construção](08%20Gestão/Fases%20de%20Construção.md)
 - **Versionamento:** SemVer por label de PR. IA entrou na 0.9.0. 1.0.0 é o primeiro release público, com imagem publicada
 - **Natureza:** código aberto
 - **Alvo inicial:** Docker · **Alvo futuro:** Kubernetes
@@ -27,7 +27,7 @@ para explicar, agrupar, detectar anomalias e sugerir causa raiz.
 | # | Área | O que define | Status |
 |---|------|--------------|--------|
 | 01 | [Produto](01%20Produto/README.md) | Problema, visão, escopo, personas, requisitos, jornadas, glossário | Implementado |
-| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 18 ADRs |
+| 02 | [Arquitetura](02%20Arquitetura/README.md) | Componentes, fluxo de dados, stack, modelo de dados, ADRs | 19 ADRs |
 | 03 | [Coleta de Logs](03%20Coleta%20de%20Logs/README.md) | Alloy, inventário e conexão de instâncias, Docker, Kubernetes | Implementado |
 | 04 | [Inteligência Artificial](04%20Inteligência%20Artificial/README.md) | Casos de uso, pipeline, prompts, providers, custos, guardrails | Implementado |
 | 05 | [Backend](05%20Backend/README.md) | API, autenticação, workers, integrações | Implementado |

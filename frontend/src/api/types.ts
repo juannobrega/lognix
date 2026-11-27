@@ -273,6 +273,7 @@ export interface SystemInfo {
   loops: SystemLoop[]
   volumes: SystemVolume[]
   proxy_rejected_total: number
+  config_file: ConfigFileInfo
 }
 
 export interface HostSummary {
@@ -599,6 +600,20 @@ export interface McpCall {
   created_at: string
 }
 
+export interface ConfigFileInfo {
+  path: string
+  found: boolean
+  keys: string[]
+  providers: number
+}
+
+export interface UpdateAttempt {
+  state: string
+  exit_code: number | null
+  finished_at: string | null
+  log: string
+}
+
 export interface UpdateInfo {
   enabled: boolean
   managed: boolean
@@ -609,4 +624,11 @@ export interface UpdateInfo {
   checked_at: string | null
   changelog_url: string
   command: string
+  self_update_enabled: boolean
+  self_update_managed: boolean
+  /** Há caminho para a troca: socket montado, alcançável, e o contêiner identificado. */
+  can_self_update: boolean
+  /** Por que não pode: socket_ausente, sem_permissao, container_desconhecido, docker_indisponivel. */
+  blocker: string | null
+  last_attempt: UpdateAttempt | null
 }

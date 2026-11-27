@@ -97,3 +97,29 @@ def test_provider_sem_kind_e_recusado(tmp_path) -> None:
 def test_providers_precisa_ser_lista(tmp_path) -> None:
     with pytest.raises(ConfigError, match="lista"):
         load(escreve(tmp_path, "providers:\n  kind: openai\n"))
+
+
+async def test_system_diz_onde_procurou_o_arquivo(authed) -> None:
+    """Arquivo no lugar errado era indistinguível de arquivo inexistente: a tela não dizia nada,
+    e quem escreveu ficava olhando para uma interface que ignorava o que ele pediu."""
+    corpo = (await authed.get("/api/v1/system")).json()
+    assert corpo["config_file"]["found"] is False
+    assert corpo["config_file"]["path"].endswith(".yaml")
+
+
+async def test_system_conta_o_que_o_arquivo_declarou(authed) -> None:
+    from lognix.settings import config_file
+
+    anterior = config_file.active()
+    config_file._ativa = config_file.FileConfig(
+        managed={"ai.enabled": True, "mcp.enabled": True},
+        providers=[{"kind": "openai"}],
+        path=config_file.Path("/config/config.yaml"),
+    )
+    try:
+        corpo = (await authed.get("/api/v1/system")).json()
+        assert corpo["config_file"]["found"] is True
+        assert corpo["config_file"]["keys"] == ["ai.enabled", "mcp.enabled"]
+        assert corpo["config_file"]["providers"] == 1
+    finally:
+        config_file._ativa = anterior

@@ -26,6 +26,9 @@ mcp:
 # versões existem — uma pergunta, nada enviado — e avisa na tela quando sair versão nova.
 updates:
   check_enabled: false
+  # Botão de atualizar na interface. Só funciona com o socket do Docker montado no contêiner
+  # — ver docker-compose.yml. Montar o socket dá ao Lognix controle do Docker deste host.
+  self_update_enabled: false
 
 # Provedores de IA, na ordem da cadeia de fallback: o primeiro atende, os seguintes entram se ele
 # recusar. Os tipos disponíveis são os mesmos da tela de Provedores.

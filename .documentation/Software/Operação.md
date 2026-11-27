@@ -435,11 +435,57 @@ interessa é a versão que você consegue baixar, e as duas já divergiram neste
 
 Para quem declara a instalação em arquivo, `updates.check_enabled: true` no `config.yaml`.
 
-!!! info "O botão de atualizar não existe, e o motivo é concreto"
+### Atualizar pela interface
 
-    Um contêiner não troca a própria imagem: quem recria o contêiner é o Docker do host. Um botão
-    dentro do Lognix exigiria dar a ele o socket do Docker da sua máquina com escrita — acesso
-    equivalente a root ali. É uma troca que a gente não vai fazer por você sem pedir.
+Existe um botão, e ele exige duas decisões suas — nenhuma delas é padrão.
+
+**Primeira: montar o socket do Docker** no contêiner do Lognix. Um contêiner não troca a própria
+imagem; quem recria o contêiner é o Docker do host. No `docker-compose.yml`:
+
+```yaml
+services:
+  lognix:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "999"   # o GID do grupo docker deste host
+```
+
+O `group_add` é necessário porque o Lognix não roda como root: sem ele o socket aparece montado e
+responde "permissão negada". Descubra o número com `getent group docker | cut -d: -f3` no Linux, ou
+`stat -f %g /var/run/docker.sock` no macOS.
+
+!!! danger "O que isso concede"
+
+    Controle do Docker desta máquina — criar qualquer contêiner, inclusive privilegiado. Na
+    prática, poder equivalente a root no host do Lognix.
+
+    **Os hosts monitorados continuam intocados.** Eles são alcançados por outro caminho, o proxy
+    que recusa tudo que não é `GET`, e nada nesta decisão muda isso.
+
+**Segunda: ligar o interruptor** em Configurações › Sistema › Atualização. Montar o socket pode ter
+sido decisão de outra pessoa, para outra finalidade; são duas chaves, não uma.
+
+Com as duas, aparece o botão **Atualizar para X.Y.Z**. O que acontece ao confirmar:
+
+1. a imagem nova é **baixada primeiro** — se falhar, nada foi tocado;
+2. um contêiner auxiliar, `lognix-updater`, sobe com a imagem nova e faz a troca de fora;
+3. o Lognix é parado e **renomeado**, não removido;
+4. o novo nasce com a mesma configuração — variáveis, volumes, redes, portas, política de reinício;
+5. se ele ficar saudável, o antigo é descartado. **Se não ficar, o novo é removido e o antigo
+   volta ao ar.**
+
+A tela fica fora do ar por cerca de um minuto e recarrega sozinha quando o Lognix responder de
+novo. Depois, o cartão Atualização mostra como terminou — lendo os registros do auxiliar, que fica
+parado na máquina. Por fora: `docker logs lognix-updater`.
+
+!!! warning "O que o rollback não conserta"
+
+    Subir versão roda as **migrações de banco** pendentes. Se uma migração falhar no meio, voltar
+    para o contêiner anterior encontra um banco que já avançou — e a versão anterior pode não
+    entender o esquema novo.
+
+    Por isso a confirmação exige marcar que existe backup recente. É a única proteção real aqui.
 
 ## Privacidade
 

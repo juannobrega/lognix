@@ -36,6 +36,7 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 | 1.2.0 | **Servidor MCP** | Transporte HTTP montado em `/mcp`, dez ferramentas, chaves com escopo e auditoria, aba MCP nas configurações. **Construída em 2026-11-27.** Ver [ADR 017](../02%20Arquitetura/ADR/ADR%20017%20Servidor%20MCP%20do%20Lognix.md) e a [área 10](../10%20Servidor%20MCP/README.md) |
 | 1.3.0 | **IA como área própria** | A IA sai de dentro de Configurações e vira grupo próprio, com Provedores, Consumo e MCP; interruptor geral do servidor MCP, desligado por padrão. **Construída em 2026-11-27** |
 | 1.4.0 | **Descoberta de atualização** | Verificação opcional contra o registro de imagens, desligada por padrão, com aviso de versão nova e o comando pronto; endereço do MCP derivado da requisição em vez do arquivo. **Construída em 2026-11-27.** Ver [ADR 018](../02%20Arquitetura/ADR/ADR%20018%20Verificação%20de%20Atualização%20Opcional.md) |
+| 1.5.0 | **Atualizar pela interface** | Botão que troca a imagem, com opt-in duplo — socket do Docker montado e chave na tela —, contêiner auxiliar, rollback automático e registro da tentativa. **Construída em 2026-11-27.** Ver [ADR 019](../02%20Arquitetura/ADR/ADR%20019%20Autoatualização%20com%20Opt-in.md) |
 | a seguir, 1 de 3 | **GitHub App** | Registro do App, configuração, vínculo de repositório com pré-preenchimento OCI, validação de repositório de código |
 | a seguir, 2 de 3 | **Diagnóstico de código** | Seleção de arquivos a partir do erro, IA-2, `code_diagnosis` na interface |
 | a seguir, 3 de 3 | **Issues** | IA-3, template, abrir, comentar, reabrir, `GithubIssue` |
@@ -70,3 +71,4 @@ vínculo antes de entregar a primeira resposta útil.
 | 1.2.0 | ADR 017, área 10 inteira |
 | 1.3.0 | Frontend/Mapa de Telas |
 | 1.4.0 | ADR 018 |
+| 1.5.0 | ADR 019 |

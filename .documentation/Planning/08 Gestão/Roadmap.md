@@ -78,7 +78,7 @@ Resumo do que entra. Detalhes em [Visão e Escopo](../01%20Produto/Visão%20e%20
 - **Imagens oficiais publicadas.** O 1.0.0 publica só código. Release versionado por tag já existe desde o início.
 - **Helm chart** quando houver suporte a Kubernetes.
 - **Modo demo** com dados sintéticos para quem quer avaliar sem cadastrar host.
-- **Botão de atualizar dentro do Lognix.** A descoberta entrou na 1.4.0 (ADR 018); o botão exige o socket do Docker do host do Lognix com escrita, feito por contêiner auxiliar efêmero, e com opt-in explícito. Precisa mandar quem clica para o backup antes de confirmar, porque subir versão roda migração.
+- ~~**Botão de atualizar dentro do Lognix.**~~ Construído na 1.5.0, com opt-in duplo e rollback. Ver [ADR 019](../02%20Arquitetura/ADR/ADR%20019%20Autoatualização%20com%20Opt-in.md).
 
 ## Ideias registradas sem avaliação
 

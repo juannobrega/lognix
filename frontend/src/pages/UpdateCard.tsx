@@ -6,6 +6,7 @@ import { CopyButton } from '../components/CopyButton'
 import { dateTime } from '../components/format'
 import { useToast } from '../components/useToast'
 import styles from './UpdateCard.module.css'
+import { SelfUpdate } from './SelfUpdate'
 import { Switch } from '../ui/Switch'
 
 /**
@@ -87,6 +88,8 @@ export function UpdateCard() {
           Subir uma versão nova roda as migrações de banco pendentes. Tenha um backup recente do Postgres antes —
           especialmente se estiver pulando várias versões.
         </p>
+
+        {d && <SelfUpdate info={d} />}
       </div>
     </section>
   )
