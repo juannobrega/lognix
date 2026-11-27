@@ -1,7 +1,5 @@
 # Arquitetura
 
-**Versão documentada:** 1.0.0
-
 Visão de quem precisa entender o sistema por dentro sem ler o planejamento inteiro. O porquê de
 cada decisão está nos [ADRs](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/README.md).
 

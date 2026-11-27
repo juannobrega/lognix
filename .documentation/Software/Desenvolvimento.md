@@ -1,7 +1,5 @@
 # Desenvolvimento
 
-**Versão documentada:** 1.0.0
-
 Como mexer no código. A visão de como o sistema funciona está em [Arquitetura](Arquitetura.md).
 
 ## Estrutura

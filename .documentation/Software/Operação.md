@@ -1,7 +1,5 @@
 # Operação
 
-**Versão documentada:** 1.0.0
-
 ## Preparar um host para o Lognix
 
 O Lognix não instala nada no host. Ele precisa só de SSH e de acesso ao socket do Docker.
