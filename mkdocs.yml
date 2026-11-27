@@ -62,19 +62,21 @@ theme:
 extra_css:
   - assets/lognix.css
 
-# Só o que serve a quem **usa** o Lognix. O guia de desenvolvimento fica no repositório: quem vai
-# mexer no código já está lá, e misturar convenção de commit com guia de instalação faz o leitor
-# comum passar por páginas que não são para ele.
+# O site responde duas perguntas: o que é, e como usar. Nada além disso.
+#
+# Arquitetura interna e guia de desenvolvimento ficam no repositório. Quem precisa deles já está
+# lá, e no site eles só fariam o leitor comum passar por páginas que não são para ele — além de
+# publicar detalhe de desenho que não precisa estar numa página aberta.
 nav:
   - Início: README.md
   - Instalação: Instalação.md
   - Configuração: Configuração.md
   - Operação: Operação.md
-  - Como funciona: Arquitetura.md
   - Mudanças: CHANGELOG.md
 
 exclude_docs: |
   Desenvolvimento.md
+  Arquitetura.md
 
 markdown_extensions:
   - admonition

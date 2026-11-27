@@ -50,22 +50,22 @@ a linha ficaria rente ao zero e esconderia exatamente o pico que alguém abre o 
 | rodar o Lognix | [Instalação](Instalação.md) |
 | declarar a instalação num arquivo | [Configuração](Configuração.md) |
 | usar no dia a dia | [Operação](Operação.md) |
-| entender como funciona por dentro | [Como funciona](Arquitetura.md) |
 | saber o que mudou | [Mudanças](CHANGELOG.md) |
 
 A referência da API é gerada pela própria instalação, em `/api/docs`.
 
-## Sobre esta documentação
+## Privacidade
 
-Ela descreve como o Lognix funciona **hoje**, e muda no mesmo pull request que muda o
-comportamento. O **porquê** de cada decisão, com as alternativas descartadas, vive na área de
-[planejamento](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/README.md)
-do repositório — inclusive as decisões que se mostraram erradas depois. Quando as duas discordam
-sobre comportamento, esta aqui vence.
+Trechos de log saem do seu ambiente **apenas** para o provedor de IA que você configurar, e isso
+é avisado na própria tela. Não há redação automática de dados sensíveis nesta versão. Variáveis de
+ambiente nunca são enviadas por valor, só por nome.
 
-Vai contribuir? O guia de desenvolvimento — rodar local, testar, migrações, convenções — fica no
-repositório, em [Desenvolvimento.md](https://github.com/juannobrega/lognix/blob/main/.documentation/Software/Desenvolvimento.md). No repositório há ainda
-[CONTRIBUTING.md](https://github.com/juannobrega/lognix/blob/main/CONTRIBUTING.md), com as
-convenções de código e o fluxo de pull request, e
-[SECURITY.md](https://github.com/juannobrega/lognix/blob/main/SECURITY.md), com o que o Lognix
-promete, o que não promete e como relatar uma vulnerabilidade.
+Fora isso, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a serviços do
+autor. A IA é opcional, e o resto funciona com ela desligada. Detalhes em
+[Operação](Operação.md#privacidade).
+
+## Contribuir
+
+O código, o guia de desenvolvimento e o registro das decisões de projeto estão no
+[repositório](https://github.com/juannobrega/lognix). Vulnerabilidades, em privado:
+[SECURITY.md](https://github.com/juannobrega/lognix/blob/main/SECURITY.md).
