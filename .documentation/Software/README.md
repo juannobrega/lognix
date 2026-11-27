@@ -50,8 +50,7 @@ a linha ficaria rente ao zero e esconderia exatamente o pico que alguém abre o 
 | rodar o Lognix | [Instalação](Instalação.md) |
 | declarar a instalação num arquivo | [Configuração](Configuração.md) |
 | usar no dia a dia | [Operação](Operação.md) |
-| entender como funciona por dentro | [Arquitetura](Arquitetura.md) |
-| mexer no código | [Desenvolvimento](Desenvolvimento.md) |
+| entender como funciona por dentro | [Como funciona](Arquitetura.md) |
 | saber o que mudou | [Mudanças](CHANGELOG.md) |
 
 A referência da API é gerada pela própria instalação, em `/api/docs`.
@@ -64,7 +63,8 @@ comportamento. O **porquê** de cada decisão, com as alternativas descartadas, 
 do repositório — inclusive as decisões que se mostraram erradas depois. Quando as duas discordam
 sobre comportamento, esta aqui vence.
 
-No repositório há ainda
+Vai contribuir? O guia de desenvolvimento — rodar local, testar, migrações, convenções — fica no
+repositório, em [Desenvolvimento.md](https://github.com/juannobrega/lognix/blob/main/.documentation/Software/Desenvolvimento.md). No repositório há ainda
 [CONTRIBUTING.md](https://github.com/juannobrega/lognix/blob/main/CONTRIBUTING.md), com as
 convenções de código e o fluxo de pull request, e
 [SECURITY.md](https://github.com/juannobrega/lognix/blob/main/SECURITY.md), com o que o Lognix

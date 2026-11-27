@@ -22,6 +22,30 @@ lognix/
 └── .documentation/         Planning (decisões) e Software (este guia)
 ```
 
+## O que cada módulo do backend faz
+
+```
+lognix/
+├── auth/          usuários, login, sessões
+├── hosts/         cadastro, validação em etapas, túneis SSH, proxy somente leitura
+├── docker/        único módulo que fala com a Docker API, sempre pelo proxy
+├── containers/    inventário, seleção de monitorados, projetos
+├── events/        eventos Docker, reconciliação, redeploy
+├── alloy/         gera e recarrega a config do Alloy
+├── loki/          único módulo que fala com o Loki
+├── analysis/      ciclo, padrões (Drain), classificação, triggers, executor
+├── ai/            provedores, cadeia de fallback, contexto, esquema, insights, custo
+├── notifications/ avisos com ação
+├── settings/      configurações no banco, segredos criptografados
+├── realtime/      WebSocket: logs ao vivo, executor, barramento
+└── api/           agrega as rotas, saúde, resumo, sistema, métricas
+```
+
+Regra que o código segue: cada sistema externo tem **um** módulo que fala com ele. Nada fora de
+`docker/` abre o socket do Docker; nada fora de `loki/` consulta o Loki; nada fora de `ai/` chama um
+provedor de IA. Dentro de `ai/`, cada tipo de provedor é um arquivo em `ai/providers/`, e o resto do
+módulo só conhece o `Protocol` `AiProvider`.
+
 ## Rodar
 
 Há **um** compose, o de instalação. Para desenvolver, suba a infraestrutura por ele e rode backend e

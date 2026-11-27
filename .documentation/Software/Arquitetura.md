@@ -111,30 +111,6 @@ São três tipos de provedor — OpenRouter, OpenAI e Amazon Bedrock —, cadast
 ordenáveis pelo usuário. A ordem é a cadeia de fallback. Ver
 [ADR 012](https://github.com/juannobrega/lognix/blob/main/.documentation/Planning/02%20Arquitetura/ADR/ADR%20012%20M%C3%BAltiplos%20Provedores%20de%20IA%20com%20Cadeia%20de%20Fallback.md).
 
-## O que cada módulo do backend faz
-
-```
-lognix/
-├── auth/          usuários, login, sessões
-├── hosts/         cadastro, validação em etapas, túneis SSH, proxy somente leitura
-├── docker/        único módulo que fala com a Docker API, sempre pelo proxy
-├── containers/    inventário, seleção de monitorados, projetos
-├── events/        eventos Docker, reconciliação, redeploy
-├── alloy/         gera e recarrega a config do Alloy
-├── loki/          único módulo que fala com o Loki
-├── analysis/      ciclo, padrões (Drain), classificação, triggers, executor
-├── ai/            provedores, cadeia de fallback, contexto, esquema, insights, custo
-├── notifications/ avisos com ação
-├── settings/      configurações no banco, segredos criptografados
-├── realtime/      WebSocket: logs ao vivo, executor, barramento
-└── api/           agrega as rotas, saúde, resumo, sistema, métricas
-```
-
-Regra que o código segue: cada sistema externo tem **um** módulo que fala com ele. Nada fora de
-`docker/` abre o socket do Docker; nada fora de `loki/` consulta o Loki; nada fora de `ai/` chama um
-provedor de IA. Dentro de `ai/`, cada tipo de provedor é um arquivo em `ai/providers/`, e o resto do
-módulo só conhece o `Protocol` `AiProvider`.
-
 ## Onde mora o quê
 
 | Dado | Onde | Retenção |
