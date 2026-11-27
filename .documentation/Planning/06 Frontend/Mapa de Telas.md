@@ -22,6 +22,7 @@ flowchart LR
     PAINEL --> PROJETOS[Projetos]
     PAINEL --> INSIGHTS[Insights]
     PAINEL --> NOTIF[Notificações]
+    PAINEL --> IA[Inteligência Artificial]
     PAINEL --> CONFIG[Configurações]
     HOSTS --> HOST[Host]
     HOST --> NOVOHOST[Cadastrar host]
@@ -31,14 +32,22 @@ flowchart LR
     PROJETO --> PINS[Insights do projeto]
     INSIGHTS --> INSIGHT[Insight]
     PINS --> INSIGHT
-    CONFIG --> IA[IA]
+    IA --> AJUSTES[Ajustes da IA]
+    IA --> PROVEDORES[Provedores]
+    IA --> CONSUMO[Consumo de IA]
+    IA --> MCP[MCP]
     CONFIG --> USUARIOS[Usuários]
-    CONFIG --> CONSUMO[Consumo de IA]
     CONFIG --> SISTEMA[Sistema]
 ```
 
-Barra lateral fixa com: Painel, Hosts, Projetos, Insights, Notificações, Configurações. Rodapé da
-barra: versão, estado da IA, usuário logado.
+Barra lateral fixa com: Painel, Hosts, Projetos, Insights, Notificações e, na seção Ajustes, dois
+grupos que abrem subitens — Inteligência Artificial e Configurações. Rodapé da barra: versão,
+estado da IA, usuário logado.
+
+**Mudou na 1.3.0:** a IA saiu de dentro de Configurações e virou grupo próprio, levando Provedores,
+Consumo e MCP. Configurações ficou com o que é do próprio Lognix — quem entra e como ele está. O
+motivo é peso: cinco subitens, quatro deles sobre IA, faziam de "Configurações" um balaio onde o
+assunto principal do produto ficava escondido. Os caminhos antigos redirecionam.
 
 ## 2. Telas
 
@@ -59,11 +68,16 @@ barra: versão, estado da IA, usuário logado.
 | **Ocorrências sem análise** | `/insights/unanalyzed` | triggers disparados sem IA | 0.6.0 |
 | **Notificações** | `/notifications` | lista, visto, limpar todos, ações diretas: monitorar container novo, reconectar host, aceitar fingerprint | 0.5.0 |
 | **Executor** | painel lateral, qualquer rota | análises em andamento | 0.6.0 |
-| **Configurações › IA** | `/settings/ai` | chave OpenRouter, modelo, limites, aviso de dados sensíveis, ativar e desativar. Estrutura na 0.8.0; teste de chave e lista de modelos na 0.9.0 | 0.8.0 |
-| **Configurações › Consumo** | `/settings/usage` | tela de consumo da área 04. Estrutura na 0.8.0; números reais na 0.9.0 | 0.8.0 |
-| **Configurações › Usuários** | `/settings/users` | cadastro e remoção de usuários, troca de senha | 0.1.0 |
+| **Inteligência Artificial** | `/ai` | entrada em cards dos quatro subitens | 1.3.0 |
+| **IA › Ajustes da IA** | `/ai/behavior` | interruptor geral, limites por chamada, aviso de dados sensíveis. Era `/settings/ai` | 0.8.0 |
+| **IA › Provedores** | `/ai/providers` | cadeia de fallback, credenciais, modelos, verificação em etapas. Era `/settings/providers` | 1.0.0 |
+| **IA › Consumo** | `/ai/usage` | chamadas, tokens, custo e confiabilidade por provedor. Era `/settings/usage` | 0.8.0 |
+| **IA › MCP** | `/ai/mcp` | interruptor do servidor, chaves com escopo, catálogo de ferramentas, histórico de chamadas. Era `/settings/mcp` | 1.2.0 |
+| **Configurações** | `/settings` | entrada em cards | 0.8.0 |
+| **Configurações › Usuários** | `/settings/users` | cadastro e remoção de usuários | 0.1.0 |
 | **Configurações › Sistema** | `/settings/system` | versão, retenção, estado dos loops, estado do Alloy e do Loki | 0.7.0 |
-| **Configurações › GitHub** | `/settings/github` | App ID, chave, instalação | 1.1.0 |
+| **Minha conta** | `/conta` | troca da própria senha | 1.1.0 |
+| **Configurações › GitHub** | `/settings/github` | App ID, chave, instalação | a seguir |
 
 ## 3. Estados que toda tela precisa tratar
 

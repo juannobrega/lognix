@@ -6,10 +6,13 @@ from functools import cache
 
 from mcp.server.transport_security import TransportSecuritySettings
 from starlette.applications import Starlette
+from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from lognix.config import get_settings
+from lognix.db import get_sessionmaker
 from lognix.mcp.server import construir
+from lognix.settings import service as servico
 
 
 def _seguranca() -> TransportSecuritySettings:
@@ -27,6 +30,41 @@ def _seguranca() -> TransportSecuritySettings:
         allowed_hosts=hosts,
         allowed_origins=[cfg.lognix_public_url.rstrip("/")],
     )
+
+
+class _Interruptor:
+    """Recusa tudo quando o servidor MCP está desligado na configuração.
+
+    Fica na frente do app do SDK porque desligar precisa valer para a conexão inteira, do
+    `initialize` em diante — não dá para desmontar uma rota em tempo de execução, e checar
+    dentro de cada ferramenta deixaria o handshake passar e as chaves continuarem válidas.
+
+    Responde 503, e não 401: a diferença entre "desligado aqui" e "sua chave não serve" é o
+    que decide se quem está depurando vai procurar na tela ou na chave.
+    """
+
+    def __init__(self, alvo: ASGIApp) -> None:
+        self.alvo = alvo
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and not await self._ligado():
+            await JSONResponse(
+                {
+                    "error": {
+                        "code": "mcp_disabled",
+                        "message": "O servidor MCP do Lognix está desligado.",
+                        "action": "Ligue em Configurações > MCP.",
+                    }
+                },
+                status_code=503,
+            )(scope, receive, send)
+            return
+        await self.alvo(scope, receive, send)
+
+    @staticmethod
+    async def _ligado() -> bool:
+        async with get_sessionmaker()() as db:
+            return await servico.get_bool(db, servico.MCP_ENABLED)
 
 
 class _NaRaiz:
@@ -63,10 +101,15 @@ def _servidor() -> Starlette:
 
 
 def app_mcp() -> Starlette:
-    """O app do MCP. Vai montado em /mcp, e é dele o lifespan que o Mount não propaga."""
+    """O app do MCP. É dele o lifespan que o Mount não propaga."""
     return _servidor()
+
+
+def montagem() -> ASGIApp:
+    """O que vai montado em /mcp: o app do SDK atrás do interruptor."""
+    return _Interruptor(_servidor())
 
 
 def rota_exata() -> ASGIApp:
     """Atende `/mcp` sem barra final, sem redirecionamento. Ver `_NaRaiz`."""
-    return _NaRaiz(_servidor())
+    return _Interruptor(_NaRaiz(_servidor()))

@@ -48,7 +48,14 @@ respondível sem ninguém abrir o navegador.
 6. **Nenhuma ferramenta devolve credencial.** Nem chave de provedor, nem senha de SSH, nem
    variável de ambiente de container. O que não sai pela API REST também não sai aqui.
 
-7. **Toda chamada é registrada**, com chave, ferramenta e horário, e a chave guarda o último uso.
+7. **Interruptor geral, desligado por padrão.** Como o da IA. Duas razões distintas: quem
+   atualiza de versão não deveria ganhar um endereço que serve log sem pedir; e quem suspeita de
+   vazamento precisa cortar tudo num clique, sem caçar chave por chave. Desligado, `/mcp`
+   responde **503** — e não 401, porque a diferença entre "desligado aqui" e "sua chave não
+   serve" é o que decide se a pessoa vai procurar na tela ou na chave. As chaves continuam
+   guardadas: desligar não é revogar.
+
+8. **Toda chamada é registrada**, com chave, ferramenta e horário, e a chave guarda o último uso.
    Sem isso não há como responder "quem consultou esses logs" nem decidir qual chave revogar.
 
 ## Alternativas consideradas

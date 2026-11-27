@@ -17,7 +17,7 @@ e repositório, leitura de código, e a ação de abrir issue.
 ## Decisões já tomadas
 
 - **Autenticação por GitHub App**, nunca token pessoal. Ver [ADR 007](../02%20Arquitetura/ADR/ADR%20007%20Integração%20GitHub%20via%20GitHub%20App.md).
-- **Fase:** a integração não entra na primeira fase de construção, e desde 2026-11-27 vem depois do servidor MCP, nas fases 1.3.0 a 1.5.0. Chega quando o Lognix passar a localizar o problema no código e abrir issues. Até lá o produto funciona só com log.
+- **Fase:** a integração não entra na primeira fase de construção, e desde 2026-11-27 vem depois do servidor MCP, nas três fases seguintes. Chega quando o Lognix passar a localizar o problema no código e abrir issues. Até lá o produto funciona só com log.
 - **Vínculo é responsabilidade do usuário.** Ele associa cada workload a um repositório pela interface. O Lognix tenta pré-preencher lendo as labels OCI da imagem, `org.opencontainers.image.source` e `org.opencontainers.image.revision`, quando existirem.
 - **Workload sem repositório é "somente imagem".** O Lognix o trata como uma imagem Docker: analisa logs e eventos, gera insights, mas não faz diagnóstico de código nem abre issue.
 - **Só repositórios de código.** O repositório vinculado tem que ser o codebase do sistema que roda no container. Repositórios de infraestrutura, manifests ou GitOps não são aceitos como vínculo.

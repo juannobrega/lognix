@@ -59,11 +59,11 @@ Lista numerada do que o sistema faz. Cada requisito aponta a fase em que entra e
 ## GitHub
 | ID | Requisito | Fase | Ref |
 |---|---|---|---|
-| RF-050 | Configurar GitHub App pela interface | 1.3.0 | Autenticação GitHub |
-| RF-051 | Vincular projeto a repositório de código, com pré-preenchimento OCI e validação | 1.3.0 | Vínculo |
-| RF-052 | Selecionar e ler arquivos relevantes a partir do erro | 1.4.0 | Leitura de Código |
-| RF-053 | Produzir diagnóstico de código com arquivo, linhas e explicação | 1.4.0 | Diagnóstico |
-| RF-054 | Abrir, comentar e reabrir issues com deduplicação por projeto e padrão | 1.5.0 | Issues |
+| RF-050 | Configurar GitHub App pela interface | a seguir | Autenticação GitHub |
+| RF-051 | Vincular projeto a repositório de código, com pré-preenchimento OCI e validação | a seguir | Vínculo |
+| RF-052 | Selecionar e ler arquivos relevantes a partir do erro | a seguir | Leitura de Código |
+| RF-053 | Produzir diagnóstico de código com arquivo, linhas e explicação | a seguir | Diagnóstico |
+| RF-054 | Abrir, comentar e reabrir issues com deduplicação por projeto e padrão | a seguir | Issues |
 
 ## Servidor MCP
 | ID | Requisito | Fase | Ref |

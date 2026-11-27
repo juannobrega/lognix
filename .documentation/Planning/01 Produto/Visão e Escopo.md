@@ -17,7 +17,7 @@ O produto é entregue em duas camadas, decisão de 2026-11-21:
 | Camada | O que é | Versão |
 |---|---|---|
 | **Núcleo** | Coleta sem agente, Loki, inventário, eventos, ciclo de análise, insights de IA por log | **1.0.0**, primeiro release público |
-| **Diferencial** | GitHub App, diagnóstico no código, abertura de issues | **1.3.0 a 1.5.0**, logo após |
+| **Diferencial** | GitHub App, diagnóstico no código, abertura de issues | **três fases a seguir**, logo após |
 
 O 1.0.0 promete o núcleo. O diferencial é anunciado como próximo passo, não como parte do release.
 

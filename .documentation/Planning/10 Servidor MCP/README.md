@@ -21,6 +21,7 @@ inventário, os logs, os padrões e os insights que já produziu.
 - **`admin` não implica `leitura`.** Quem quer tudo marca tudo, e isso fica visível na tela. Escopo largo por herança é o jeito mais fácil de uma chave de automação virar acesso a todos os logs.
 - **Nenhuma ferramenta escreve.** Nem no host monitorado — isso o proxy somente leitura já garantia — nem no próprio Lognix. O servidor MCP não cadastra host, não marca container, não apaga insight. Uma chave vazada lê; não altera.
 - **Nenhuma ferramenta devolve credencial.** Chave de provedor, senha de SSH e segredo de container não entram em nenhuma resposta, nem na ferramenta de estado do sistema.
+- **Interruptor geral, desligado por padrão,** como o da IA. Desligado, `/mcp` responde 503 a todo mundo, com chave ou sem, e as chaves ficam guardadas — é o corte rápido de quem suspeita de vazamento. `mcp.enabled` também entra no `config.yaml`, e declarado lá a tela mostra e não deixa editar, como manda o [ADR 014](../02%20Arquitetura/ADR/ADR%20014%20Configuração%20por%20Arquivo.md).
 - **Toda chamada fica registrada,** com a chave que a fez, duração e erro. Sem esse registro não há como decidir qual chave revogar.
 
 ## O que o escopo deixa de fora, e por quê

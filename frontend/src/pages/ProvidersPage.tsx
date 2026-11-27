@@ -132,8 +132,8 @@ export function ProvidersPage() {
             uma vez no mesmo provedor antes de descer a cadeia, porque trocar de modelo não costuma corrigir formato.
           </p>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Cada tentativa é registrada com provedor, modelo, tokens, custo e latência em <Link to="/settings/usage">Consumo</Link>. O
-            interruptor geral da IA e os limites de tokens ficam em <Link to="/settings/ai">IA</Link>
+            Cada tentativa é registrada com provedor, modelo, tokens, custo e latência em <Link to="/ai/usage">Consumo</Link>. O
+            interruptor geral da IA e os limites de tokens ficam em <Link to="/ai/behavior">IA</Link>
             {ai.data && !ai.data.enabled ? ' — ele está desligado agora, então nada será chamado.' : '.'}
           </p>
         </div>

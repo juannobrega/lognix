@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ApiError, api } from '../api/client'
 import type { McpCall, McpInfo, McpKey } from '../api/types'
+import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { CopyButton } from '../components/CopyButton'
 import { EmptyState } from '../components/EmptyState'
@@ -13,6 +14,7 @@ import { McpKeyDialog } from '../mcp/McpKeyDialog'
 import styles from '../mcp/McpPage.module.css'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { Menu } from '../ui/Menu'
+import { Switch } from '../ui/Switch'
 
 const ROTULO: Record<string, string> = {
   leitura: 'Leitura',
@@ -55,6 +57,15 @@ export function McpPage() {
     onError: (e) => toast.show(e instanceof ApiError ? e.message : 'Falha ao atualizar a chave.', 'error'),
   })
 
+  const ligar = useMutation({
+    mutationFn: (enabled: boolean) => api<McpInfo>('/settings/mcp', { method: 'PUT', json: { enabled } }),
+    onSuccess: (r) => {
+      toast.show(r.enabled ? 'Servidor MCP ligado.' : 'Servidor MCP desligado.', 'success')
+      void qc.invalidateQueries({ queryKey: ['mcp', 'info'] })
+    },
+    onError: (e) => toast.show(e instanceof ApiError ? e.message : 'Falha ao mudar o interruptor.', 'error'),
+  })
+
   const revogar = useMutation({
     mutationFn: (id: string) => api(`/settings/mcp/keys/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
@@ -72,9 +83,31 @@ export function McpPage() {
     <div className={styles.page}>
       <section className="card">
         <div className="card-header">
-          <h2>Conexão</h2>
+          <h2>Servidor MCP</h2>
+          <span className={styles.switch}>
+            <span className="muted">{info.data?.enabled ? 'ligado' : 'desligado'}</span>
+            <Switch
+              checked={info.data?.enabled ?? false}
+              disabled={!info.data || info.data.managed || ligar.isPending}
+              onCheckedChange={(v) => ligar.mutate(v)}
+              aria-label="Servidor MCP"
+            />
+          </span>
         </div>
         <div className="card-body">
+          {info.data?.managed ? (
+            <Alert
+              kind="info"
+              message="mcp.enabled está declarado no config.yaml. Para ligar ou desligar pela tela, tire a chave do arquivo."
+            />
+          ) : info.data?.enabled === false ? (
+            <Alert
+              kind="warn"
+              message="Desligado: o endereço /mcp responde 503 a todo mundo, com chave ou sem. As chaves continuam guardadas."
+            />
+          ) : info.data?.has_keys === false ? (
+            <Alert kind="warn" message="Ligado, mas sem nenhuma chave ativa — ninguém consegue conectar ainda." />
+          ) : null}
           <p className="muted">
             O Lognix atende o protocolo MCP neste endereço. Qualquer cliente compatível — Claude Code, Claude Desktop —
             passa a consultar hosts, logs e insights pelas ferramentas listadas abaixo, usando uma chave criada aqui.

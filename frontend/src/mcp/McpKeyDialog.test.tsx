@@ -7,6 +7,9 @@ import { ToastProvider } from '../components/Toast'
 import { McpKeyDialog } from './McpKeyDialog'
 
 const info: McpInfo = {
+  enabled: true,
+  has_keys: false,
+  managed: false,
   url: 'http://localhost:8080/mcp',
   scopes: [
     {

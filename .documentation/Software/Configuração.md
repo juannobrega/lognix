@@ -37,6 +37,9 @@ ai:
   enabled: true
   max_input_tokens: 12000
 
+mcp:
+  enabled: true
+
 providers:
   - kind: openrouter
     name: OpenRouter

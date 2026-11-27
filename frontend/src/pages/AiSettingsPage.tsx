@@ -77,7 +77,7 @@ export function AiSettingsPage() {
         <div className="card-body">
           <p className="muted" style={{ marginTop: 0 }}>
             Este é o interruptor geral. Credenciais, modelos e a ordem de fallback ficam em{' '}
-            <Link to="/settings/providers">Provedores</Link>
+            <Link to="/ai/providers">Provedores</Link>
             {s.providers === 0 ? ' — cadastre um para poder ligar a IA.' : '.'}
           </p>
           {s.enabled && !s.configured && (
@@ -133,7 +133,7 @@ export function AiSettingsPage() {
           </p>
           <p className="muted" style={{ marginBottom: 0 }}>
             Resposta fora do formato esperado tem um retry no mesmo provedor; falha de credencial, limite ou indisponibilidade desce a cadeia
-            de fallback. Toda tentativa é registrada com provedor, modelo, tokens e custo em <Link to="/settings/usage">Consumo</Link>.
+            de fallback. Toda tentativa é registrada com provedor, modelo, tokens e custo em <Link to="/ai/usage">Consumo</Link>.
           </p>
         </div>
       </section>

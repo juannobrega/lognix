@@ -44,7 +44,7 @@ async def db() -> AsyncIterator:
 
 
 @pytest.fixture(scope="session")
-async def mcp_vivo() -> AsyncIterator[None]:
+async def _mcp_servindo() -> AsyncIterator[None]:
     """Sobe o ciclo de vida que o Mount não propaga.
 
     Escopo de sessão porque o gerenciador de sessões do SDK só aceita um `run()` por
@@ -64,6 +64,22 @@ async def mcp_vivo() -> AsyncIterator[None]:
     yield
     parar.set()
     await tarefa
+
+
+@pytest.fixture
+async def mcp_vivo(_mcp_servindo: None, db) -> AsyncIterator[None]:
+    """Servidor de pé e interruptor ligado — o estado em que o MCP atende."""
+    from lognix.settings import service as config
+
+    await config.set_value(db, config.MCP_ENABLED, "true")
+    await db.commit()
+    yield
+
+
+@pytest.fixture
+async def mcp_desligado(_mcp_servindo: None) -> AsyncIterator[None]:
+    """Servidor de pé e interruptor no padrão, que é desligado."""
+    yield
 
 
 @asynccontextmanager
@@ -623,3 +639,72 @@ async def test_analisar_agora_roda_o_ciclo_e_devolve_as_ocorrencias(
     assert saida["linhas_com_erro"] == 1
     assert [o["tipo"] for o in saida["ocorrencias"]] == ["manual"]
     assert saida["ocorrencias"][0]["analisada"] is False
+
+
+# --- interruptor geral --------------------------------------------------------------------
+
+
+async def test_nasce_desligado(authed: AsyncClient) -> None:
+    """Endereço que serve log não passa a responder porque alguém atualizou a versão."""
+    corpo = (await authed.get(ROTA)).json()
+    assert corpo["enabled"] is False
+    assert corpo["has_keys"] is False
+
+
+async def test_desligado_recusa_mesmo_com_chave_boa(mcp_desligado: None, db) -> None:
+    chave = await _chave(db, McpScope.leitura)
+    async with httpx2.AsyncClient(
+        transport=httpx2.ASGITransport(app=app),
+        base_url=BASE,
+        headers={"Authorization": f"Bearer {chave}"},
+    ) as http:
+        for caminho in ("/mcp", "/mcp/"):
+            resp = await http.post(
+                caminho,
+                json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+                headers={"Accept": "application/json, text/event-stream"},
+            )
+            # 503, e não 401: a mensagem tem que dizer que é a tela, não a chave.
+            assert resp.status_code == 503, caminho
+            assert resp.json()["error"]["code"] == "mcp_disabled"
+
+
+async def test_ligar_e_desligar_pela_rota(authed: AsyncClient) -> None:
+    ligado = await authed.put(ROTA, json={"enabled": True})
+    assert ligado.status_code == 200
+    assert ligado.json()["enabled"] is True
+    assert (await authed.get(ROTA)).json()["enabled"] is True
+
+    desligado = await authed.put(ROTA, json={"enabled": False})
+    assert desligado.json()["enabled"] is False
+
+
+async def test_desligar_nao_apaga_chave(authed: AsyncClient) -> None:
+    await authed.put(ROTA, json={"enabled": True})
+    criada = (await authed.post(f"{ROTA}/keys", json={"name": "k", "scopes": ["leitura"]})).json()
+    await authed.put(ROTA, json={"enabled": False})
+    listadas = (await authed.get(f"{ROTA}/keys")).json()
+    assert [k["id"] for k in listadas] == [criada["id"]]
+    assert listadas[0]["enabled"] is True
+
+
+async def test_has_keys_ignora_chave_desativada(authed: AsyncClient) -> None:
+    criada = (await authed.post(f"{ROTA}/keys", json={"name": "k", "scopes": ["leitura"]})).json()
+    assert (await authed.get(ROTA)).json()["has_keys"] is True
+    await authed.put(f"{ROTA}/keys/{criada['id']}", json={"enabled": False})
+    assert (await authed.get(ROTA)).json()["has_keys"] is False
+
+
+async def test_interruptor_declarado_no_arquivo_nao_muda_pela_tela(authed: AsyncClient) -> None:
+    """A regra do ADR 014: o que está no arquivo não se edita pela tela."""
+    from lognix.settings import config_file
+
+    anterior = config_file.active()
+    config_file._ativa = config_file.FileConfig(managed={"mcp.enabled": True})
+    try:
+        assert (await authed.get(ROTA)).json()["managed"] is True
+        resp = await authed.put(ROTA, json={"enabled": False})
+        assert resp.status_code == 409
+        assert resp.json()["error"]["code"] == "managed_by_file"
+    finally:
+        config_file._ativa = anterior

@@ -22,7 +22,7 @@ from lognix.errors import install_error_handlers
 from lognix.events.workers import get_host_workers
 from lognix.hosts.supervisor import get_supervisor
 from lognix.logging_setup import setup_logging
-from lognix.mcp.http import app_mcp, rota_exata
+from lognix.mcp.http import app_mcp, montagem, rota_exata
 from lognix.metrics import metrics_middleware
 from lognix.realtime.hub import get_tail_hub
 from lognix.realtime.ws import router as ws_router
@@ -85,7 +85,7 @@ def create_app() -> FastAPI:
     # inteiro sob responsabilidade do SDK. Antes do coringa do frontend, que engoliria /mcp.
     # A rota exata existe porque o Mount casa só /mcp/... e o roteador responderia 307 em /mcp.
     app.router.routes.append(Route("/mcp", endpoint=rota_exata()))
-    app.mount("/mcp", app_mcp())
+    app.mount("/mcp", montagem())
     # Por último: a rota coringa do frontend engoliria as da API se viesse antes.
     mount_frontend(app, Path(get_settings().frontend_dir))
     return app

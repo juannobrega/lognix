@@ -1,6 +1,6 @@
 # Diagnóstico de Código
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.4.0
+**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** a seguir, 2 de 3
 
 Caso de uso IA-2. Combina insight, eventos e código para apontar o trecho.
 

@@ -7,9 +7,22 @@ responder, sem você abrir a interface.
 Funciona com qualquer cliente compatível. Os exemplos usam o Claude Code e o Claude Desktop porque
 são os mais comuns.
 
-## 1. Crie uma chave
+## 1. Ligue o servidor
 
-**Configurações › MCP › Nova chave.** Dê um nome que diga de quem é a chave — é por ele que você vai
+Em **Inteligência Artificial › MCP**, o interruptor no alto da tela. Ele nasce **desligado**: um
+endereço que serve log não deveria passar a responder porque alguém atualizou a versão.
+
+Desligado, `/mcp` responde **503** a todo mundo, com chave ou sem — e as chaves continuam
+guardadas, intactas. É o jeito de cortar todo o acesso MCP de uma vez, sem revogar uma por uma.
+
+!!! tip "Pode ficar no `config.yaml`"
+
+    `mcp.enabled: true` sobe a instalação com o servidor já ligado. Declarado no arquivo, o
+    interruptor aparece na tela e não deixa editar — ver [Configuração](Configuração.md).
+
+## 2. Crie uma chave
+
+**Inteligência Artificial › MCP › Nova chave.** Dê um nome que diga de quem é a chave — é por ele que você vai
 saber qual revogar — e marque as permissões.
 
 | Permissão | Libera | Se a chave vazar |
@@ -26,7 +39,7 @@ saber qual revogar — e marque as permissões.
 Recomendação: **uma chave por cliente**, com o menor escopo que resolva. É o que permite cortar um
 sem derrubar os outros.
 
-## 2. Aponte o cliente
+## 3. Aponte o cliente
 
 === "Claude Code"
 
@@ -58,7 +71,7 @@ sem derrubar os outros.
 O endereço é o seu `LOGNIX_PUBLIC_URL` com `/mcp` no fim. Se o cliente responder **421**, o endereço
 pelo qual ele chega não é o configurado — veja [Hosts aceitos](#hosts-aceitos).
 
-## 3. Pergunte
+## 4. Pergunte
 
 Algumas perguntas que funcionam direto:
 

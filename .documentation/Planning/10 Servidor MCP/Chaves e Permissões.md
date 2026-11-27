@@ -30,6 +30,19 @@ produziu três grupos em vez de dez.
 - **A tela mostra o risco de cada escopo ao lado da caixa de seleção.** Quem escolhe permissão sem
   saber o que ela expõe marca tudo.
 
+## Interruptor geral
+
+Antes de qualquer chave existir, o servidor precisa estar ligado — e nasce desligado. O estado
+mora em `mcp.enabled`, na tabela `Setting`, e é conferido **por requisição**, à frente do app do
+SDK: desligar vale para a conexão inteira, do `initialize` em diante, e não dá para desmontar uma
+rota em tempo de execução.
+
+A resposta é **503**, não 401. "Desligado aqui" e "sua chave não serve" levam a pessoa a procurar
+em lugares diferentes, e um 401 para os dois casos faz perder tempo no lugar errado.
+
+Desligar **não** revoga: as chaves ficam como estavam, e religar devolve o acesso de todas. Quem
+quer tirar o acesso de uma só desativa ou revoga aquela chave.
+
 ## Ciclo de vida
 
 - **Criação:** nome obrigatório, ao menos um escopo, validade opcional (30, 90, 365 dias ou sem

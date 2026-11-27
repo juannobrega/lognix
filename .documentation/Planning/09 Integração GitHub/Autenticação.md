@@ -1,6 +1,6 @@
 # Autenticação com GitHub
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.3.0
+**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** a seguir, 1 de 3
 
 Base: ADR 007. GitHub App, nunca token pessoal.
 

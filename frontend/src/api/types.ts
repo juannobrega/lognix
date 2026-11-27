@@ -561,6 +561,11 @@ export interface McpToolInfo {
 }
 
 export interface McpInfo {
+  enabled: boolean
+  /** Existe chave que responde. Desligado e sem chave são motivos diferentes de não funcionar. */
+  has_keys: boolean
+  /** Declarado no config.yaml: a tela mostra, e não deixa editar. */
+  managed: boolean
   url: string
   scopes: McpScopeInfo[]
   tools: McpToolInfo[]

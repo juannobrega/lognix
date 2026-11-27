@@ -17,6 +17,11 @@ ai:
   max_output_tokens: 1500
   concurrency: 3
 
+# Servidor MCP: deixa um cliente de IA — Claude Code, Claude Desktop — consultar os logs e os
+# insights deste Lognix. Nasce desligado; as chaves são criadas na tela, nunca aqui.
+mcp:
+  enabled: false
+
 # Provedores de IA, na ordem da cadeia de fallback: o primeiro atende, os seguintes entram se ele
 # recusar. Os tipos disponíveis são os mesmos da tela de Provedores.
 providers:
