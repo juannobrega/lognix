@@ -39,7 +39,8 @@ export function UpdateCard() {
           <span className="muted">{d?.enabled ? 'verificando' : 'não verifica'}</span>
           <Switch
             checked={d?.enabled ?? false}
-            disabled={!d || d.managed || ligar.isPending}
+            disabled={!d || d.managed}
+            pending={ligar.isPending}
             onCheckedChange={(v) => ligar.mutate(v)}
             aria-label="Verificar atualizações"
           />

@@ -92,7 +92,8 @@ export function SelfUpdate({ info }: { info: UpdateInfo }) {
         </span>
         <Switch
           checked={info.self_update_enabled}
-          disabled={info.self_update_managed || ligar.isPending}
+          disabled={info.self_update_managed}
+          pending={ligar.isPending}
           onCheckedChange={(v) => ligar.mutate(v)}
           aria-label="Atualizar pela interface"
         />

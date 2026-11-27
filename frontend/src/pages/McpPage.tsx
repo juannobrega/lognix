@@ -88,7 +88,8 @@ export function McpPage() {
             <span className="muted">{info.data?.enabled ? 'ligado' : 'desligado'}</span>
             <Switch
               checked={info.data?.enabled ?? false}
-              disabled={!info.data || info.data.managed || ligar.isPending}
+              disabled={!info.data || info.data.managed}
+              pending={ligar.isPending}
               onCheckedChange={(v) => ligar.mutate(v)}
               aria-label="Servidor MCP"
             />

@@ -36,10 +36,13 @@ describe('tokens de estilo', () => {
     const orfas: string[] = []
     for (const arquivo of cssFiles(SRC)) {
       const texto = readFileSync(arquivo, 'utf8')
+      // Variável declarada no próprio arquivo é local por desenho — o Switch calcula a posição
+      // do polegar a partir das dimensões do trilho, e esses números não são token de tema.
+      const noArquivo = new Set([...texto.matchAll(/^\s*(--[\w-]+):/gm)].map((m) => m[1]))
       for (const [, nome] of texto.matchAll(/var\((--[\w-]+)/g)) {
         // Variáveis locais, que o componente passa por style={{ '--tint': ... }}, e as que o
         // próprio Radix injeta no elemento. Nenhuma das duas mora em tokens.css.
-        if (LOCAIS.has(nome) || nome.startsWith('--radix-')) continue
+        if (LOCAIS.has(nome) || noArquivo.has(nome) || nome.startsWith('--radix-')) continue
         if (!declarados.has(nome)) orfas.push(`${arquivo.replace(SRC, '')}: ${nome}`)
       }
     }
