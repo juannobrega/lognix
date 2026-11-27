@@ -83,6 +83,8 @@ O cadastro valida a conexão em seis etapas e, quando falha, diz exatamente o qu
 - Explicação por IA com evidências rastreáveis, custo por chamada e tela de consumo.
 - Reconhecimento de redeploy: recriar um container não apaga o histórico do projeto.
 - Métricas Prometheus e uma tela de Sistema que mostra o estado de cada processo.
+- **Servidor MCP:** aponte o Claude Code para o seu Lognix e pergunte "o que aconteceu com a api?".
+  Dez ferramentas, chaves com escopo e registro de cada chamada. Nenhuma delas escreve.
 
 **Em construção:** a integração com o GitHub, que vai ligar o erro ao trecho de código que o
 causou e abrir a issue.
@@ -106,9 +108,10 @@ Detalhes em [Arquitetura](.documentation/Software/Arquitetura.md).
 
 ## Privacidade
 
-Trechos de log saem do seu ambiente **apenas** para o provider de IA que você configurar, e isso
-é avisado na tela. Não há redação automática de dados sensíveis nesta versão. Variáveis de
-ambiente nunca são enviadas por valor, só por nome.
+Trechos de log saem do seu ambiente **apenas** para os provedores de IA que você configurar — e,
+se você criar uma chave MCP, para o cliente de IA de quem tem a chave. As duas coisas são avisadas
+na tela. Não há redação automática de dados sensíveis nesta versão. Variáveis de ambiente nunca são
+enviadas por valor, só por nome.
 
 Fora isso, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a serviços do
 autor. A IA é opcional e o resto funciona com ela desligada.

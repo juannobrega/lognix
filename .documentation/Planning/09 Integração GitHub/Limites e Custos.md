@@ -1,6 +1,6 @@
 # Limites e Custos da Integração GitHub
 
-**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.1.0 a 1.3.0
+**Status:** Rascunho para revisão · **Atualizado:** 2026-11-21 · **Fase:** 1.3.0 a 1.5.0
 
 ## 1. API do GitHub
 

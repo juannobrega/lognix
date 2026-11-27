@@ -32,13 +32,20 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 
 | Versão | Fase | Entrega |
 |---|---|---|
-| 1.1.0 | **GitHub App** | Registro do App, configuração, vínculo de repositório com pré-preenchimento OCI, validação de repositório de código |
-| 1.2.0 | **Diagnóstico de código** | Seleção de arquivos a partir do erro, IA-2, `code_diagnosis` na interface |
-| 1.3.0 | **Issues** | IA-3, template, abrir, comentar, reabrir, `GithubIssue` |
-| 1.x | Roadmap | Conforme [Roadmap](Roadmap.md), começando por deduplicação de insights e imagens publicadas |
+| 1.1.0 | **Endurecimento** | Troca de senha pela própria conta, remoção de código morto, testes HTTP dos quatro provedores de IA, deduplicação de insights em módulo próprio. **Construída em 2026-11-27** |
+| 1.2.0 | **Servidor MCP** | Transporte HTTP montado em `/mcp`, dez ferramentas, chaves com escopo e auditoria, aba MCP nas configurações. **Construída em 2026-11-27.** Ver [ADR 017](../02%20Arquitetura/ADR/ADR%20017%20Servidor%20MCP%20do%20Lognix.md) e a [área 10](../10%20Servidor%20MCP/README.md) |
+| 1.3.0 | **GitHub App** | Registro do App, configuração, vínculo de repositório com pré-preenchimento OCI, validação de repositório de código |
+| 1.4.0 | **Diagnóstico de código** | Seleção de arquivos a partir do erro, IA-2, `code_diagnosis` na interface |
+| 1.5.0 | **Issues** | IA-3, template, abrir, comentar, reabrir, `GithubIssue` |
+| 1.x | Roadmap | Conforme [Roadmap](Roadmap.md), começando por canais de notificação |
+
+**Decidido em 2026-11-27:** o MCP entra antes do GitHub App e empurra as três fases do diferencial
+para 1.3.0 a 1.5.0. O motivo é sequência de valor: o MCP aproveita tudo que já existe — inventário, logs,
+padrões, insights — e não depende de nada novo, enquanto o GitHub App começa por autenticação e
+vínculo antes de entregar a primeira resposta útil.
 
 **Decidido em 2026-11-21:** GitHub fica depois do 1.0.0. A Visão e Escopo foi ajustada para separar
-**núcleo**, entregue no 1.0.0, de **diferencial**, entregue em 1.1.0 a 1.3.0.
+**núcleo**, entregue no 1.0.0, de **diferencial**, entregue em 1.3.0 a 1.5.0.
 
 ## 4. O que cada fase precisa ter aprovado antes de começar
 
@@ -54,3 +61,4 @@ Ordem de implementação, mapeada em versões. Decisões de 2026-11-21: a IA ent
 | 0.8.0 | Frontend completo |
 | 0.9.0 | Área 04 inteira, ADR 006 |
 | 1.0.0 | Software/ completo, ADR 011, ADR 012 |
+| 1.2.0 | ADR 017, área 10 inteira |

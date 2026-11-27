@@ -543,3 +543,49 @@ export interface ProviderUsage {
   p95_latency_ms: number
   success_rate: number
 }
+
+export type McpScopeName = 'leitura' | 'analise' | 'admin'
+
+export interface McpScopeInfo {
+  nome: McpScopeName
+  rotulo: string
+  descricao: string
+  /** O que acontece se a chave vazar. É o que decide quais escopos marcar. */
+  risco: string
+}
+
+export interface McpToolInfo {
+  nome: string
+  escopo: McpScopeName
+  descricao: string
+}
+
+export interface McpInfo {
+  url: string
+  scopes: McpScopeInfo[]
+  tools: McpToolInfo[]
+}
+
+export interface McpKey {
+  id: string
+  name: string
+  prefix: string
+  scopes: McpScopeName[]
+  enabled: boolean
+  expires_at: string | null
+  last_used_at: string | null
+  calls: number
+  created_at: string
+  /** Só vem na resposta da criação. Depois disso não existe mais em lugar legível. */
+  secret: string | null
+}
+
+export interface McpCall {
+  id: string
+  key_name: string
+  tool: string
+  ok: boolean
+  error: string | null
+  duration_ms: number
+  created_at: string
+}

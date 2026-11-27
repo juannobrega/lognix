@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import time
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
@@ -11,6 +10,7 @@ from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
+from lognix.analysis import manual
 from lognix.analysis.cycle import cycle_lock, run_cycle
 from lognix.analysis.executor import get_executor
 from lognix.analysis.manager import get_analysis_manager
@@ -31,9 +31,6 @@ from lognix.loki.client import LokiClient
 projects_router = APIRouter(prefix="/projects", tags=["analysis"])
 insights_router = APIRouter(prefix="/insights", tags=["analysis"])
 executor_router = APIRouter(prefix="/executor", tags=["analysis"])
-
-_manual_last: dict[uuid.UUID, float] = {}
-MANUAL_MIN_INTERVAL = 60
 
 
 class PatternOut(BaseModel):
@@ -180,15 +177,14 @@ async def analyze_now(
     project_id: uuid.UUID, body: AnalyzeIn, user: CurrentUser, db: DbSession
 ) -> AnalyzeOut:
     container = await _project(db, project_id)
-    last = _manual_last.get(project_id)
-    if last is not None and time.monotonic() - last < MANUAL_MIN_INTERVAL:
+    if manual.espera(project_id) > 0:
         raise ApiError(
             429,
             "rate_limited",
             "Análise manual limitada a uma por minuto por projeto.",
             "Aguarde um minuto.",
         )
-    _manual_last[project_id] = time.monotonic()
+    manual.marcar(project_id)
     end = body.end or datetime.now(UTC)
     start = body.start or (end - timedelta(minutes=body.minutes))
     if start >= end:

@@ -35,6 +35,7 @@ Cada decisão não óbvia de arquitetura vira um arquivo `ADR NNN Título.md`.
 | 014 | [Configuração por Arquivo](ADR%20014%20Configura%C3%A7%C3%A3o%20por%20Arquivo.md) | Proposto |
 | 015 | [Pipeline de Release e Publicação](ADR%20015%20Pipeline%20de%20Release%20e%20Publica%C3%A7%C3%A3o.md) | Proposto |
 | 016 | [Deduplicação de Insights](ADR%20016%20Deduplica%C3%A7%C3%A3o%20de%20Insights.md) | Proposto |
+| 017 | [Servidor MCP do Lognix](ADR%20017%20Servidor%20MCP%20do%20Lognix.md) | Aceito |
 
 ## Candidatos ainda não decididos
 

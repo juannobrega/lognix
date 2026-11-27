@@ -50,6 +50,7 @@ a linha ficaria rente ao zero e esconderia exatamente o pico que alguém abre o 
 | rodar o Lognix | [Instalação](Instalação.md) |
 | declarar a instalação num arquivo | [Configuração](Configuração.md) |
 | usar no dia a dia | [Operação](Operação.md) |
+| perguntar ao Claude sobre os seus logs | [Conectar uma IA](MCP.md) |
 | saber o que mudou | [Mudanças](CHANGELOG.md) |
 
 A referência da API é gerada pela própria instalação, em `/api/docs`.
@@ -57,7 +58,8 @@ A referência da API é gerada pela própria instalação, em `/api/docs`.
 ## Privacidade
 
 Trechos de log saem do seu ambiente **apenas** para o provedor de IA que você configurar, e isso
-é avisado na própria tela. Não há redação automática de dados sensíveis nesta versão. Variáveis de
+é avisado na própria tela. Se você criar uma chave [MCP](MCP.md), eles também saem para o cliente
+de IA de quem tem a chave — por isso a chave tem escopo, prazo e registro de uso. Não há redação automática de dados sensíveis nesta versão. Variáveis de
 ambiente nunca são enviadas por valor, só por nome.
 
 Fora isso, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a serviços do

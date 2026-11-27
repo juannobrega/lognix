@@ -29,6 +29,7 @@ os.environ.setdefault("TUNNELS_DIR", "/tmp/lgx-test-tunnels")
 
 from lognix.alloy import service as alloy_service
 from lognix.analysis import manager as manager_module
+from lognix.analysis import manual as manual_limit
 from lognix.analysis.manager import AnalysisManager
 from lognix.auth.routes import login_limiter
 from lognix.db import get_engine
@@ -42,6 +43,8 @@ from tests.fake_docker import FakeDocker
 from tests.fake_ssh import FakeSshBackend
 
 TABLES = [
+    "mcp_calls",
+    "mcp_keys",
     "ai_calls",
     "insights",
     "ai_models",
@@ -118,6 +121,7 @@ def fake_alloy() -> FakeAlloy:
 @pytest.fixture(autouse=True)
 async def _clean_tables() -> AsyncIterator[None]:
     login_limiter.reset()
+    manual_limit.limpar()
     fake = FakeAlloy()
     manager = alloy_service.AlloyManager(
         config_path=os.environ["ALLOY_CONFIG_PATH"],

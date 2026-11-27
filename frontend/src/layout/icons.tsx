@@ -108,6 +108,12 @@ export const Icons = {
       <path d="M12 5v14M5 12h14" />
     </svg>
   ),
+  key: (p: SVGProps<SVGSVGElement>) => (
+    <svg {...base} {...p}>
+      <circle cx="8" cy="15" r="4" />
+      <path d="M10.8 12.2 20 3M17 3h4v4" />
+    </svg>
+  ),
   search: (p: SVGProps<SVGSVGElement>) => (
     <svg {...base} {...p}>
       <circle cx="11" cy="11" r="7" />

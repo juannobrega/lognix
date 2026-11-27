@@ -1,0 +1,72 @@
+.scopes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.scope {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border: 1px solid var(--well-border);
+  border-radius: var(--radius-well);
+  cursor: pointer;
+}
+.scope:hover {
+  border-color: var(--control-border);
+}
+.scope input {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.scope strong {
+  display: block;
+  font-weight: 500;
+}
+.scope span {
+  color: var(--fg-faint);
+  font-size: var(--text-sm);
+}
+.risk {
+  display: block;
+  margin-top: 2px;
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
+}
+.legend {
+  margin: 0 0 var(--space-2);
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
+}
+.secret {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--well-border);
+  border-radius: var(--radius-well);
+  background: var(--block-bg);
+}
+.secret code {
+  flex: 1;
+  overflow-wrap: anywhere;
+  /* Um clique seleciona a chave inteira: sem isto, quem não tem clipboard copia pela metade. */
+  user-select: all;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.steps {
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--fg-dim);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+}
+.prazo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}

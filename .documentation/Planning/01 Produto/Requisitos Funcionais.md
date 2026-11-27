@@ -59,11 +59,21 @@ Lista numerada do que o sistema faz. Cada requisito aponta a fase em que entra e
 ## GitHub
 | ID | Requisito | Fase | Ref |
 |---|---|---|---|
-| RF-050 | Configurar GitHub App pela interface | 1.1.0 | Autenticação GitHub |
-| RF-051 | Vincular projeto a repositório de código, com pré-preenchimento OCI e validação | 1.1.0 | Vínculo |
-| RF-052 | Selecionar e ler arquivos relevantes a partir do erro | 1.2.0 | Leitura de Código |
-| RF-053 | Produzir diagnóstico de código com arquivo, linhas e explicação | 1.2.0 | Diagnóstico |
-| RF-054 | Abrir, comentar e reabrir issues com deduplicação por projeto e padrão | 1.3.0 | Issues |
+| RF-050 | Configurar GitHub App pela interface | 1.3.0 | Autenticação GitHub |
+| RF-051 | Vincular projeto a repositório de código, com pré-preenchimento OCI e validação | 1.3.0 | Vínculo |
+| RF-052 | Selecionar e ler arquivos relevantes a partir do erro | 1.4.0 | Leitura de Código |
+| RF-053 | Produzir diagnóstico de código com arquivo, linhas e explicação | 1.4.0 | Diagnóstico |
+| RF-054 | Abrir, comentar e reabrir issues com deduplicação por projeto e padrão | 1.5.0 | Issues |
+
+## Servidor MCP
+| ID | Requisito | Fase | Ref |
+|---|---|---|---|
+| RF-055 | Atender o Model Context Protocol em `/mcp`, com transporte HTTP | 1.2.0 | [Ferramentas](../10%20Servidor%20MCP/Ferramentas.md) |
+| RF-056 | Expor hosts, projetos, logs, padrões, ocorrências e insights como ferramentas | 1.2.0 | Ferramentas |
+| RF-057 | Disparar análise de um projeto por ferramenta, com o limite da interface | 1.2.0 | Ferramentas |
+| RF-058 | Criar, listar, desativar e revogar chaves de API com escopo e validade | 1.2.0 | [Chaves e Permissões](../10%20Servidor%20MCP/Chaves%20e%20Permissões.md) |
+| RF-059 | Mostrar a chave uma única vez, guardando só o hash | 1.2.0 | Chaves e Permissões |
+| RF-070 | Registrar toda chamada MCP com chave, ferramenta, duração e erro | 1.2.0 | Chaves e Permissões |
 
 ## Sistema
 | ID | Requisito | Fase | Ref |
