@@ -45,6 +45,11 @@ services:
 
   postgres:
     image: postgres:16-alpine
+    # Preso ao loopback: não é alcançável pela rede, e é o que permite rodar backend, frontend e
+    # a suíte de testes fora do Docker durante o desenvolvimento. Mude a porta pelo .env se a
+    # 5432 já estiver ocupada na sua máquina.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-lognix}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lognix}

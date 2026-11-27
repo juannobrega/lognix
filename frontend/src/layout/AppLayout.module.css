@@ -139,6 +139,18 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-control);
 }
+.user {
+  border-radius: var(--radius-control);
+  color: inherit;
+  text-decoration: none;
+}
+.user:hover {
+  background: var(--hover);
+  text-decoration: none;
+}
+.userActive {
+  background: var(--accent-soft);
+}
 .avatar {
   width: 26px;
   height: 26px;

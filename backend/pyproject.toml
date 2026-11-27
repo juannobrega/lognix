@@ -35,6 +35,8 @@ dependencies = [
 dev = [
   "pytest>=8",
   "pytest-asyncio>=0.23",
+  # Síncrono, só para criar o banco de teste antes de o engine async subir.
+  "psycopg[binary]>=3.1",
   "ruff>=0.5",
   "mypy>=1.10",
   "types-passlib",

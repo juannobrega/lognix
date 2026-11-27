@@ -61,12 +61,17 @@ export function AppLayout() {
         </nav>
 
         <div className={styles.footer}>
-          <div className={styles.user}>
+          {/* O nome já estava aqui; agora leva a algum lugar — era o único jeito de alguém
+              chegar à troca de senha. */}
+          <NavLink
+            to="/conta"
+            className={({ isActive }) => [styles.user, isActive ? styles.userActive : ''].join(' ')}
+          >
             <span className={styles.avatar} aria-hidden="true">
               {initials}
             </span>
             <span className={styles.userName}>{user?.name}</span>
-          </div>
+          </NavLink>
           <span className={styles.version}>v{__APP_VERSION__}</span>
           <div className={styles.footerRow}>
             <Tooltip content={theme === 'dark' ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'}>
