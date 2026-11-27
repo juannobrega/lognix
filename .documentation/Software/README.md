@@ -62,8 +62,9 @@ Trechos de log saem do seu ambiente **apenas** para o provedor de IA que você c
 de IA de quem tem a chave — por isso a chave tem escopo, prazo e registro de uso. Não há redação automática de dados sensíveis nesta versão. Variáveis de
 ambiente nunca são enviadas por valor, só por nome.
 
-Fora isso, nada sai: sem telemetria, sem verificação de atualização, sem chamadas a serviços do
-autor. A IA é opcional, e o resto funciona com ela desligada. Detalhes em
+Fora isso, nada sai: sem telemetria e sem chamadas a serviços do autor. A verificação de
+atualização existe, **desligada**: ligada, o Lognix pergunta ao registro de imagens quais versões
+existem — uma pergunta, nada enviado — e avisa quando sair versão nova. A IA é opcional, e o resto funciona com ela desligada. Detalhes em
 [Operação](Operação.md#privacidade).
 
 ## Contribuir

@@ -40,6 +40,9 @@ ai:
 mcp:
   enabled: true
 
+updates:
+  check_enabled: true
+
 providers:
   - kind: openrouter
     name: OpenRouter

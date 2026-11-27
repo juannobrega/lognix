@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 from pydantic import BaseModel, Field
 
 from lognix.auth.deps import CurrentUser, DbSession
@@ -66,7 +66,13 @@ class InfoOut(BaseModel):
     #: Existe chave que responde. Desligado e sem chave são motivos diferentes de não funcionar.
     has_keys: bool
     managed: bool
+    #: Montado a partir do endereço por onde *esta* pessoa chegou: é o que vai funcionar no
+    #: cliente dela. Atrás de proxy, o LOGNIX_PUBLIC_URL sozinho mostraria o endereço interno.
     url: str
+    #: O que LOGNIX_PUBLIC_URL declara, para a tela poder apontar a divergência.
+    public_url: str
+    #: O cabeçalho Host desta requisição passa pela checagem do /mcp? Se não, o cliente toma 421.
+    host_allowed: bool
     scopes: list[EscopoOut]
     tools: list[FerramentaOut]
 
@@ -97,10 +103,28 @@ class InfoIn(BaseModel):
     enabled: bool
 
 
-async def _info(db: DbSession) -> InfoOut:
+def _origem(request: Request) -> tuple[str, str]:
+    """Esquema e host por onde a requisição chegou, já desembrulhando o proxy.
+
+    Os cabeçalhos são lidos à mão porque o uvicorn só confia neles quando o proxy está na lista
+    de `forwarded-allow-ips`; atrás de um proxy em outra máquina, a tela mostraria o endereço
+    interno do contêiner — justamente o que não funciona de fora.
+    """
+    cabecalhos = request.headers
+    # Proxy em cadeia manda "a, b": o primeiro é quem o cliente procurou.
+    host = (cabecalhos.get("x-forwarded-host") or cabecalhos.get("host") or "").split(",")[0]
+    esquema = (cabecalhos.get("x-forwarded-proto") or request.url.scheme).split(",")[0]
+    return esquema.strip(), host.strip()
+
+
+async def _info(db: DbSession, request: Request) -> InfoOut:
     from sqlalchemy import func, select
 
-    base = get_settings().lognix_public_url.rstrip("/")
+    cfg = get_settings()
+    declarado = cfg.lognix_public_url.rstrip("/")
+    esquema, host = _origem(request)
+    base = f"{esquema}://{host}" if host else declarado
+    permitidos = cfg.mcp_hosts
     chaves = (
         await db.execute(select(func.count()).select_from(McpKey).where(McpKey.enabled.is_(True)))
     ).scalar()
@@ -109,19 +133,22 @@ async def _info(db: DbSession) -> InfoOut:
         has_keys=bool(chaves),
         managed=config_file.is_managed(config.MCP_ENABLED),
         url=f"{base}/mcp",
+        public_url=declarado,
+        # Lista vazia significa que a checagem está desligada, e aí qualquer nome passa.
+        host_allowed=not permitidos or host in permitidos,
         scopes=ESCOPOS,
         tools=[FerramentaOut(**f) for f in CATALOGO],
     )
 
 
 @router.get("", response_model=InfoOut)
-async def info(_: CurrentUser, db: DbSession) -> InfoOut:
+async def info(request: Request, _: CurrentUser, db: DbSession) -> InfoOut:
     """O que o cliente precisa para se conectar, e o que cada escopo libera."""
-    return await _info(db)
+    return await _info(db, request)
 
 
 @router.put("", response_model=InfoOut)
-async def ligar(body: InfoIn, _: CurrentUser, db: DbSession) -> InfoOut:
+async def ligar(body: InfoIn, request: Request, _: CurrentUser, db: DbSession) -> InfoOut:
     """Interruptor geral. Desligado, `/mcp` responde 503 a todo mundo, com chave ou sem."""
     if config_file.is_managed(config.MCP_ENABLED):
         raise ApiError(
@@ -132,7 +159,7 @@ async def ligar(body: InfoIn, _: CurrentUser, db: DbSession) -> InfoOut:
         )
     await config.set_value(db, config.MCP_ENABLED, "true" if body.enabled else "false")
     await db.commit()
-    return await _info(db)
+    return await _info(db, request)
 
 
 @router.get("/keys", response_model=list[ChaveOut])

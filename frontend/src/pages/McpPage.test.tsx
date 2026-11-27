@@ -11,6 +11,8 @@ const INFO = {
   has_keys: true,
   managed: false,
   url: 'http://localhost:8080/mcp',
+  public_url: 'http://localhost:8080',
+  host_allowed: true,
   scopes: [{ nome: 'leitura', rotulo: 'Leitura', descricao: 'Logs.', risco: 'Lê os logs.' }],
   tools: [{ nome: 'lognix_buscar_logs', escopo: 'leitura', descricao: 'Linhas de log de um projeto.' }],
 }

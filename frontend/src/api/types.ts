@@ -566,7 +566,11 @@ export interface McpInfo {
   has_keys: boolean
   /** Declarado no config.yaml: a tela mostra, e não deixa editar. */
   managed: boolean
+  /** Montado a partir do endereço por onde você chegou, não do LOGNIX_PUBLIC_URL. */
   url: string
+  public_url: string
+  /** false: o /mcp recusaria este endereço com 421 por não estar na lista de Hosts. */
+  host_allowed: boolean
   scopes: McpScopeInfo[]
   tools: McpToolInfo[]
 }
@@ -593,4 +597,16 @@ export interface McpCall {
   error: string | null
   duration_ms: number
   created_at: string
+}
+
+export interface UpdateInfo {
+  enabled: boolean
+  managed: boolean
+  current: string
+  /** Nulo com a verificação desligada, ou quando o registro não respondeu. */
+  available: string | null
+  outdated: boolean
+  checked_at: string | null
+  changelog_url: string
+  command: string
 }

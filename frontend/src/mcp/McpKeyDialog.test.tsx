@@ -11,6 +11,8 @@ const info: McpInfo = {
   has_keys: false,
   managed: false,
   url: 'http://localhost:8080/mcp',
+  public_url: 'http://localhost:8080',
+  host_allowed: true,
   scopes: [
     {
       nome: 'leitura',

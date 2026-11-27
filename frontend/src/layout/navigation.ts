@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react'
+import { McpMark } from '../mcp/icon'
 import { Icons } from './icons'
 
 export interface NavChild {
@@ -80,7 +81,7 @@ export const SECTIONS: NavSection[] = [
             to: '/ai/mcp',
             label: 'MCP',
             description: 'Conectar um cliente de IA ao Lognix: chaves, permissões e ferramentas.',
-            icon: Icons.key,
+            icon: McpMark,
           },
         ],
       },
